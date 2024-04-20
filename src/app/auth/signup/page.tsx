@@ -81,21 +81,21 @@ function SignupForm({ email, setEmail, emailValidated, onValidateEmail }) {
 
   const handleSignupButton = async (e) => {
     e.preventDefault();
-    if (!passwordRegex.test(password)) {
-      setError(
-        "Password must contain minimum 8 characters, at least one letter and one number."
-      );
-      return;
-    }
+    // if (!passwordRegex.test(password)) {
+    //   setError(
+    //     "Password must contain minimum 8 characters, at least one letter and one number."
+    //   );
+    //   return;
+    // }
 
     const { error } = await supabase.auth.signUp({
       email: email,
       password: password,
       options: {
         data: {
-          firstName: firstName,
-          lastName: lastName,
-          username: username,
+          first_name: firstName,
+          last_name: lastName,
+          // username: username,
         },
       },
     });

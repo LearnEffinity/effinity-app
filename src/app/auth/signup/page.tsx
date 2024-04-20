@@ -89,8 +89,15 @@ function SignupForm({ email, setEmail, emailValidated, onValidateEmail }) {
     }
 
     const { error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: email,
+      password: password,
+      options: {
+        data: {
+          firstName: firstName,
+          lastName: lastName,
+          username: username,
+        },
+      },
     });
 
     if (error) {

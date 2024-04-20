@@ -27,7 +27,7 @@ function LoginPage() {
             <p className="text-gray-500 mb-6">
               ----- or Sign in with Email -----
             </p>
-            <LoginForm />
+            <LoginForm supabase={supabase} />
             <p className="text-gray-500 mt-4">
               Don&apos;t have an account?{" "}
               <a
@@ -45,38 +45,40 @@ function LoginPage() {
   );
 }
 
-function LoginForm() {
+function LoginForm({ supabase }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const supabase = createClient();
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
   const handleLoginButton = async (e: any) => {
     e.preventDefault();
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-    if (!passwordRegex.test(password)) {
-      setError(
-        "Password must contain minimum 8 characters, at least one letter and one number."
-      );
-      return;
-    }
+    console.log("Email:", email);
+    // if (!emailRegex.test(email)) {
+    //   setError("Please enter a valid email address.");
+    //   return;
+    // }
+    // if (!passwordRegex.test(password)) {
+    //   setError(
+    //     "Password must contain minimum 8 characters, at least one letter and one number."
+    //   );
+    //   return;
+    // }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
     });
 
     if (error) {
+      console.log("Failed to login:", error.message);
       setError("Failed to login: " + error.message);
     } else {
       setError("");
     }
+    console.log("Logged in:", data);
   };
 
   return (

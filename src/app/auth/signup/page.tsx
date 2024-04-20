@@ -1,22 +1,39 @@
-'use client'
-import React from 'react';
+"use client";
+import React from "react";
+import { createClient } from "@/utils/supabase/client";
 
 function SignupPage() {
+  const supasebase = createClient();
+  async function signUpWithGoogle() {
+    const { data, error } = await supasebase.auth.signInWithOAuth({
+      provider: "google",
+    });
+  }
   return (
     <>
       <div className="signupPage flex flex-row">
         <div className="signupLeft w-1/2 flex justify-center items-center h-screen">
           <div className="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
             <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
-            <p className="text-gray-500 mb-6">Take control of your financial journey.</p>
-            <button className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full mb-4">
+            <p className="text-gray-500 mb-6">
+              Take control of your financial journey.
+            </p>
+            <button
+              onClick={signUpWithGoogle}
+              className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full mb-4"
+            >
               Sign Up with Google
             </button>
-            <p className="text-gray-500 mb-6">----- or Sign Up with Email -----</p>
+            <p className="text-gray-500 mb-6">
+              ----- or Sign Up with Email -----
+            </p>
             <SignupForm />
             <p className="text-gray-500 mt-4">
-              Already have an account?{' '}
-              <a href="/auth/login/" className="text-blue-500 hover:text-blue-700">
+              Already have an account?{" "}
+              <a
+                href="/auth/login/"
+                className="text-blue-500 hover:text-blue-700"
+              >
                 Log in
               </a>
             </p>
@@ -29,13 +46,13 @@ function SignupPage() {
 }
 
 function SignupForm() {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
 
   const handleSignupButton = (e: any) => {
     e.preventDefault();
-    console.log('Email:', email);
-    console.log('Password:', password);
+    console.log("Email:", email);
+    console.log("Password:", password);
   };
 
   return (

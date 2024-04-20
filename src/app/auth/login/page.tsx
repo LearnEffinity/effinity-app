@@ -1,10 +1,10 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 function LoginPage() {
-  const supasebase = createClient();
+  const supabase = createClient();
   async function signInWithGoogle() {
-    const { data, error } = await supasebase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
     });
   }
@@ -20,7 +20,8 @@ function LoginPage() {
             </p>
             <button
               onClick={signInWithGoogle}
-              className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full mb-4">
+              className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full mb-4"
+            >
               Continue with Google
             </button>
             <p className="text-gray-500 mb-6">
@@ -45,13 +46,37 @@ function LoginPage() {
 }
 
 function LoginForm() {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const supabase = createClient();
 
-  const handleLoginButton = (e: any) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+  const handleLoginButton = async (e: any) => {
     e.preventDefault();
-    console.log("Email:", email);
-    console.log("Password:", password);
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (!passwordRegex.test(password)) {
+      setError(
+        "Password must contain minimum 8 characters, at least one letter and one number."
+      );
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+    if (error) {
+      setError("Failed to login: " + error.message);
+    } else {
+      setError("");
+    }
   };
 
   return (

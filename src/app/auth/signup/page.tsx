@@ -1,6 +1,5 @@
 'use client'
 import React from 'react';
-import "./globals.css";
 
 function SignupPage() {
   return (
@@ -33,7 +32,7 @@ function SignupForm() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  const handleSignupButton = (e) => {
+  const handleSignupButton = (e: any) => {
     e.preventDefault();
     console.log('Email:', email);
     console.log('Password:', password);

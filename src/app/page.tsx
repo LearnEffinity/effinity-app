@@ -5,14 +5,14 @@ import { useState, useEffect } from "react";
 
 export default function Home() {
   const supabase = createClient();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     async function getUser() {
       try {
         const { data, error } = await supabase.auth.getUser();
         if (error) throw error;
-        setUser(data.user);
+        setUser(data.user as User);
         console.log("User:", data.user);
       } catch (error) {
         console.error("Error fetching user:", error);

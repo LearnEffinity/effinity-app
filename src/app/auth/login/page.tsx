@@ -45,7 +45,7 @@ function LoginPage() {
   );
 }
 
-function LoginForm({ supabase }) {
+function LoginForm({ supabase }: { supabase: any }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

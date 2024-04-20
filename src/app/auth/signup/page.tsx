@@ -51,6 +51,8 @@ function SignupPage() {
               setEmail={setEmail}
               emailValidated={emailValidated}
               onValidateEmail={handleEmailValidation}
+              supabase={supabase}
+
             />
             <p className="text-gray-500 mt-4">
               Already have an account?{" "}
@@ -69,17 +71,28 @@ function SignupPage() {
   );
 }
 
-function SignupForm({ email, setEmail, emailValidated, onValidateEmail }) {
+function SignupForm({
+  email,
+  setEmail,
+  emailValidated,
+  onValidateEmail,
+  supabase,
+}: {
+  email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  emailValidated: boolean;
+  onValidateEmail: () => void;
+  supabase: any;
+}) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const supabase = createClient();
 
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
-  const handleSignupButton = async (e) => {
+  const handleSignupButton = async (e: React.FormEvent) => {
     e.preventDefault();
     // if (!passwordRegex.test(password)) {
     //   setError(

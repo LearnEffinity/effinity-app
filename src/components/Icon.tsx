@@ -21,8 +21,8 @@ export default function Icon({
 }) {
   return (
     <svg
-      width={width || "1em"}
-      height={height || "1em"}
+      width={width || 24}
+      height={height || 24}
       className={className}
       viewBox="0 0 24 24"
       fill="none"

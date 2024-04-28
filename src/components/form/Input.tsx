@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 import Icon from "../Icon";
 
 type InputProps = {
@@ -31,14 +35,25 @@ export default function Input({
   subtext,
   ...props
 }: InputProps) {
+  const [textVisible, setTextVisible] = useState(type !== "password");
+
   return (
-    <div className="rounded-lg text-sm w-full flex flex-col gap-2">
+    <div className="text-sm relative flex w-full flex-col gap-2 rounded-lg">
       <input
         {...props}
-        type={type}
+        type={textVisible ? (type === "password" ? "text" : type) : "password"}
         onChange={(e) => onChange?.(e.target.value)}
-        className={`p-4 w-full bg-input-surface border focus:border-input-pressed rounded-lg placeholder:text-text-tertiary ${sizeMap[size]} ${stateMap[state]} ${className}`}
+        className={`w-full rounded-lg border bg-input-surface p-4 placeholder:text-text-tertiary focus:border-input-pressed ${sizeMap[size]} ${stateMap[state]} ${className}`}
       />
+      {type === "password" && (
+        <button
+          onClick={() => setTextVisible((p) => !p)}
+          type="button"
+          className="absolute right-1 top-4 flex h-max w-12 items-center justify-center text-text-tertiary"
+        >
+          <Icon name={textVisible ? "eye-open" : "eye-closed"} />
+        </button>
+      )}
       {state !== "normal" && (
         <span
           className={`flex items-center gap-1.5 ${
@@ -69,7 +84,7 @@ export function InputWithLabel({
 } & InputProps) {
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      <label htmlFor={label} className="text-text-secondary font-medium">
+      <label htmlFor={label} className="font-medium text-text-secondary">
         {label}
       </label>
       <Input {...props} className={inputClassName} id={label} />

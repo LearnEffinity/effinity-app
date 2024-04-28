@@ -6,15 +6,17 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const router = useRouter();
   const sendResetLink = async (e: any) => {
-      e.preventDefault();
-      const clientUrl = process.env.NEXT_PUBLIC_CLIENT_URL;
+    e.preventDefault();
+    const clientUrl = process.env.NEXT_PUBLIC_CLIENT_URL;
 
     const supabase = createClient();
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {redirectTo: `${clientUrl}/auth/reset`});
-        if (error) {
-            console.log("Error:", error.message);
-            return;
-      }
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${clientUrl}/auth/reset`,
+    });
+    if (error) {
+      console.log("Error:", error.message);
+      return;
+    }
     router.push("/auth/forgot-password/sent/");
     console.log("Email:", email);
   };
@@ -38,7 +40,7 @@ export default function ForgotPasswordPage() {
             />
             <button
               className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full"
-                onClick={sendResetLink}
+              onClick={sendResetLink}
             >
               Send Reset Link
             </button>

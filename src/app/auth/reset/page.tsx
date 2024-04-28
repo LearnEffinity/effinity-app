@@ -1,8 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { CircularProgress } from "@mui/material";
 import { useSearchParams, useRouter } from "next/navigation";
+
+import { InputWithLabel } from "@/components/form/Input";
+import Button from "@/components/form/Button";
+
 function ResetPasswordPage() {
   const supabase = createClient();
   const [validSession, setValidSession] = useState(false);
@@ -13,9 +16,9 @@ function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const code = searchParams.get("code");
-  if (!code) {
-    return <p>Invalid reset code.</p>;
-  }
+  // if (!code) {
+  //   return <p>Invalid reset code.</p>;
+  // }
 
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,43 +38,27 @@ function ResetPasswordPage() {
   };
 
   return (
-    <div className="resetPasswordPage flex flex-row">
-      <div className="flex flex-col justify-center items-center h-screen w-1/2">
-        <div className="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
-          <h1 className="text-2xl font-bold mb-4">Reset Your Password</h1>
-          <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
-            <input
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="New Password"
-              type="password"
-              className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
-            />
-            <input
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm New Password"
-              type="password"
-              className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
-            />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <button
-              className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full"
-              type="submit"
-              disabled={!passwordsMatch}
-            >
-              Reset Password
-            </button>
-          </form>
-          <a
-            href="/auth/login/"
-            className="text-blue-500 hover:text-blue-700 mt-4"
-          >
-            Back to Log In
-          </a>
-        </div>
-      </div>
-      <div className="resetpageRight w-1/2"></div>
+    <div className="flex h-full flex-col gap-8 py-8">
+      <hgroup className="flex flex-col gap-1">
+        <h1 className="text-4xl font-semibold">Reset Your Password</h1>
+      </hgroup>
+      <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
+        <InputWithLabel
+          label="New Password"
+          value={newPassword}
+          onChange={(v) => setNewPassword(v)}
+          type="password"
+        />
+        <InputWithLabel
+          label="Confirm Password"
+          value={confirmPassword}
+          onChange={(v) => setConfirmPassword(v)}
+          type="password"
+        />
+        <Button className="mt-4" type="submit">
+          Reset Password
+        </Button>
+      </form>
     </div>
   );
 }

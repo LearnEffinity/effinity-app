@@ -8,6 +8,7 @@ const routes = {
   "/auth/login": "Welcome back to Effinity!",
   "/auth/signup": "Ready to go to Effinity and beyond?",
   "/auth/forgot-password": "Forgot your password?",
+  "/auth/reset": "Reset your password.",
 };
 
 export default function DashboardLayout({

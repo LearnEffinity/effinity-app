@@ -2,11 +2,15 @@
 import React, { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+
+import { InputWithLabel } from "@/components/form/Input";
+import Button from "@/components/form/Button";
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const router = useRouter();
-  const sendResetLink = async (e: any) => {
-    e.preventDefault();
+
+  const sendResetLink = async () => {
     const clientUrl = process.env.NEXT_PUBLIC_CLIENT_URL;
 
     const supabase = createClient();
@@ -22,38 +26,22 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="forgotPasswordPage flex flex-row">
-      <div className="flex flex-col justify-center items-center h-screen w-1/2">
-        <div className="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
-          <h1 className="text-2xl font-bold mb-4">Forgot Your Password?</h1>
-          <p className="text-gray-500 mb-6">
-            Enter your email address and we'll send you a link to reset your
-            password.
-          </p>
-          <form className="flex flex-col gap-4">
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              type="email"
-              className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
-            />
-            <button
-              className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full"
-              onClick={sendResetLink}
-            >
-              Send Reset Link
-            </button>
-          </form>
-          <a
-            href="/auth/login/"
-            className="text-blue-500 hover:text-blue-700 mt-4"
-          >
-            Back to Log In
-          </a>
-        </div>
-      </div>
-      <div className="forgotpageRight w-1/2"></div>
+    <div className="flex h-full flex-col gap-8 py-8">
+      <hgroup className="flex flex-col gap-1">
+        <h1 className="text-4xl font-semibold">Forgot your password?</h1>
+        <p className="text-lg text-text-secondary">
+          No worries, we&apos;ll send you reset instructions.
+        </p>
+      </hgroup>
+      <form className="flex flex-col gap-4">
+        <InputWithLabel
+          label="Email"
+          value={email}
+          onChange={(v) => setEmail(v)}
+          type="email"
+        />
+        <Button onClick={sendResetLink}>Reset Password</Button>
+      </form>
     </div>
   );
 }

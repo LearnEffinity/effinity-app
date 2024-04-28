@@ -103,7 +103,7 @@ function LoginForm({
           />
           <span>Remember me</span>
         </span>
-        <a href="/auth/reset" className="text-text-primary">
+        <a href="/auth/forgot-password" className="text-text-primary">
           Forgot password?
         </a>
       </div>

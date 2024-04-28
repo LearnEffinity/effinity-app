@@ -1,13 +1,17 @@
 "use client";
+
 import React, { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+
+import { InputWithLabel } from "@/components/form/Input";
+import Button, { SocialMediaButton } from "@/components/form/Button";
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function SignupPage() {
   const supabase = createClient();
   const [emailValidated, setEmailValidated] = useState(false);
   const [email, setEmail] = useState("");
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   async function signUpWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -16,58 +20,30 @@ function SignupPage() {
     if (error) console.error("Error signing up with Google:", error);
   }
 
-  const handleEmailValidation = () => {
-    if (emailRegex.test(email)) {
-      setEmailValidated(true);
-    } else {
-      alert("Please enter a valid email address.");
-    }
+  const validateEmail = (email: string) => {
+    setEmailValidated(emailRegex.test(email));
   };
 
   return (
-    <>
-      <div className="signupPage flex flex-row">
-        <div className="signupLeft w-1/2 flex justify-center items-center h-screen">
-          <div className="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
-            <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
-            <p className="text-gray-500 mb-6">
-              Take control of your financial journey.
-            </p>
-            {!emailValidated && (
-              <>
-                <button
-                  onClick={signUpWithGoogle}
-                  className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full mb-4"
-                >
-                  Sign Up with Google
-                </button>
-                <p className="text-gray-500 mb-6">
-                  ----- or Sign Up with Email -----
-                </p>
-              </>
-            )}
-            <SignupForm
-              email={email}
-              setEmail={setEmail}
-              emailValidated={emailValidated}
-              onValidateEmail={handleEmailValidation}
-              supabase={supabase}
-
-            />
-            <p className="text-gray-500 mt-4">
-              Already have an account?{" "}
-              <a
-                href="/auth/login/"
-                className="text-blue-500 hover:text-blue-700"
-              >
-                Log in
-              </a>
-            </p>
-          </div>
-        </div>
-        <div className="signupRight"></div>
-      </div>
-    </>
+    <div className="flex h-full flex-col gap-8 py-8">
+      <hgroup className="flex flex-col gap-1">
+        <h1 className="text-4xl font-semibold">Sign Up</h1>
+        <p className="text-lg text-text-secondary">
+          Take control of your financial journey.
+        </p>
+      </hgroup>
+      <SignupForm
+        email={email}
+        setEmail={setEmail}
+        emailValidated={emailValidated}
+        validateEmail={validateEmail}
+        supabase={supabase}
+        signUpWithGoogle={signUpWithGoogle}
+      />
+      <span className="text-sm">
+        Already have an account? <a href="/auth/login">Log in</a>
+      </span>
+    </div>
   );
 }
 
@@ -75,15 +51,18 @@ function SignupForm({
   email,
   setEmail,
   emailValidated,
-  onValidateEmail,
+  validateEmail,
   supabase,
+  signUpWithGoogle,
 }: {
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string>>;
   emailValidated: boolean;
-  onValidateEmail: () => void;
+  validateEmail: (email: string) => void;
   supabase: any;
+  signUpWithGoogle: () => void;
 }) {
+  const [emailIsValid, setEmailIsValid] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
@@ -93,6 +72,8 @@ function SignupForm({
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
   const handleSignupButton = async (e: React.FormEvent) => {
+    if (!email || !emailValidated) return;
+
     e.preventDefault();
     // if (!passwordRegex.test(password)) {
     //   setError(
@@ -122,63 +103,78 @@ function SignupForm({
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSignupButton}>
-      <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
+      <div className="flex flex-col gap-6 py-4">
+        <SocialMediaButton onClick={signUpWithGoogle} />
+        <div className="flex items-center gap-5">
+          <span className="flex-grow border-b border-text-tertiary"></span>
+          <span className="text-text-secondary">or Sign Up with Email</span>
+          <span className="flex-grow border-b border-text-tertiary"></span>
+        </div>
+      </div>
+      <InputWithLabel
+        label="Email"
         type="email"
-        className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
+        value={email}
+        onChange={(v) => {
+          setEmail(v);
+          setEmailIsValid(emailRegex.test(email));
+        }}
+        state={!emailIsValid ? "error" : "success"}
+        subtext={
+          !emailIsValid
+            ? "Please enter a valid email address."
+            : "Email is valid."
+        }
       />
       {!emailValidated ? (
-        <button
-          className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full"
-          type="button"
-          onClick={onValidateEmail}
+        <Button
+          className="mt-4"
+          disabled={!email}
+          onClick={() => validateEmail(email)}
         >
-          Confirm Email
-        </button>
+          Continue
+        </Button>
       ) : (
-        <div className="flex-col">
-          <div className="flex-row gap-4">
-            <input
+        <>
+          <div className="grid grid-cols-2 gap-4">
+            <InputWithLabel
+              label="First Name"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="First Name"
-              type="text"
-              className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 flex-1"
+              onChange={setFirstName}
             />
-            <input
+            <InputWithLabel
+              label="Last Name"
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Last Name"
-              type="text"
-              className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 flex-1"
+              onChange={setLastName}
             />
           </div>
-          <div className="flex gap-4">
-            <input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Username"
-              type="text"
-              className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 flex-1"
-            />
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              type="password"
-              className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 flex-1"
-            />
-          </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <button
-            className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full"
-            type="submit"
-          >
+          <InputWithLabel
+            label="Username"
+            value={username}
+            onChange={setUsername}
+          />
+          <InputWithLabel
+            iconHidden
+            label="Password"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            state={passwordRegex.test(password) ? "success" : "error"}
+            subtext={
+              passwordRegex.test(password)
+                ? "Password is valid."
+                : "Password must contain minimum 8 characters, at least one letter and one number."
+            }
+          />
+          <Button className="mt-4" type="submit">
             Sign Up
-          </button>
-        </div>
+          </Button>
+          <span className="text-xs text-center text-text-secondary">
+            By signing up you are agreeing to our{" "}
+            <a href="/privacy">Privacy Policy</a> and{" "}
+            <a href="/terms">Terms & Conditions</a>
+          </span>
+        </>
       )}
     </form>
   );

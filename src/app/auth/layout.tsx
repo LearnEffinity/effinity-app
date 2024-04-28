@@ -18,8 +18,8 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full w-full">
-      <div className="flex h-full w-full flex-col justify-center gap-10 px-8 py-16 md:px-32 lg:max-w-[720px]">
+    <div className="grid h-full w-full lg:grid-cols-2">
+      <div className="mx-auto flex w-full flex-col justify-center gap-10 place-self-center px-8 py-16 md:px-32 lg:max-w-[720px]">
         <Image width={52} height={52} src="/logo.svg" alt="Effinity" />
         {children}
       </div>

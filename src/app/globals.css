@@ -5,13 +5,16 @@
 *,
 *::before,
 *::after {
-  appearance: none;
   margin: 0;
   padding: 0;
 }
 
 @layer base {
   input {
-    @apply bg-transparent focus:outline-none;
+    @apply appearance-none bg-transparent focus:outline-none;
+  }
+
+  a {
+    @apply text-brand-accent hover:underline;
   }
 }

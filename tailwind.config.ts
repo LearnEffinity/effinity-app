@@ -67,6 +67,7 @@ const config: Config = {
         warning,
         success,
         info,
+        surface,
         button: {
           DEFAULT: brand.accent,
           pressed: brand.primary,
@@ -107,6 +108,10 @@ const config: Config = {
           error: error[400],
         },
       },
+    },
+    fontSize: {
+      "3xl": "1.75rem",
+      "4xl": "2rem",
     },
   },
   plugins: [],

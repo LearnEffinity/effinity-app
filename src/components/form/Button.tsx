@@ -1,3 +1,7 @@
+import Icon from "../Icon";
+
+import capitalize from "@/utils/capitalize";
+
 const styleMap = {
   sm: "px-5 py-2",
   md: "px-7 py-3 text-xl",
@@ -28,12 +32,35 @@ export default function Button({
 } & React.ComponentProps<"button">) {
   return (
     <button
-      className={`rounded-lg w-full bg-button hover:bg-button-hover disabled:bg-button-disabled focus:bg-button-pressed text-white font-medium transition-colors ${styleMap[size]} ${variantMap[variant]} ${className}`}
+      className={`w-full rounded-lg bg-button font-medium text-white transition-colors hover:bg-button-hover focus:bg-button-pressed disabled:bg-button-disabled ${styleMap[size]} ${variantMap[variant]} ${className}`}
       disabled={disabled}
       onClick={onClick}
       type={type}
     >
       {children}
+    </button>
+  );
+}
+
+// ! The design for this is not finished in Figma; we still need hover/focus/disabled states.
+// ! I'm using the input component as a reference for the design for the time being.
+export function SocialMediaButton({
+  className,
+  disabled,
+  onClick,
+  variant = "google",
+}: {
+  onClick?: () => void;
+  variant?: "google"; // * Will add more variants when they are added to the design.
+} & React.ComponentProps<"button">) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex w-full items-center justify-center gap-4 rounded-lg border border-surface-secondary py-3 font-medium text-text-secondary transition-colors hover:border-surface-tertiary ${className}`}
+    >
+      <Icon name={variant} />
+      Continue with {capitalize(variant)}
     </button>
   );
 }

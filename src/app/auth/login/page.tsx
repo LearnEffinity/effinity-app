@@ -1,7 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-function LoginPage() {
+
+import { InputWithLabel } from "@/components/form/Input";
+import Button, { SocialMediaButton } from "@/components/form/Button";
+import Checkbox from "@/components/form/Checkbox";
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+export default function LoginPage() {
   const supabase = createClient();
   async function signInWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -10,42 +17,28 @@ function LoginPage() {
   }
 
   return (
-    <>
-      <div className="loginPage flex flex-row">
-        <div className="loginLeft w-1/2 flex justify-center items-center h-screen">
-          <div className="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
-            <h1 className="text-2xl font-bold mb-4">Log In</h1>
-            <p className="text-gray-500 mb-6">
-              Take control of your financial journey.
-            </p>
-            <button
-              onClick={signInWithGoogle}
-              className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full mb-4"
-            >
-              Continue with Google
-            </button>
-            <p className="text-gray-500 mb-6">
-              ----- or Sign in with Email -----
-            </p>
-            <LoginForm supabase={supabase} />
-            <p className="text-gray-500 mt-4">
-              Don&apos;t have an account?{" "}
-              <a
-                href="/auth/signup/"
-                className="text-blue-500 hover:text-blue-700"
-              >
-                Sign up
-              </a>
-            </p>
-          </div>
-        </div>
-        <div className="loginRight"></div>
-      </div>
-    </>
+    <div className="flex h-full flex-col gap-8 py-8">
+      <hgroup className="flex flex-col gap-1">
+        <h1 className="text-4xl font-semibold">Log In</h1>
+        <p className="text-lg text-text-secondary">
+          Take control of your financial journey.
+        </p>
+      </hgroup>
+      <LoginForm signInWithGoogle={signInWithGoogle} supabase={supabase} />
+      <span className="text-sm">
+        Don&apos;t have an account? <a href="/auth/signup">Sign up</a>
+      </span>
+    </div>
   );
 }
 
-function LoginForm({ supabase }: { supabase: any }) {
+function LoginForm({
+  supabase,
+  signInWithGoogle,
+}: {
+  supabase: SupabaseClient<any, "public", any>;
+  signInWithGoogle: () => void;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -83,40 +76,40 @@ function LoginForm({ supabase }: { supabase: any }) {
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleLoginButton}>
-      <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
-        type="email"
-        className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
-      />
-      <input
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-        type="password"
-        className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
-      />
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="form-checkbox h-4 w-4 text-blue-500"
-          />
-          <label className="text-gray-500">Remember me</label>
+      <div className="flex flex-col gap-6 py-4">
+        <SocialMediaButton onClick={signInWithGoogle} />
+        <div className="flex items-center gap-5">
+          <span className="flex-grow border-b border-text-tertiary"></span>
+          <span className="text-text-secondary">or Sign in with Email</span>
+          <span className="flex-grow border-b border-text-tertiary"></span>
         </div>
-        <a href="/auth/signup/" className="text-blue-500 hover:text-blue-700">
+      </div>
+      <InputWithLabel
+        label="Email"
+        type="email"
+        value={email}
+        onChange={(v) => setEmail(v)}
+      />
+      <InputWithLabel
+        label="Password"
+        type="password"
+        value={password}
+        onChange={(v) => setPassword(v)}
+      />
+      <div className="text-sm flex items-center justify-between">
+        <span className="flex items-center gap-2">
+          <Checkbox
+            onChange={(v: boolean) => console.log(`Remember me set to ${v}`)}
+          />
+          <span>Remember me</span>
+        </span>
+        <a href="/auth/reset" className="text-text-primary">
           Forgot password?
         </a>
       </div>
-      <button
-        className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full"
-        type="submit"
-      >
+      <Button type="submit" className="mt-4">
         Log In
-      </button>
+      </Button>
     </form>
   );
 }
-
-export default LoginPage;

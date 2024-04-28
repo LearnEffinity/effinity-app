@@ -105,7 +105,10 @@ function LoginForm({ supabase }: { supabase: any }) {
           />
           <label className="text-gray-500">Remember me</label>
         </div>
-        <a href="/auth/signup/" className="text-blue-500 hover:text-blue-700">
+        <a
+          href="/auth/forgot-password"
+          className="text-blue-500 hover:text-blue-700"
+        >
           Forgot password?
         </a>
       </div>

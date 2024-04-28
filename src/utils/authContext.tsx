@@ -14,8 +14,8 @@ export const AuthContext = createContext({
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
-    const router = useRouter();
-    const pathname = usePathname();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const { data: authListener } = supabaseClient.auth.onAuthStateChange(
@@ -34,14 +34,28 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  // useEffect(() => {
+  //   if (user && pathname.startsWith("/auth")) {
+  //     router.push("/");
+  //   } else if (!user && !pathname.startsWith("/auth")) {
+  //     router.push("/auth/login");
+  //   }
+  // }, [user, router]);
   useEffect(() => {
-    if (user && pathname.startsWith("/auth")) {
+    if (
+      user &&
+      pathname.startsWith("/auth") &&
+      !pathname.startsWith("/auth/reset")
+    ) {
       router.push("/");
-    } else if (!user && !pathname.startsWith("/auth")) {
+    } else if (
+      !user &&
+      !pathname.startsWith("/auth") &&
+      !pathname.startsWith("/auth/reset")
+    ) {
       router.push("/auth/login");
     }
   }, [user, router]);
-
   return (
     <AuthContext.Provider value={{ user, session, client: supabaseClient }}>
       {children}

@@ -30,6 +30,7 @@ export default function Home() {
           {user
             ? user.user_metadata.name || user.user_metadata.first_name
             : "Loading..."}
+          <a href="/signout"> sign out </a>
         </p>
       </div>
     </main>

@@ -1,5 +1,14 @@
 import Icon from "../Icon";
 
+type InputProps = {
+  type?: "text" | "email" | "password";
+  state?: "normal" | "error" | "success";
+  size?: "sm" | "md" | "lg";
+  subtext?: React.ReactNode;
+  iconHidden?: boolean;
+  onChange?: (value: string) => void;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "onChange">;
+
 const sizeMap = {
   sm: "p-2",
   md: "p-3",
@@ -21,14 +30,7 @@ export default function Input({
   className,
   subtext,
   ...props
-}: {
-  type?: "text" | "email" | "password";
-  state?: "normal" | "error" | "success";
-  size?: "sm" | "md" | "lg";
-  subtext?: React.ReactNode;
-  iconHidden?: boolean;
-  onChange?: (value: string) => void;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "onChange">) {
+}: InputProps) {
   return (
     <div className="rounded-lg text-sm w-full flex flex-col gap-2">
       <input
@@ -52,6 +54,25 @@ export default function Input({
           {subtext}
         </span>
       )}
+    </div>
+  );
+}
+
+export function InputWithLabel({
+  label,
+  className,
+  inputClassName,
+  ...props
+}: {
+  label: string;
+  inputClassName?: string;
+} & InputProps) {
+  return (
+    <div className={`flex flex-col gap-2 ${className}`}>
+      <label htmlFor={label} className="text-text-secondary font-medium">
+        {label}
+      </label>
+      <Input {...props} className={inputClassName} id={label} />
     </div>
   );
 }

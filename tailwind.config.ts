@@ -75,8 +75,8 @@ const config: Config = {
           surface: surface.primary,
         },
         input: {
-          DEFAULT: surface.secondary,
-          surface: surface.primary,
+          DEFAULT: neutral[300],
+          surface: "white",
           pressed: brand.primary,
           error: error[400],
           success: success[400],
@@ -105,12 +105,6 @@ const config: Config = {
           success: success[400],
           warning: warning[400],
           error: error[400],
-          brand: {
-            DEFAULT: brand.accent,
-            secondary: brand.primary,
-            tertiary: brand.tertiary,
-            quaternary: brand.quaternary,
-          },
         },
       },
     },

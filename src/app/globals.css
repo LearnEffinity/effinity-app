@@ -2,3 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+*,
+*::before,
+*::after {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+}
+
+@layer base {
+  input {
+    @apply bg-transparent focus:outline-none;
+  }
+}

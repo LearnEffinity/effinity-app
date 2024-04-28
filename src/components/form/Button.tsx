@@ -21,13 +21,11 @@ export default function Button({
   variant = "primary",
 }: {
   children: React.ReactNode;
-  className?: string;
-  disabled?: boolean;
   onClick?: () => void;
   type?: "button" | "submit" | "reset";
   variant?: "primary" | "outline";
   size?: "sm" | "md" | "lg";
-}) {
+} & React.ComponentProps<"button">) {
   return (
     <button
       className={`rounded-lg w-full bg-button hover:bg-button-hover disabled:bg-button-disabled focus:bg-button-pressed text-white font-medium transition-colors ${styleMap[size]} ${variantMap[variant]} ${className}`}

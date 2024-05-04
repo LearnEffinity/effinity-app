@@ -18,10 +18,16 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
 
+  const showImage = pathname !== "/auth/forgot-password/sent"
+
+
+
   return (
     <div className="grid h-full w-full lg:grid-cols-2">
       <div className="mx-auto flex w-full flex-col justify-center gap-10 place-self-center px-8 py-16 md:px-32 lg:max-w-[720px]">
-        <Image width={52} height={52} src="/logo.svg" alt="Effinity" />
+        {showImage && (
+          <Image width={52} height={52} src="/logo.svg" alt="Effinity" />
+        )}
         {children}
       </div>
       <div className="sticky top-0 hidden h-screen w-full flex-col items-center justify-center gap-4 bg-brand-accent px-16 lg:flex">

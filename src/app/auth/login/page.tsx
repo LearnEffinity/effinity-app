@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-
+import { motion } from "framer-motion";
 import { InputWithLabel } from "@/components/form/Input";
 import Button, { SocialMediaButton } from "@/components/form/Button";
 import Checkbox from "@/components/form/Checkbox";
@@ -41,6 +41,7 @@ function LoginForm({
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isInvalid, setIsInvalid] = useState(false);
   const [error, setError] = useState("");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -49,16 +50,7 @@ function LoginForm({
   const handleLoginButton = async (e: any) => {
     e.preventDefault();
     console.log("Email:", email);
-    // if (!emailRegex.test(email)) {
-    //   setError("Please enter a valid email address.");
-    //   return;
-    // }
-    // if (!passwordRegex.test(password)) {
-    //   setError(
-    //     "Password must contain minimum 8 characters, at least one letter and one number."
-    //   );
-    //   return;
-    // }
+
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -68,6 +60,7 @@ function LoginForm({
     if (error) {
       console.log("Failed to login:", error.message);
       setError("Failed to login: " + error.message);
+      setIsInvalid(true);
     } else {
       setError("");
     }
@@ -84,6 +77,9 @@ function LoginForm({
           <span className="flex-grow border-b border-text-tertiary"></span>
         </div>
       </div>
+      {isInvalid && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, type: "spring" }} className="w-full bg-error-100 text-text-error text-center py-4 rounded-lg">Invalid username or password</motion.div>
+      )}
       <InputWithLabel
         label="Email"
         type="email"

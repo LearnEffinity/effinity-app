@@ -75,12 +75,7 @@ function SignupForm({
     if (!email || !emailValidated) return;
 
     e.preventDefault();
-    // if (!passwordRegex.test(password)) {
-    //   setError(
-    //     "Password must contain minimum 8 characters, at least one letter and one number."
-    //   );
-    //   return;
-    // }
+
 
     const { error } = await supabase.auth.signUp({
       email: email,
@@ -89,7 +84,7 @@ function SignupForm({
         data: {
           first_name: firstName,
           last_name: lastName,
-          // username: username,
+          username: username,
         },
       },
     });
@@ -161,9 +156,15 @@ function SignupForm({
             onChange={setPassword}
             state={passwordRegex.test(password) ? "success" : "error"}
             subtext={
-              passwordRegex.test(password)
-                ? "Password is valid."
-                : "Password must contain minimum 8 characters, at least one letter and one number."
+              passwordRegex.test(password) ? (
+                "Password is valid."
+              ) : (
+                <ul className="list-disc list-inside text-[15px] text-red-500">
+                  <li>Mix of uppercase & lowercase letters</li>
+                  <li>Minimum of 7 characters long</li>
+                  <li>Contain at least 1 number</li>
+                </ul>
+              )
             }
           />
           <Button className="mt-4" type="submit">

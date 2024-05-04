@@ -1,6 +1,6 @@
 "use client";
 import { createClient } from "./supabase/client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 const supabaseClient = createClient();
@@ -25,22 +25,21 @@ export const AuthProvider = ({ children }) => {
       }
     );
 
-    const currentSession = supabaseClient.auth.getSession();
-    setSession(currentSession);
-    setUser(currentSession?.user || null);
+    const fetchSession = async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      setSession(session);
+      setUser(session?.user || null);
+    };
+
+    fetchSession();
+
 
     return () => {
       authListener.subscription.unsubscribe();
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (user && pathname.startsWith("/auth")) {
-  //     router.push("/");
-  //   } else if (!user && !pathname.startsWith("/auth")) {
-  //     router.push("/auth/login");
-  //   }
-  // }, [user, router]);
+
   useEffect(() => {
     if (
       user &&

@@ -3,7 +3,7 @@ import type { Config } from "tailwindcss";
 const neutral = {
     50: "#F8F8FC",
     100: "#EAE9F2",
-    200: "#D6D5DD",
+    200: "#EFEEF6",
     300: "#BCBBC3",
     400: "#636369",
     500: "#505055",
@@ -108,10 +108,10 @@ const config: Config = {
           error: error[400],
         },
       },
-    },
-    fontSize: {
-      "3xl": "1.75rem",
-      "4xl": "2rem",
+      fontSize: {
+        "3xl": "1.75rem",
+        "4xl": "2rem",
+      },
     },
   },
   plugins: [],

@@ -76,7 +76,6 @@ function SignupForm({
 
     e.preventDefault();
 
-
     const { error } = await supabase.auth.signUp({
       email: email,
       password: password,
@@ -159,7 +158,7 @@ function SignupForm({
               passwordRegex.test(password) ? (
                 "Password is valid."
               ) : (
-                <ul className="list-disc list-inside text-[15px] text-red-500">
+                <ul className="list-inside list-disc text-[15px] text-red-500">
                   <li>Mix of uppercase & lowercase letters</li>
                   <li>Minimum of 7 characters long</li>
                   <li>Contain at least 1 number</li>

@@ -8,18 +8,11 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <div className="flex-start mx-4 mt-8 flex flex-col sm:mx-8 sm:mt-10 md:mx-[120px] md:mt-[64px]">
-        <Image
-          width={168}
-          height={52}
-          src="/Effinity-Logo.svg"
-          alt="Effinity"
-        />
-        <ProgressBar stage={1} totalStage={3} />
-        {children}
-      </div>
-    </>
+    <div className="flex-start mx-4 mt-8 flex flex-col sm:mx-8 sm:mt-10 md:mx-[120px] md:mt-[64px]">
+      <Image width={168} height={52} src="/Effinity-Logo.svg" alt="Effinity" />
+      <ProgressBar stage={1} totalStage={3} />
+      {children}
+    </div>
   );
 }
 

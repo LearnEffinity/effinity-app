@@ -1,68 +1,300 @@
+'use client'
+
+import { 
+  Continue, 
+  GoBack 
+} from "@/components/onboarding/Buttons";
 import {
   FinancialGoal,
   ProficiencyLevel,
   Topic,
 } from "@/components/onboarding/Option";
+import ProgressBar from "@/components/onboarding/ProgressBar";
 
-const stage1 = (
-  <FinancialGoal
-    title="Achieve Financial Freedom"
-    description="Achieve a life of financial independence and retire early"
-    image="/screen-1/Trophy.png"
-  />
-);
+import { useState } from "react";
 
-const stage2 = (
-  <ProficiencyLevel
-    title="Beginner"
-    description="I'm new to financial concepts and want to learn the basics."
-    image="/screen-2/Wonder-Image.png"
-  />
-);
+const stage1 = [
+  {
+    title: "Achieve Financial Freedom",
+    description: "Achieve a life of financial independence and retire early",
+    image: "/screen-1/Trophy.png"
+  },
+  {
+    title: "Enhance Career Opportunities",
+    description: "Advance my career by developing valuable financial skills",
+    image: "/screen-1/Board.png"
+  },
+  {
+    title: "Master Money Management",
+    description: "Achieve a life of financial independence and retire early",
+    image: "/screen-1/Coin.png"
+  },
+  {
+    title: "Plan for the future",
+    description: "Achieve a life of financial independence and retire early",
+    image: "/screen-1/Pig.png"
+  },
+  {
+    title: "Build wealth",
+    description: "Achieve a life of financial independence and retire early",
+    image: "/screen-1/Abacus.png"
+  },
+  {
+    title: "Pay off debt",
+    description: "Achieve a life of financial independence and retire early",
+    image: "/screen-1/Money.png"
+  }
+];
 
-const stage3 = <Topic title="Budgeting" image="/screen-3/Budget.png" />;
+const stage2 = [
+  {
+    title: "Beginner",
+    description: "I'm new to financial concepts and want to learn the basics.",
+    image:  "/screen-2/Wonder-Image.png"
+  },
+  {
+    title: "Intermediate",
+    description: "I have some knowledge but want to deepen my understanding.",
+    image: "/screen-2/Smile-Image.png"
+  },
+  {
+    title: "Advanced",
+    description: "I'm already familiar and want to explore advanced topics.",
+    image: "/screen-2/Cool-Image.png"
+  }
+];
+
+const stage3 = [
+  { title: "Budgeting", image: "/screen-3/Budget.png" },
+  { title: "Saving Accounts", image: "/screen-3/Savings.png" },
+  { title: "Investing", image: "/screen-3/Investing.png" },
+  { title: "Debt Management", image: "/screen-3/Debt.png" },
+  { title: "Credit Card", image: "/screen-3/Credit-Card.png" },
+  { title: "Real Estate", image: "/screen-3/Real-Estate.png" },
+  { title: "Cryptocurrency", image: "/screen-3/BTC.png" },
+  { title: "Insurance", image: "/screen-3/Insurance.png" }
+];
+
+const stage4 = [
+  { title: "Sports", image: "/screen-4/Sports.png" },
+  { title: "Gaming", image: "/screen-4/Gaming.png" },
+  { title: "Fitness", image: "/screen-4/Fitness.png" },
+  { title: "Art", image: "/screen-4/Art.png" },
+  { title: "Foodie", image: "/screen-4/Foodie.png" },
+  { title: "Technology", image: "/screen-4/Technology.png" },
+  { title: "Fashion", image: "/screen-4/Fashion.png" },
+  { title: "Media", image: "/screen-4/Media.png" }
+];
+
+const subHobbies = {
+  Sports: [
+    { title : "Football", image: "/sports/Football.png" },
+    { title: "Basketball", image: "/sports/Basketball.png" },
+    { title: "Boxing", image: "/sports/Boxing.png" },
+    { title: "Soccer", image: "/sports/Soccer.png" }
+  ],
+  Gaming: [
+    { title: "Minecraft", image: "/gaming/Minecraft.png" },
+    { title: "Valorant", image: "/gaming/Valorant.png" },
+    { title: "Call of Duty", image: "/gaming/COD.png" },
+    { title: "Fortnite", image: "/gaming/Fortnite.png" }
+  ],
+  Fitness: [
+    { title: "Weightlifting", image: "/fitness/Weightlifting.png" },
+    { title: "Running", image: "/fitness/Running.png" },
+    { title: "Yoga", image: "/fitness/Yoga.png" },
+    { title: "Hiking", image: "/fitness/Hiking.png" },
+  ],
+  Art: [
+    { title: "Music", image: "/arts/Music.png" },
+    { title: "Painting", image: "/arts/Painting.png" },
+    { title: "Pottery", image: "/arts/Pottery.png" },
+    { title: "History", image: "/arts/History.png" },
+  ],
+  Foodie: [
+    { title: "Cooking", image: "/foodie/Cooking.png" },
+    { title: "Baking", image: "/foodie/Baking.png" },
+    { title: "Fine Dining", image: "/foodie/Fine-Dining.png" },
+    { title: "Fast Food", image: "/foodie/Fast-Food.png" }
+  ],
+  Technology: [
+    { title: "Programming", image: "/technology/Programming.png" },
+    { title: "Computers", image: "/technology/Computers.png" },
+    { title: "Artificial Intelligence", image: "/technology/AI.png" },
+    { title: "Robotics", image: "/technology/Robotics.png" }
+  ],
+  Fashion: [
+    { title: "Thrifting", image: "/fashion/Thrifting.png" },
+    { title: "Luxury", image: "/fashion/High-heeled\ shoe.png" },
+    { title: "Streetwear", image: "/fashion/Streetwear.png" },
+    { title: "Sustainable", image: "/fashion/Sustainable.png" }
+  ],
+  Media: [
+    { title: "Social Media", image: "/media/Social-Media.png" },
+    { title: "Videography", image: "/media/Videography.png" },
+    { title: "Photography", image: "/media/Camera.png" },
+    { title: "Animation", image: "/media/Animation.png"}
+  ]
+}
 
 export default function Onboarding() {
+  const [stage, setStage] = useState<number>(1);
+  const [selectedStage1, setSelectedStage1] = useState<number | null>(null);
+  const [selectedStage2, setSelectedStage2] = useState<number | null>(null);
+  const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
+  const [selectedStage4, setSelectedStage4] = useState<number | null>(null);
+  const [hobby, selectSubHobby] = useState<{ hob: string; ind: number | null }>({ hob: '', ind: null });
+
+  const isContinueDisabled = () => {
+    if (stage === 1) return selectedStage1 === null;
+    if (stage === 2) return selectedStage2 === null;
+    if (stage === 3) return selectedTopics.length === 0;
+    if (stage === 4) return selectedStage4 === null;
+    if (stage === 5) return hobby.ind === null;
+
+    return true;
+  };
+
+  const handleTopicSelection = (index: number) => {
+    if (selectedTopics.includes(index)) {
+      setSelectedTopics(selectedTopics.filter(item => item !== index));
+      console.log(selectedTopics)
+    } else if (selectedTopics.length < 3) {
+      setSelectedTopics([...selectedTopics, index]);
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-16 py-16">
-      <ul className="grid grid-cols-2 gap-6">
-        {stage1}
-        {stage1}
-        {stage1}
-        {stage1}
-        {stage1}
-        {stage1}
-      </ul>
-      <hr />
-      <ul className="grid grid-cols-3 gap-6">
-        {stage2}
-        {stage2}
-        {stage2}
-      </ul>
-      <hr />
-      <ul className="grid grid-cols-4 gap-6">
-        {stage3}
-        {stage3}
-        {stage3}
-        {stage3}
-        {stage3}
-        {stage3}
-        {stage3}
-        {stage3}
-      </ul>
-      <hr />
-      <ul className="grid grid-cols-3 gap-6">
-        <Topic
-          title="Budgeting"
-          image="/screen-3/Budget.png"
-          className="row-span-2 !text-4xl"
-          disabled
-        />
-        {stage3}
-        {stage3}
-        {stage3}
-        {stage3}
-      </ul>
-    </div>
+    <>
+      <ProgressBar stage={stage} totalStage={6}/>
+      <div className="flex flex-col py-10">
+        {stage == 1 && 
+          <>
+            <p className="text-3xl pb-7">Why do you want to learn about finance?</p>
+            <ul className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {stage1.map((goal, index) => (
+                <FinancialGoal
+                  key={index}
+                  title={goal.title}
+                  description={goal.description}
+                  image={goal.image}
+                  onClick={() => setSelectedStage1(index)}
+                  selected={selectedStage1 === index}
+                />
+              ))}
+            </ul>
+            <div className="flex justify-end mt-10">
+              <Continue 
+                onClick={() => setStage(stage + 1)}
+                disabled={isContinueDisabled()}
+              />
+            </div>
+          </>
+        }
+        {stage == 2 &&
+          <>
+            <p className="text-3xl pb-7">How much do you know about finance?</p>
+            <ul className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {stage2.map((level, index) =>(
+                <ProficiencyLevel 
+                  key={index}
+                  title={level.title}
+                  description={level.description}
+                  image={level.image}
+                  onClick={() => setSelectedStage2(index)}
+                  selected={selectedStage2 === index}
+                />
+              ))}
+            </ul>
+            <div className="flex mt-28 justify-between">
+              <GoBack onClick={() => setStage(stage - 1)} />
+              <Continue 
+                onClick={() => setStage(stage + 1)}
+                disabled={isContinueDisabled()}
+              />
+            </div>
+          </>
+        }
+        {stage == 3 &&
+          <>
+            <p className="text-3xl pb-7">What topics are you interested in learning?</p>
+            <ul className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {stage3.map((topic, index) => (
+                <Topic 
+                  key={index}
+                  title={topic.title}
+                  image={topic.image}
+                  onClick={() => handleTopicSelection(index)}
+                  selected={selectedTopics.includes(index)}
+                  disabled={selectedTopics.length >= 3 && !selectedTopics.includes(index)}
+                  font="text-3xl font-[500]"
+                />
+              ))}
+            </ul>
+            <div className="flex mt-28 justify-between">
+              <GoBack onClick={() => setStage(stage - 1)} />
+              <Continue 
+                onClick={() => setStage(stage + 1)}
+                disabled={isContinueDisabled()}
+              />
+            </div>
+          </>
+        }
+        {stage == 4 && 
+          <>
+            <p className="text-3xl pb-7">What is your favorite hobby? <span className=" text-text-secondary">We'll use this to help you learn more effectively.</span></p>
+            <ul className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {stage4.map((topic, index) => (
+                <Topic 
+                  key={index}
+                  title={topic.title}
+                  image={topic.image}
+                  onClick={() => setSelectedStage4(index)}
+                  selected={selectedStage4 === index}
+                  font="text-3xl font-[500]"
+                />
+              ))}
+            </ul>
+            <div className="flex mt-28 justify-between">
+              <GoBack onClick={() => setStage(stage - 1)} />
+              <Continue 
+                onClick={() => setStage(stage + 1)}
+                disabled={isContinueDisabled()}
+              />
+            </div>
+          </>
+        }
+        {stage == 5 && selectedStage4 !== null && subHobbies[stage4[selectedStage4].title] && (
+          <>
+          <p className="text-3xl pb-7">What is your favorite hobby? <span className=" text-text-secondary">We'll use this to help you learn more effectively.</span></p>
+          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <Topic
+              title={stage4[selectedStage4].title}
+              image={stage4[selectedStage4].image}
+              className="col-span-2 lg:row-span-2"
+              font="text-4xl font-[500]"
+              disabled
+            />
+            {subHobbies[stage4[selectedStage4].title].map((subHobby, subIndex) => (
+              <Topic 
+                key={subIndex}
+                title={subHobby.title}
+                image={subHobby.image}
+                font="text-3xl font-[500]"
+                onClick={() => selectSubHobby({hob: subHobby, ind: subIndex})}
+                selected={hobby.hob === subHobby}
+              />
+            ))}
+          </ul>
+          <div className="flex mt-28 justify-between">
+              <GoBack onClick={() => setStage(stage - 1)} />
+              <Continue 
+                disabled={isContinueDisabled()}
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }

@@ -7,6 +7,7 @@ interface OptionProps {
   selected?: boolean;
   onClick?: () => void;
   className?: string;
+  font?: string
 }
 
 export function FinancialGoal({
@@ -60,6 +61,7 @@ export function Topic({
   image,
   onClick,
   className,
+  font,
   selected = false,
   disabled = false,
 }: Omit<OptionProps, "description"> & { disabled?: boolean }) {
@@ -74,7 +76,7 @@ export function Topic({
       >
         <Image src={image} width={244} height={168} alt={title} />
       </div>
-      <span className="text-2xl font-semibold">{title}</span>
+      <span className={`font-semibold ${font}`}>{title}</span>
     </button>
   );
 }

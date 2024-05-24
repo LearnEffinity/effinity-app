@@ -242,7 +242,7 @@ export default function Onboarding() {
         }
         {stage == 4 && 
           <>
-            <p className="text-3xl pb-7">What is your favorite hobby? <span className=" text-text-secondary">We'll use this to help you learn more effectively.</span></p>
+            <p className="text-3xl pb-7">What is your favorite hobby? <span className=" text-text-secondary">We&apos;ll use this to help you learn more effectively.</span></p>
             <ul className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               {stage4.map((topic, index) => (
                 <Topic 
@@ -266,7 +266,7 @@ export default function Onboarding() {
         }
         {stage == 5 && selectedStage4 !== null && subHobbies[stage4[selectedStage4].title] && (
           <>
-          <p className="text-3xl pb-7">What is your favorite hobby? <span className=" text-text-secondary">We'll use this to help you learn more effectively.</span></p>
+          <p className="text-3xl pb-7">What is your favorite hobby? <span className=" text-text-secondary">We&apos;ll use this to help you learn more effectively.</span></p>
           <ul className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <Topic
               title={stage4[selectedStage4].title}

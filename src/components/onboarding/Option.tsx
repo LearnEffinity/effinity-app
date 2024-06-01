@@ -7,7 +7,7 @@ interface OptionProps {
   selected?: boolean;
   onClick?: () => void;
   className?: string;
-  font?: string
+  font?: string;
 }
 
 export function FinancialGoal({
@@ -22,7 +22,7 @@ export function FinancialGoal({
     <button
       role="button"
       onClick={onClick}
-      className={`${className} ${selected ? "border-brand-accent" : "border-transparent hover:border-surface-secondary"} flex items-center gap-5 rounded-2xl border-4 bg-surface-base p-6 transition-colors`}
+      className={`${className} ${selected ? "border-brand-accent" : "border-transparent hover:border-surface-secondary"} flex flex-col items-center gap-5 rounded-2xl border-4 bg-surface-base p-4 transition-colors sm:flex-row md:p-6`}
     >
       <Image src={image} width={132} height={132} alt={title} />
       <div className="flex flex-col gap-2 text-left">
@@ -69,7 +69,7 @@ export function Topic({
     <button
       role="button"
       onClick={onClick}
-      className={`${className} ${disabled && "cursor-default"} flex flex-col items-center gap-3`}
+      className={`${className} ${disabled && "cursor-default opacity-50"} flex flex-col items-center gap-3 transition-opacity duration-500 ease-out`}
     >
       <div
         className={`${selected ? "border-brand-accent" : !disabled ? "border-transparent hover:border-surface-secondary" : "border-transparent"} grid w-full flex-grow place-items-center rounded-2xl border-4 bg-surface-base p-4`}

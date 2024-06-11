@@ -69,13 +69,12 @@ function SignupForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  const passwordRegex = /^[^\s]{8,}$/;
 
   const handleSignupButton = async (e: React.FormEvent) => {
     if (!email || !emailValidated) return;
 
     e.preventDefault();
-
 
     const { error } = await supabase.auth.signUp({
       email: email,
@@ -159,10 +158,11 @@ function SignupForm({
               passwordRegex.test(password) ? (
                 "Password is valid."
               ) : (
-                <ul className="list-disc list-inside text-[15px] text-red-500">
+                <ul className="list-inside list-disc text-[15px] text-red-500">
                   <li>Mix of uppercase & lowercase letters</li>
-                  <li>Minimum of 7 characters long</li>
-                  <li>Contain at least 1 number</li>
+                  <li>At least one number</li>
+                  <li>At least 8 characters</li>
+                  <li>Any characters but no spaces</li>
                 </ul>
               )
             }

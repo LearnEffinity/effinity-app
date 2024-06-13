@@ -236,7 +236,17 @@ function SignupForm({
           {error && !error.includes("Username") && (
             <div className="text-red-500">{error}</div>
           )}
-          <Button className="mt-4" type="submit">
+          <Button
+            disabled={
+              !emailValidated ||
+              !firstName ||
+              !lastName ||
+              !username ||
+              !password
+            }
+            className="mt-4"
+            type="submit"
+          >
             Sign Up
           </Button>
           <span className="text-xs text-center text-text-secondary">

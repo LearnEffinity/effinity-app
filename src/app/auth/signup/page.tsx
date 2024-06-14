@@ -95,6 +95,7 @@ function SignupForm({
   const handleSignupButton = async (e: React.FormEvent) => {
     e.preventDefault();
 
+
     let hasError = false;
 
     // Validate email if not already validated

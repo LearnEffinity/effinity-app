@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, use } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -13,9 +13,27 @@ function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const passwordsMatch = newPassword === confirmPassword;
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const code = searchParams.get("code");
+  if (!code) {
+    return <p>Invalid reset code.</p>;
+  }
+  useEffect(() => {
+    async function checkSession() {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) {
+        console.error("Error validating reset code:", error.message);
+        return;
+      }
+      setValidSession(true);
+      const session = await supabase.auth.getSession()
+      console.log("Session:", session);
 
-
+    }
+    checkSession();
+  }
+  , [code]);
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {

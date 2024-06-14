@@ -20,8 +20,26 @@ function SignupPage() {
     if (error) console.error("Error signing up with Google:", error);
   }
 
-  const validateEmail = (email: string) => {
-    setEmailValidated(emailRegex.test(email));
+  const validateEmail = async (email: string) => {
+    console.log("Validating email:", email);
+    if (!emailRegex.test(email)) {
+      setEmailValidated(false);
+      return "Invalid email address.";
+    }
+
+    const { data, error } = await supabase
+      .from("users")
+      .select()
+      .eq("email", email);
+
+    console.log("Email validation response:", data, error);
+    if (data.length > 0) {
+      setEmailValidated(false);
+      return "Email already exists. Please use a different email.";
+    }
+
+    setEmailValidated(true);
+    return "";
   };
 
   return (
@@ -58,25 +76,58 @@ function SignupForm({
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string>>;
   emailValidated: boolean;
-  validateEmail: (email: string) => void;
+  validateEmail: (email: string) => Promise<string>;
   supabase: any;
   signUpWithGoogle: () => void;
 }) {
-  const [emailIsValid, setEmailIsValid] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [emailCheckPerformed, setEmailCheckPerformed] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
-  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  const passwordRegex = /^[^\s]{8,}$/;
 
   const handleSignupButton = async (e: React.FormEvent) => {
-    if (!email || !emailValidated) return;
-
     e.preventDefault();
 
-    const { error } = await supabase.auth.signUp({
+
+    let hasError = false;
+
+    // Validate email if not already validated
+    if (!emailValidated) {
+      const emailValidationError = await validateEmail(email);
+      setEmailError(emailValidationError);
+      setEmailCheckPerformed(true);
+      if (emailValidationError) hasError = true;
+    }
+
+    // Validate username
+    const { data: usernameData, error: usernameError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username);
+    if (usernameData && usernameData.length > 0) {
+      setUsernameError("Username already exists. Please choose another one.");
+      hasError = true;
+    }
+
+    // Validate password
+    if (!passwordRegex.test(password)) {
+      setPasswordError(
+        "Password must be at least 8 characters long with no spaces.",
+      );
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    // Sign up
+    const { error: signupError } = await supabase.auth.signUp({
       email: email,
       password: password,
       options: {
@@ -88,11 +139,18 @@ function SignupForm({
       },
     });
 
-    if (error) {
-      setError("Failed to sign up: " + error.message);
+    if (signupError) {
+      console.error("Error signing up:", signupError);
+      setError("Failed to sign up: " + signupError.message);
     } else {
       setError("");
     }
+  };
+
+  const handleEmailValidation = async () => {
+    const error = await validateEmail(email);
+    setEmailError(error);
+    setEmailCheckPerformed(true);
   };
 
   return (
@@ -111,20 +169,23 @@ function SignupForm({
         value={email}
         onChange={(v) => {
           setEmail(v);
-          setEmailIsValid(emailRegex.test(email));
+          setEmailCheckPerformed(false);
+          setEmailError("");
         }}
-        state={!emailIsValid ? "error" : "success"}
-        subtext={
-          !emailIsValid
-            ? "Please enter a valid email address."
-            : "Email is valid."
+        state={
+          emailCheckPerformed
+            ? emailValidated
+              ? "success"
+              : "error"
+            : undefined
         }
+        subtext={emailCheckPerformed && !emailValidated ? emailError : ""}
       />
       {!emailValidated ? (
         <Button
           className="mt-4"
           disabled={!email}
-          onClick={() => validateEmail(email)}
+          onClick={handleEmailValidation}
         >
           Continue
         </Button>
@@ -145,28 +206,48 @@ function SignupForm({
           <InputWithLabel
             label="Username"
             value={username}
-            onChange={setUsername}
+            onChange={(v) => {
+              setUsername(v);
+              setUsernameError("");
+            }}
+            state={usernameError ? "error" : undefined}
+            subtext={usernameError}
           />
           <InputWithLabel
             iconHidden
             label="Password"
             type="password"
             value={password}
-            onChange={setPassword}
-            state={passwordRegex.test(password) ? "success" : "error"}
+            onChange={(v) => {
+              setPassword(v);
+              setPasswordError("");
+            }}
+            state={passwordError ? "error" : undefined}
             subtext={
-              passwordRegex.test(password) ? (
-                "Password is valid."
-              ) : (
+              passwordError || (
                 <ul className="list-inside list-disc text-[15px] text-red-500">
                   <li>Mix of uppercase & lowercase letters</li>
-                  <li>Minimum of 7 characters long</li>
-                  <li>Contain at least 1 number</li>
+                  <li>At least one number</li>
+                  <li>At least 8 characters</li>
+                  <li>Any characters but no spaces</li>
                 </ul>
               )
             }
           />
-          <Button className="mt-4" type="submit">
+          {error && !error.includes("Username") && (
+            <div className="text-red-500">{error}</div>
+          )}
+          <Button
+            disabled={
+              !emailValidated ||
+              !firstName ||
+              !lastName ||
+              !username ||
+              !password
+            }
+            className="mt-4"
+            type="submit"
+          >
             Sign Up
           </Button>
           <span className="text-xs text-center text-text-secondary">

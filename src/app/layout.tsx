@@ -16,10 +16,12 @@ export const metadata: Metadata = {
     title: "Effinity",
     description: "It's a secret",
     siteName: "Effinity",
-    images: [{
-      url: "/EffinityMetadataBanner.png",
-    }],
-  }
+    images: [
+      {
+        url: "/EffinityMetadataBanner.png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -30,9 +32,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`text-text-primary h-max min-h-screen ${poppins.className}`}
+        className={`h-max min-h-screen text-text-primary ${poppins.className}`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        {/* <AuthProvider>{children}</AuthProvider> */}
+        {children}
       </body>
     </html>
   );

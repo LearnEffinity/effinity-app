@@ -5,7 +5,7 @@ import icons from "@/utils/Icons";
 // * 2. Add an item to the object in src/utils/Icons.tsx with the name of the icon
 // * 2 (cont). and the value being the SVG string copied from Figma with the surrounding svg tag removed
 // * 3. Use the Icon component with "name" set to the name of the icon
-// * 4. To change the size of the icon, set the font size of the parent element using text-[size]
+// * 4. To change the size of the icon, set explicit width and height props
 // ! Make sure you copy the icon from the design system file!
 
 export default function Icon({

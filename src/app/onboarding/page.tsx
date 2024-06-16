@@ -281,6 +281,7 @@ export default function Onboarding() {
                   image={goal.image}
                   onClick={() => handleStage1Selection(index)}
                   selected={selectedStage1.includes(index)}
+                  disabled={selectedStage1.length >= 3 && !selectedStage1.includes(index)}
                 />
               ))}
             </ul>

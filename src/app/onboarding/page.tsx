@@ -159,9 +159,9 @@ export default function Onboarding() {
           const onboardingData = data.onboardingData || {};
           setSelectedStage1(onboardingData.stage1);
           setSelectedStage2(onboardingData.stage2);
-          setSelectedTopics(onboardingData.stage3);
+          setSelectedTopics(onboardingData.stage3 || []);
           setSelectedStage4(onboardingData.stage4);
-          selectSubHobby(onboardingData.subHobby);
+          selectSubHobby(onboardingData.subHobby || { hob: "", ind: null });
         }
       }
     };
@@ -204,16 +204,23 @@ export default function Onboarding() {
       stage4: selectedStage4,
       subHobby: hobby,
     };
+    console.log("Saving onboarding data:", onboardingData);
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("users")
-        .update({ onboardingStage: nextStage, onboardingData })
-        .eq("id", user.id);
+        .update({
+          onboardingData: onboardingData,
+          onboardingStage: nextStage,
+        })
+        .eq("id", user.id)
+        .select();
 
       if (error) {
         throw error;
       }
+
+      console.log("Updated data:", data[0]);
     } catch (error) {
       console.error("Error saving onboarding data:", error);
     }
@@ -221,14 +228,24 @@ export default function Onboarding() {
 
   const handleContinue = async () => {
     console.log("Stage before update:", stage);
-    console.log("typeof stage:", typeof stage)
-    const nextStage = parseInt(stage) + 1;
-    await saveOnboardingData(nextStage);
-    setStage((prevStage) => {
-      console.log("Updating stage from:", prevStage, "to:", nextStage);
-      return nextStage;
-    });
-    console.log("Stage after update:", nextStage);
+    console.log("typeof stage:", typeof stage);
+    const nextStage = parseInt(stage.toString()) + 1;
+
+    if (nextStage === 6) {
+      setStage(-1);
+      console.log("Redirect to dashboard");
+      window.location.href = "/";
+      await saveOnboardingData(-1);
+      return;
+    } else {
+      setStage((prevStage) => {
+        console.log("Updating stage from:", prevStage, "to:", nextStage);
+        return nextStage;
+      });
+      await saveOnboardingData(nextStage);
+
+      console.log("Stage after update:", nextStage);
+    }
   };
 
   const handleGoBack = async () => {
@@ -304,7 +321,7 @@ export default function Onboarding() {
                   title={topic.title}
                   image={topic.image}
                   onClick={() => handleTopicSelection(index)}
-                  selected={selectedTopics.includes(index)}
+                  selected={selectedTopics?.includes(index)}
                   disabled={
                     selectedTopics.length >= 3 &&
                     !selectedTopics.includes(index)

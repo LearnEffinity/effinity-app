@@ -157,7 +157,7 @@ export default function Onboarding() {
           console.log("Onboarding data:", data);
           setStage(data.onboardingStage || 1);
           const onboardingData = data.onboardingData || {};
-          setSelectedStage1(onboardingData.stage1);
+          setSelectedStage1(onboardingData.stage1 || []);
           setSelectedStage2(onboardingData.stage2);
           setSelectedTopics(onboardingData.stage3 || []);
           setSelectedStage4(onboardingData.stage4);
@@ -171,7 +171,7 @@ export default function Onboarding() {
 
   const [user, setUser] = useState(null);
   const [stage, setStage] = useState<number>(1);
-  const [selectedStage1, setSelectedStage1] = useState<number | null>(null);
+  const [selectedStage1, setSelectedStage1] = useState<number[]>([]);
   const [selectedStage2, setSelectedStage2] = useState<number | null>(null);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
   const [selectedStage4, setSelectedStage4] = useState<number | null>(null);
@@ -190,6 +190,15 @@ export default function Onboarding() {
       setSelectedTopics([...selectedTopics, index]);
     }
   };
+  const handleStage1Selection = (index: number) => {
+    if (selectedStage1.includes(index)) {
+      setSelectedStage1(selectedStage1.filter((item) => item !== index));
+      console.log(selectedStage1);
+    } else {
+      setSelectedStage1([...selectedStage1, index]);
+    }
+  };
+
 
   const saveOnboardingData = async (nextStage: number) => {
     if (!user) {
@@ -270,15 +279,15 @@ export default function Onboarding() {
                   title={goal.title}
                   description={goal.description}
                   image={goal.image}
-                  onClick={() => setSelectedStage1(index)}
-                  selected={selectedStage1 === index}
+                  onClick={() => handleStage1Selection(index)}
+                  selected={selectedStage1.includes(index)}
                 />
               ))}
             </ul>
             <div className="mt-10 flex justify-end">
               <Continue
                 onClick={handleContinue}
-                disabled={!selectedStage1 && selectedStage1 !== 0}
+                disabled={selectedStage1.length === 0}
               />
             </div>
           </>

@@ -5,7 +5,7 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
-export function Continue({ onClick, disabled = true }: ButtonProps) {
+export function Continue({ onClick, disabled = false }: ButtonProps) {
   return (
     <button
       className={`px-7 py-3 ${disabled ? "bg-button-disabled" : "bg-button-pressed"} rounded-md text-surface-primary`}

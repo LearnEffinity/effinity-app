@@ -7,8 +7,8 @@ import {
   Topic,
 } from "@/components/onboarding/Option";
 import ProgressBar from "@/components/onboarding/ProgressBar";
-
-import { useState } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { useEffect, useState } from "react";
 
 const stage1 = [
   {
@@ -135,24 +135,52 @@ const subHobbies = {
 };
 
 export default function Onboarding() {
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user || null);
+
+      if (user) {
+        const { data, error } = await supabase
+          .from("users")
+          .select("onboardingStage, onboardingData")
+          .eq("id", user.id)
+          .single();
+
+        if (error) console.error(error);
+
+        if (data) {
+          console.log("Onboarding data:", data);
+          setStage(data.onboardingStage || 1);
+          const onboardingData = data.onboardingData || {};
+          setSelectedStage1(onboardingData.stage1 || []);
+          setSelectedStage2(onboardingData.stage2);
+          setSelectedTopics(onboardingData.stage3 || []);
+          setSelectedStage4(onboardingData.stage4);
+          selectSubHobby(onboardingData.subHobby || { hob: "", ind: null });
+        }
+      }
+    };
+
+    fetchSession();
+  }, []);
+
+  const [user, setUser] = useState(null);
   const [stage, setStage] = useState<number>(1);
-  const [selectedStage1, setSelectedStage1] = useState<number | null>(null);
+  const [selectedStage1, setSelectedStage1] = useState<number[]>([]);
   const [selectedStage2, setSelectedStage2] = useState<number | null>(null);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
   const [selectedStage4, setSelectedStage4] = useState<number | null>(null);
   const [hobby, selectSubHobby] = useState<{ hob: string; ind: number | null }>(
-    { hob: "", ind: null },
+    {
+      hob: "",
+      ind: null,
+    },
   );
-
-  const isContinueDisabled = () => {
-    if (stage === 1) return selectedStage1 === null;
-    if (stage === 2) return selectedStage2 === null;
-    if (stage === 3) return selectedTopics.length === 0;
-    if (stage === 4) return selectedStage4 === null;
-    if (stage === 5) return hobby.ind === null;
-
-    return true;
-  };
 
   const handleTopicSelection = (index: number) => {
     if (selectedTopics.includes(index)) {
@@ -161,6 +189,78 @@ export default function Onboarding() {
     } else if (selectedTopics.length < 3) {
       setSelectedTopics([...selectedTopics, index]);
     }
+  };
+  const handleStage1Selection = (index: number) => {
+    if (selectedStage1.includes(index)) {
+      setSelectedStage1(selectedStage1.filter((item) => item !== index));
+      console.log(selectedStage1);
+    } else {
+      setSelectedStage1([...selectedStage1, index]);
+    }
+  };
+
+
+  const saveOnboardingData = async (nextStage: number) => {
+    if (!user) {
+      console.error("No user found");
+      return;
+    }
+
+    const onboardingData = {
+      stage1: selectedStage1,
+      stage2: selectedStage2,
+      stage3: selectedTopics,
+      stage4: selectedStage4,
+      subHobby: hobby,
+    };
+    console.log("Saving onboarding data:", onboardingData);
+
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .update({
+          onboardingData: onboardingData,
+          onboardingStage: nextStage,
+        })
+        .eq("id", user.id)
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log("Updated data:", data[0]);
+    } catch (error) {
+      console.error("Error saving onboarding data:", error);
+    }
+  };
+
+  const handleContinue = async () => {
+    console.log("Stage before update:", stage);
+    console.log("typeof stage:", typeof stage);
+    const nextStage = parseInt(stage.toString()) + 1;
+
+    if (nextStage === 6) {
+      setStage(-1);
+      console.log("Redirect to dashboard");
+      window.location.href = "/";
+      await saveOnboardingData(-1);
+      return;
+    } else {
+      setStage((prevStage) => {
+        console.log("Updating stage from:", prevStage, "to:", nextStage);
+        return nextStage;
+      });
+      await saveOnboardingData(nextStage);
+
+      console.log("Stage after update:", nextStage);
+    }
+  };
+
+  const handleGoBack = async () => {
+    const previousStage = stage - 1;
+    await saveOnboardingData(previousStage);
+    setStage(previousStage);
   };
 
   return (
@@ -179,15 +279,16 @@ export default function Onboarding() {
                   title={goal.title}
                   description={goal.description}
                   image={goal.image}
-                  onClick={() => setSelectedStage1(index)}
-                  selected={selectedStage1 === index}
+                  onClick={() => handleStage1Selection(index)}
+                  selected={selectedStage1.includes(index)}
+                  disabled={selectedStage1.length >= 3 && !selectedStage1.includes(index)}
                 />
               ))}
             </ul>
             <div className="mt-10 flex justify-end">
               <Continue
-                onClick={() => setStage(stage + 1)}
-                disabled={isContinueDisabled()}
+                onClick={handleContinue}
+                disabled={selectedStage1.length === 0}
               />
             </div>
           </>
@@ -210,10 +311,10 @@ export default function Onboarding() {
               ))}
             </ul>
             <div className="mt-28 flex justify-between">
-              <GoBack onClick={() => setStage(stage - 1)} />
+              <GoBack onClick={handleGoBack} />
               <Continue
-                onClick={() => setStage(stage + 1)}
-                disabled={isContinueDisabled()}
+                onClick={handleContinue}
+                disabled={selectedStage2 === null}
               />
             </div>
           </>
@@ -230,7 +331,7 @@ export default function Onboarding() {
                   title={topic.title}
                   image={topic.image}
                   onClick={() => handleTopicSelection(index)}
-                  selected={selectedTopics.includes(index)}
+                  selected={selectedTopics?.includes(index)}
                   disabled={
                     selectedTopics.length >= 3 &&
                     !selectedTopics.includes(index)
@@ -240,10 +341,10 @@ export default function Onboarding() {
               ))}
             </ul>
             <div className="mt-28 flex justify-between">
-              <GoBack onClick={() => setStage(stage - 1)} />
+              <GoBack onClick={handleGoBack} />
               <Continue
-                onClick={() => setStage(stage + 1)}
-                disabled={isContinueDisabled()}
+                onClick={handleContinue}
+                disabled={selectedTopics.length === 0}
               />
             </div>
           </>
@@ -269,10 +370,10 @@ export default function Onboarding() {
               ))}
             </ul>
             <div className="mt-28 flex justify-between">
-              <GoBack onClick={() => setStage(stage - 1)} />
+              <GoBack onClick={handleGoBack} />
               <Continue
-                onClick={() => setStage(stage + 1)}
-                disabled={isContinueDisabled()}
+                onClick={handleContinue}
+                disabled={selectedStage4 === null}
               />
             </div>
           </>
@@ -310,8 +411,13 @@ export default function Onboarding() {
                 )}
               </ul>
               <div className="mt-28 flex justify-between">
-                <GoBack onClick={() => setStage(stage - 1)} />
-                <Continue disabled={isContinueDisabled()} />
+                <GoBack onClick={handleGoBack} />
+                <Continue
+                  onClick={() => {
+                    handleContinue();
+                  }}
+                  disabled={hobby.hob === ""}
+                />
               </div>
             </>
           )}

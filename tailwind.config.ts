@@ -112,6 +112,10 @@ const config: Config = {
         "3xl": "1.75rem",
         "4xl": "2rem",
       },
+      boxShadow: {
+        "right-custom":
+          "15px 0 20px -5px rgba(0, 0, 0, 0.2), 15px 0 10px -3px rgba(0, 0, 0, 0.1)",
+      },
     },
   },
   plugins: [],

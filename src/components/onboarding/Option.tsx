@@ -12,17 +12,19 @@ interface OptionProps {
 
 export function FinancialGoal({
   title,
-  description,
   image,
   onClick,
   className,
+  description,
   selected = false,
-}: OptionProps) {
+  disabled = false,
+}: Omit<OptionProps, "font" | "disabled"> & { disabled?: boolean }) {
   return (
     <button
       role="button"
       onClick={onClick}
-      className={`${className} ${selected ? "border-brand-accent" : "border-transparent hover:border-surface-secondary"} flex flex-col items-center gap-5 rounded-2xl border-4 bg-surface-base p-4 transition-colors sm:flex-row md:p-6`}
+      disabled={disabled}
+      className={`${className} ${disabled && "cursor-default opacity-50"} ${selected ? "border-brand-accent" : "border-transparent hover:border-surface-secondary"} flex flex-col items-center gap-5 rounded-2xl border-4 bg-surface-base p-4 transition-colors sm:flex-row md:p-6`}
     >
       <Image src={image} width={132} height={132} alt={title} />
       <div className="flex flex-col gap-2 text-left">

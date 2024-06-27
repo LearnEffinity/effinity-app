@@ -28,21 +28,21 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
   return (
     <motion.div
-      className={`my-4 flex cursor-pointer rounded-xl px-8 py-3 transition-colors duration-200 ease-in-out
+      className={`mx-auto my-4 flex cursor-pointer rounded-xl py-3 transition-colors duration-200 ease-in-out
         ${isSelected ? "bg-brand-accent text-white" : "hover:bg-gray-100"}
-        ${isCollapsed ? "justify-start" : "justify-start"}`}
+        ${isCollapsed ? " justify-start" : "justify-start px-8"}`}
       onClick={handleClick}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
-      <div className="flex items-start">
+      <div className={`flex items-start ${isCollapsed ? "mx-auto" : ""}`}>
         <Icon
           strokeColor={isSelected ? "#fff" : "#080808"}
           className={`h-6 w-6 ${isSelected ? "text-white" : "text-gray-600"}`}
         />
         {!isCollapsed && (
           <span
-            className={`ml-4 font-medium ${isSelected ? "text-white" : "text-gray-800"}`}
+            className={`font-medium ${isSelected ? "text-white" : "text-gray-800"} ${isCollapsed ? "mx-auto" : "ml-4"} `}
           >
             {name}
           </span>

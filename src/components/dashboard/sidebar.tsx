@@ -36,35 +36,34 @@ const Sidebar: React.FC = () => {
       animate={{ width: isCollapsed ? 100 : 245 }}
       transition={{ duration: 0.35, ease: "easeInOut" }}
     >
-      <div className="flex-col items-center justify-center p-4">
+      <div
+        className={`mt-5 flex-col ${isCollapsed ? "" : ""} items-center justify-center`}
+      >
         <Image
           src={isCollapsed ? "/logo.svg" : "/effinity-logo.png"}
           alt="Effinity Logo"
           width={isCollapsed ? 40 : 156}
           height={40}
         />
-        {/* <button
-          className="flex items-center text-gray-500 hover:text-gray-700"
-          onClick={toggleCollapse}
+        <div
+          className={`${isCollapsed ? "ml-1" : "ml-7"} mt-6 flex justify-start `}
         >
-          {isCollapsed ? (
-            <icons.Collapsed className="h-6 w-6" />
-          ) : (
-            <>
-              <icons.Collapse className="mr-2 h-6 w-6" />
-              <span className="text-sm">Collapse</span>
-            </>
-          )}
-        </button> */}
-        <SidebarItem
-          icon={isCollapsed ? "Collapsed" : "Collapse"}
-          name="Collapse"
-          isCollapsed={isCollapsed}
-          onClick={toggleCollapse}
-        />
+          <button className="flex items-center " onClick={toggleCollapse}>
+            {isCollapsed ? (
+              <icons.Collapsed className="h-7 w-7 transform transition-all duration-300 ease-in-out hover:scale-110" />
+            ) : (
+              <>
+                <icons.Collapse className="mr-[10px]  h-7 w-7" />
+                <span className="transform font-medium transition-all duration-300 ease-in-out hover:scale-110 hover:text-zinc-700">
+                  Collapse
+                </span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
       <nav className="flex flex-grow flex-col justify-between py-4">
-        <div className="">
+        <div className="mt-20">
           {mainItems.map((item) => (
             <SidebarItem
               key={item.name}
@@ -74,7 +73,7 @@ const Sidebar: React.FC = () => {
             />
           ))}
         </div>
-        <div className="mx-auto">
+        <div className="">
           {bottomItems.map((item) => (
             <SidebarItem
               key={item.name}

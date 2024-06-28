@@ -1,12 +1,13 @@
 "use client";
-import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/sidebar";
+import { usePathname } from "next/navigation";
 
 export default function Home() {
   const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     async function getUser() {
@@ -25,10 +26,10 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 p-8">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-8 flex items-center justify-between">
+      <Sidebar currentRoute={pathname} />
+      <main className="flex-1 px-8 py-10">
+        <div className="mx-auto ">
+          <div className="mb-8 flex flex-col items-center justify-center gap-y-20">
             <h1 className="text-4xl font-bold">
               Welcome{" "}
               {user
@@ -42,7 +43,7 @@ export default function Home() {
               Sign out
             </a>
           </div>
-          {/* Add your main content here */}
+          {/* content here */}
         </div>
       </main>
     </div>

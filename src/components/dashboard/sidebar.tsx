@@ -1,28 +1,34 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+
 import SidebarItem from "./sidebarItem";
 import icons from "./icons";
 
 interface SidebarItemData {
   icon: keyof typeof icons;
   name: string;
+  route: string;
 }
 
 const mainItems: SidebarItemData[] = [
-  { icon: "Home", name: "Home" },
-  { icon: "Learn", name: "Learn" },
-  { icon: "Play", name: "Play" },
-  { icon: "Quests", name: "Quests" },
-  { icon: "Store", name: "Store" },
+  { icon: "Home", name: "Home", route: "/" },
+  { icon: "Learn", name: "Learn", route: "/learn" },
+  { icon: "Play", name: "Play", route: "/play" },
+  { icon: "Quests", name: "Quests", route: "/quests" },
+  { icon: "Store", name: "Store", route: "/store" },
 ];
 
 const bottomItems: SidebarItemData[] = [
-  { icon: "Settings", name: "Settings" },
-  { icon: "Logout", name: "Logout" },
+  { icon: "Settings", name: "Settings", route: "/settings" },
+  { icon: "Logout", name: "Logout", route: "/signout" },
 ];
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  currentRoute: string;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ currentRoute }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleCollapse = () => {
@@ -70,6 +76,8 @@ const Sidebar: React.FC = () => {
               icon={item.icon}
               name={item.name}
               isCollapsed={isCollapsed}
+              isSelected={currentRoute === item.route}
+              route={item.route}
             />
           ))}
         </div>
@@ -80,6 +88,8 @@ const Sidebar: React.FC = () => {
               icon={item.icon}
               name={item.name}
               isCollapsed={isCollapsed}
+              isSelected={currentRoute === item.route}
+              route={item.route}
             />
           ))}
         </div>

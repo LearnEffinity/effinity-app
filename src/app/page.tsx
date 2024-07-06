@@ -9,6 +9,12 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname();
 
+  const [sidebarWidth, setSidebarWidth] = useState(245);
+
+  const handleSidebarWidthChange = (width: number) => {
+    setSidebarWidth(width);
+  };
+
   useEffect(() => {
     async function getUser() {
       try {
@@ -26,8 +32,14 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar currentRoute={pathname} />
-      <main className="flex-1 px-8 py-10">
+      <Sidebar
+        currentRoute={pathname}
+        onWidthChange={handleSidebarWidthChange}
+      />
+      <main
+        className="flex-1 px-8 py-10"
+        style={{ marginLeft: `${sidebarWidth}px` }}
+      >
         <div className="mx-auto ">
           <div className="mb-8 flex flex-col items-center justify-center gap-y-20">
             <h1 className="text-4xl font-bold">

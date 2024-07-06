@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
@@ -26,21 +26,26 @@ const bottomItems: SidebarItemData[] = [
 
 interface SidebarProps {
   currentRoute: string;
+  onWidthChange: (width: number) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentRoute }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentRoute, onWidthChange }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  useEffect(() => {
+    onWidthChange(isCollapsed ? 100 : 245);
+  }, [isCollapsed, onWidthChange]);
+
   return (
     <motion.div
-      className="flex h-screen flex-col bg-white px-8 shadow-lg"
+      className="sidebar fixed left-0 top-0 flex h-screen flex-col bg-white px-8 shadow-lg"
       initial={{ width: 245 }}
       animate={{ width: isCollapsed ? 100 : 245 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
+      transition={{ duration: 0.25, ease: "easeInOut" }}
     >
       <div
         className={`mt-5 flex-col ${isCollapsed ? "" : ""} items-center justify-center`}

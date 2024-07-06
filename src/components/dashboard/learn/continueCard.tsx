@@ -20,7 +20,7 @@ export default function ContinueModule({
 }: ContinueModuleCardProps) {
   return (
     <>
-      <div className="flex w-[502px] items-center rounded-xl bg-neutral-50 ">
+      <div className="flex w-[532px] items-center rounded-xl bg-neutral-50 ">
         <img src={image} className="px-10" alt={`ModuleImage-${image}`} />
         <div className="flex w-full flex-col items-start gap-y-4 rounded-r-xl bg-surface-base p-6">
           <div className="flex flex-col gap-y-1">

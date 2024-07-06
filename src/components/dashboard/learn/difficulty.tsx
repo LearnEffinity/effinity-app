@@ -30,6 +30,9 @@ const DifficultyIcons: React.FC<DifficultyIconsProps> = ({ difficulty }) => {
           />
         </svg>
       ))}
+      <span className="ml-2 text-xs font-normal leading-5 text-text-secondary">
+        {difficulty}
+      </span>
     </div>
   );
 };

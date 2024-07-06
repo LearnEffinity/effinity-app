@@ -14,7 +14,7 @@ const neutral = {
     primary: "#4D37C9",
     secondary: "#7C71F4",
     tertiary: "#7C71F4",
-    quaternary: "#7C71F4",
+    quaternary: "#D7CFFF",
     accent: "#583AFE",
   },
   error = {

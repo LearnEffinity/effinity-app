@@ -12,6 +12,7 @@ interface ModuleData {
   difficulty: Difficulty;
   progress: number;
   image: string;
+  slug: string;
 }
 
 // Dummy Data
@@ -23,6 +24,7 @@ const data: ModuleData[] = [
     difficulty: "Beginner",
     progress: 75,
     image: "/screen-1/Coin.png",
+    slug: "basics-to-budgeting",
   },
   {
     moduleID: 2,
@@ -31,6 +33,7 @@ const data: ModuleData[] = [
     difficulty: "Intermediate",
     progress: 75,
     image: "/screen-1/Pig.png",
+    slug: "creating-a-budget",
   },
 ];
 
@@ -42,18 +45,18 @@ export default function Continue() {
           Continue Learning
         </h1>
         <div className="flex flex-row items-start gap-6">
-          {data.map((key) => {
-            return (
-              <ContinueModule
-                moduleID={key.moduleID}
-                title={key.title}
-                duration={key.duration}
-                difficulty={key.difficulty}
-                progress={key.progress}
-                image={key.image}
-              />
-            );
-          })}
+          {data.map((module) => (
+            <ContinueModule
+              key={module.moduleID}
+              moduleID={module.moduleID}
+              title={module.title}
+              duration={module.duration}
+              difficulty={module.difficulty}
+              progress={module.progress}
+              image={module.image}
+              slug={module.slug}
+            />
+          ))}
         </div>
       </div>
     </>

@@ -8,6 +8,7 @@ interface ModuleCardProps {
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   image: string;
   description: string;
+  slug: string;
 }
 
 interface TopicProps {
@@ -30,6 +31,7 @@ const topicsData: TopicProps[] = [
         image: "/screen-3/Budget.png",
         description:
           "Discover techniques to optimize your budgeting and financial efficiency.",
+        slug: "budgeting-strategies",
       },
       {
         moduleID: 4,
@@ -39,6 +41,7 @@ const topicsData: TopicProps[] = [
         image: "/screen-3/Debt.png",
         description:
           "Learn to effectively manage your debt, paving the way to financial freedom",
+        slug: "managing-debt",
       },
       {
         moduleID: 5,
@@ -48,6 +51,7 @@ const topicsData: TopicProps[] = [
         image: "/screen-3/Insurance.png",
         description:
           "Explore strategies for long-term budgeting and build wealth over time",
+        slug: "long-term-budgeting",
       },
       // !Add more modules for Budgeting
     ],
@@ -80,6 +84,7 @@ export default function Recommended() {
                   difficulty={module.difficulty}
                   image={module.image}
                   description={module.description}
+                  slug={module.slug}
                 />
               ))}
             </div>

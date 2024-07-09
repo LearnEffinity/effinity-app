@@ -4,14 +4,22 @@ import { cookies } from "next/headers";
 
 export async function middleware(request: NextRequest) {
   console.log("Middleware function called for path:", request.nextUrl.pathname);
-  const cookiesStore = cookies();
+  const cookieStore = cookies();
 
   const supabase = createServerClient(
     "https://lgsfvkelrdcyiezhayoz.supabase.co/",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2Z2a2VscmRjeWllemhheW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTMzMDg3ODYsImV4cCI6MjAyODg4NDc4Nn0.ueUfLllxnBQ4fpEaynvj3mprryoxDFIu5w3Bxyr7W5g",
     {
-      cookies: {},
-    },
+      cookies: {
+        get: (name: string) => cookieStore.get(name)?.value,
+        set: (name: string, value: string, options: any) => {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove: (name: string, options: any) => {
+          cookieStore.set({ name, value: '', ...options });
+        },
+      },
+    }
   );
 
   const {
@@ -31,11 +39,10 @@ export async function middleware(request: NextRequest) {
     console.log("Allowing access to /auth/reset");
     return;
   }
-  // ! Something is wrong with this shit
-  // if (!user && !pathname.startsWith("/auth")) {
-  //   console.log("No user, redirecting to login");
-  //   return Response.redirect(new URL("/auth/login", request.url));
-  // }
+  if (!user && !pathname.startsWith("/auth")) {
+    console.log("No user, redirecting to login");
+    return Response.redirect(new URL("/auth/login", request.url));
+  }
 
   if (user && pathname.startsWith("/auth") && pathname !== "/auth/reset") {
     console.log("Authenticated user accessing auth page, redirecting to home");

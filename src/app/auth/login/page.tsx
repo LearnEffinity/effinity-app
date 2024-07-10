@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, use } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { InputWithLabel } from "@/components/form/Input";
@@ -10,10 +10,33 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export default function LoginPage() {
   const supabase = createClient();
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+      if (error) {
+        console.log("Error fetching user:", error.message);
+      } else {
+        console.log("Current user on page load:", session);
+      }
+    };
+
+    checkUser();
+  }, []);
   async function signInWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
     });
+    if (error) {
+      console.log("Failed to sign in with Google:", error.message);
+    } else {
+      console.log("Signed in with Google:", data);
+    }
   }
 
   return (
@@ -44,13 +67,9 @@ function LoginForm({
   const [isInvalid, setIsInvalid] = useState(false);
   const [error, setError] = useState("");
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-
-  const handleLoginButton = async (e: any) => {
+  const handleLoginButton = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Email:", email);
-
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -63,12 +82,14 @@ function LoginForm({
       setIsInvalid(true);
     } else {
       setError("");
+      setIsInvalid(false);
+      console.log("Logged in:", data);
+      window.location.href = "/";
     }
-    console.log("Logged in:", data);
   };
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={handleLoginButton}>
+    <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-6 py-4">
         <SocialMediaButton onClick={signInWithGoogle} />
         <div className="flex items-center gap-5">
@@ -78,34 +99,43 @@ function LoginForm({
         </div>
       </div>
       {isInvalid && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, type: "spring" }} className="w-full bg-error-100 text-text-error text-center py-4 rounded-lg">Invalid username or password</motion.div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, type: "spring" }}
+          className="w-full rounded-lg bg-error-100 py-4 text-center text-text-error"
+        >
+          {error || "Invalid username or password"}
+        </motion.div>
       )}
-      <InputWithLabel
-        label="Email"
-        type="email"
-        value={email}
-        onChange={(v) => setEmail(v)}
-      />
-      <InputWithLabel
-        label="Password"
-        type="password"
-        value={password}
-        onChange={(v) => setPassword(v)}
-      />
-      <div className="text-sm flex items-center justify-between">
-        <span className="flex items-center gap-2">
-          <Checkbox
-            onChange={(v: boolean) => console.log(`Remember me set to ${v}`)}
-          />
-          <span>Remember me</span>
-        </span>
-        <a href="/auth/forgot-password" className="text-text-primary">
-          Forgot password?
-        </a>
-      </div>
-      <Button type="submit" className="mt-4">
-        Log In
-      </Button>
-    </form>
+      <form onSubmit={handleLoginButton}>
+        <InputWithLabel
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(v) => setEmail(v)}
+        />
+        <InputWithLabel
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(v) => setPassword(v)}
+        />
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2">
+            <Checkbox
+              onChange={(v: boolean) => console.log(`Remember me set to ${v}`)}
+            />
+            <span>Remember me</span>
+          </span>
+          <a href="/auth/forgot-password" className="text-text-primary">
+            Forgot password?
+          </a>
+        </div>
+        <Button type="submit" className="mt-4">
+          Log In
+        </Button>
+      </form>
+    </div>
   );
 }

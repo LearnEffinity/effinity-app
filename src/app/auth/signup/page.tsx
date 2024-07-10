@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-
+import { motion } from "framer-motion";
 import { InputWithLabel } from "@/components/form/Input";
 import Button, { SocialMediaButton } from "@/components/form/Button";
 
@@ -16,8 +16,14 @@ function SignupPage() {
   async function signUpWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
     if (error) console.error("Error signing up with Google:", error);
+    else {
+      console.log("Signed in with Google:", data);
+    }
   }
 
   const validateEmail = async (email: string) => {
@@ -33,7 +39,7 @@ function SignupPage() {
       .eq("email", email);
 
     console.log("Email validation response:", data, error);
-    if (data.length > 0) {
+    if (data && data.length > 0) {
       setEmailValidated(false);
       return "Email already exists. Please use a different email.";
     }
@@ -84,17 +90,17 @@ function SignupForm({
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isInvalid, setIsInvalid] = useState(false);
   const [error, setError] = useState("");
   const [emailCheckPerformed, setEmailCheckPerformed] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  const passwordRegex = /^[^\s]{8,}$/;
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
   const handleSignupButton = async (e: React.FormEvent) => {
     e.preventDefault();
-
 
     let hasError = false;
 
@@ -119,12 +125,15 @@ function SignupForm({
     // Validate password
     if (!passwordRegex.test(password)) {
       setPasswordError(
-        "Password must be at least 8 characters long with no spaces.",
+        "Password must be at least 8 characters long, include a number and a letter, and contain no spaces.",
       );
       hasError = true;
     }
 
-    if (hasError) return;
+    if (hasError) {
+      setIsInvalid(true);
+      return;
+    }
 
     // Sign up
     const { error: signupError } = await supabase.auth.signUp({
@@ -142,8 +151,11 @@ function SignupForm({
     if (signupError) {
       console.error("Error signing up:", signupError);
       setError("Failed to sign up: " + signupError.message);
+      setIsInvalid(true);
     } else {
       setError("");
+      setIsInvalid(false);
+      window.location.href = "/";
     }
   };
 
@@ -163,6 +175,16 @@ function SignupForm({
           <span className="flex-grow border-b border-text-tertiary"></span>
         </div>
       </div>
+      {isInvalid && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, type: "spring" }}
+          className="w-full rounded-lg bg-error-100 py-4 text-center text-text-error"
+        >
+          {error || "Please correct the errors below."}
+        </motion.div>
+      )}
       <InputWithLabel
         label="Email"
         type="email"
@@ -214,7 +236,6 @@ function SignupForm({
             subtext={usernameError}
           />
           <InputWithLabel
-            iconHidden
             label="Password"
             type="password"
             value={password}
@@ -223,20 +244,8 @@ function SignupForm({
               setPasswordError("");
             }}
             state={passwordError ? "error" : undefined}
-            subtext={
-              passwordError || (
-                <ul className="list-inside list-disc text-[15px] text-red-500">
-                  <li>Mix of uppercase & lowercase letters</li>
-                  <li>At least one number</li>
-                  <li>At least 8 characters</li>
-                  <li>Any characters but no spaces</li>
-                </ul>
-              )
-            }
+            subtext={passwordError}
           />
-          {error && !error.includes("Username") && (
-            <div className="text-red-500">{error}</div>
-          )}
           <Button
             disabled={
               !emailValidated ||
@@ -250,7 +259,7 @@ function SignupForm({
           >
             Sign Up
           </Button>
-          <span className="text-xs text-center text-text-secondary">
+          <span className="text-center text-xs text-text-secondary">
             By signing up you are agreeing to our{" "}
             <a href="/privacy">Privacy Policy</a> and{" "}
             <a href="/terms">Terms & Conditions</a>

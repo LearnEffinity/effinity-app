@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 export async function middleware(request: NextRequest) {
   console.log("Middleware function called for path:", request.nextUrl.pathname);
   const cookieStore = cookies();
+  const { pathname } = request.nextUrl;
 
   const supabase = createServerClient(
     "https://lgsfvkelrdcyiezhayoz.supabase.co/",
@@ -16,12 +17,15 @@ export async function middleware(request: NextRequest) {
           cookieStore.set({ name, value, ...options });
         },
         remove: (name: string, options: any) => {
-          cookieStore.set({ name, value: '', ...options });
+          cookieStore.set({ name, value: "", ...options });
         },
       },
-    }
+    },
   );
-
+  if (pathname.startsWith("/auth/callback")) {
+    console.log("Skipping middleware for /auth/callback/route.ts");
+    return;
+  }
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -32,13 +36,13 @@ export async function middleware(request: NextRequest) {
     user ? "Authenticated" : "Not authenticated",
   );
 
-  const { pathname } = request.nextUrl;
   console.log("Current pathname:", pathname);
 
-  if (pathname.startsWith("/auth/reset")) {
-    console.log("Allowing access to /auth/reset");
+  if (pathname === "/signout" || pathname.startsWith("/auth/reset")) {
+    console.log("Allowing access to /signout or /auth/reset");
     return;
   }
+
   if (!user && !pathname.startsWith("/auth")) {
     console.log("No user, redirecting to login");
     return Response.redirect(new URL("/auth/login", request.url));
@@ -48,9 +52,39 @@ export async function middleware(request: NextRequest) {
     console.log("Authenticated user accessing auth page, redirecting to home");
     return Response.redirect(new URL("/", request.url));
   }
-}
 
-console.log("Middleware completed, no redirection needed");
+  if (user) {
+    const { data: onboardingStage, error: onboardingError } = await supabase
+      .from("users")
+      .select("onboardingStage")
+      .eq("id", user.id)
+      .single();
+
+    const onboardingData = parseInt(onboardingStage?.onboardingStage);
+    console.log("Onboarding data:", onboardingData, typeof onboardingData);
+
+    if (onboardingError) {
+      console.error("Error fetching onboarding data:", onboardingError);
+    } else if (
+      onboardingData !== null &&
+      onboardingData !== undefined &&
+      onboardingData !== -1
+    ) {
+      if (!pathname.startsWith("/onboarding") && pathname !== "/signout") {
+        console.log("Redirecting to onboarding");
+        return Response.redirect(new URL("/onboarding", request.url));
+      }
+    } else if (pathname.startsWith("/onboarding")) {
+      if (onboardingData === -1) {
+        console.log("Onboarding already completed, redirecting to home");
+        return Response.redirect(new URL("/", request.url));
+      }
+      return;
+    }
+  }
+
+  console.log("Middleware completed, no redirection needed");
+}
 
 export const config = {
   matcher: [

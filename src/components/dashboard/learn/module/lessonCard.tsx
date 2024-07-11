@@ -1,45 +1,113 @@
 import React from "react";
+import Link from "next/link";
 
-export default function LessonCard() {
+interface LessonCardProps {
+  lessonNumber: number;
+  title: string;
+  description: string;
+  status: "not-started" | "in-progress" | "completed";
+  progress?: number;
+  slug: string;
+  moduleSlug: string;
+}
+
+export default function LessonCard({
+  lessonNumber,
+  title,
+  description,
+  status,
+  progress = 0,
+  slug,
+  moduleSlug,
+}: LessonCardProps) {
   return (
-    <>
-      <div className="flex h-[280px] w-full flex-row items-center rounded-xl bg-neutral-50">
-        <img
-          src={"/screen-1/Trophy.png"}
-          className="mx-14 my-14 h-[170px] w-[170px]"
-          alt={`ModuleImage`}
-        />
-        <div className="flex h-full w-full flex-col gap-y-4 rounded-r-xl bg-surface-base p-8">
-          <div className="flex flex-col gap-y-2">
-            <div className="flex justify-between">
-              <h3 className="text-base font-medium leading-6 text-text-secondary">
-                Lesson 1
-              </h3>
-              <CompleteIcon />
-            </div>
-            <h1 className="text-2xl font-medium text-text-primary">
-              introduction to budgeting
-            </h1>
+    <div className="flex h-[280px] w-full flex-row items-center rounded-xl bg-neutral-50">
+      <img
+        src={"/screen-1/Trophy.png"}
+        className="mx-14 my-14 h-[170px] w-[170px]"
+        alt={`ModuleImage`}
+      />
+      <div className="flex h-full w-full flex-col gap-y-4 rounded-r-xl bg-surface-base p-8">
+        <div className="flex flex-col gap-y-2">
+          <div className="flex justify-between">
+            <h3 className="text-base font-medium leading-6 text-text-secondary">
+              Lesson {lessonNumber}
+            </h3>
+            {renderStatusIcon(status)}
           </div>
-          <h6 className="mb-8  w-full text-base font-normal text-text-secondary">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-            Repellendus rem in eligendi placeat at repudiandae veniam id rerum
-            voluptas laudantium illum ea quo voluptatem consectetur, repellat
-            animi? Excepturi, asperiores nihil!
-          </h6>
+          <h1 className="text-2xl font-medium text-text-primary">{title}</h1>
+        </div>
+        <h6 className="mb-8 w-full text-base font-normal text-text-secondary">
+          {description}
+        </h6>
 
-          <div className="flex w-full justify-end">
-            <a
-              //   href={`/learn/${slug}`}
-              className=" inline-block cursor-pointer bg-transparent px-4 py-2 font-semibold text-brand-accent transition-colors duration-300 ease-in-out hover:text-brand-tertiary"
-            >
-              Review
-            </a>
-          </div>
+        <div className="flex w-full justify-end">
+          {renderActionButton(status, progress, slug, moduleSlug)}
         </div>
       </div>
-    </>
+    </div>
   );
+}
+
+function renderStatusIcon(status: "not-started" | "in-progress" | "completed") {
+  switch (status) {
+    case "completed":
+      return <CompleteIcon />;
+    case "in-progress":
+      return <ProgressCircle />;
+    case "not-started":
+      return <StartIcon />;
+  }
+}
+
+function renderActionButton(
+  status: "not-started" | "in-progress" | "completed",
+  progress: number,
+  slug: string,
+  moduleSlug: string,
+) {
+  switch (status) {
+    case "completed":
+      return (
+        <Link
+          href={`/learn/${moduleSlug}/${slug}`}
+          className="mt-7 inline-block cursor-pointer bg-transparent px-4 py-2 font-semibold text-brand-accent transition-colors duration-300 ease-in-out hover:text-brand-tertiary"
+        >
+          Review
+        </Link>
+      );
+    case "in-progress":
+      return (
+        <div className="mt-7 flex w-full items-center justify-between gap-x-4">
+          <div className="w-10/12 -translate-y-1 transform">
+            <p className="pb-2 text-sm font-semibold text-brand-accent ">
+              {progress}% complete
+            </p>
+            <div className="h-2 w-full rounded-full bg-brand-quaternary">
+              <div
+                className="h-full rounded-full bg-brand-accent"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+          <Link
+            href={`/learn/${moduleSlug}/${slug}`}
+            className="inline-block cursor-pointer rounded-md bg-brand-accent px-4 py-2 font-semibold text-white transition-colors duration-300 ease-in-out hover:bg-brand-tertiary"
+          >
+            Continue
+          </Link>
+        </div>
+      );
+    case "not-started":
+      return (
+        <Link
+          href={`/learn/${moduleSlug}/${slug}`}
+          className="mt-7 inline-block cursor-pointer rounded-md bg-brand-accent px-4 py-2 font-semibold text-white transition-colors duration-300 ease-in-out hover:bg-brand-tertiary"
+        >
+          Start
+        </Link>
+      );
+  }
 }
 
 interface IconProps {
@@ -69,8 +137,8 @@ const CompleteIcon = ({ className }: IconProps) => {
 const ProgressCircle = ({ className }: IconProps) => {
   return (
     <svg
-      width="64"
-      height="64"
+      width="32"
+      height="32"
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -99,8 +167,8 @@ const ProgressCircle = ({ className }: IconProps) => {
 const StartIcon = ({ className }: IconProps) => {
   return (
     <svg
-      width="64"
-      height="64"
+      width="32"
+      height="32"
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -110,7 +178,7 @@ const StartIcon = ({ className }: IconProps) => {
         fill-rule="evenodd"
         clip-rule="evenodd"
         d="M58.6673 32.0007C58.6673 46.7282 46.7282 58.6673 32.0007 58.6673C17.2731 58.6673 5.33398 46.7282 5.33398 32.0007C5.33398 17.2731 17.2731 5.33398 32.0007 5.33398C46.7282 5.33398 58.6673 17.2731 58.6673 32.0007ZM42.7482 23.9198C43.5292 24.7008 43.5292 25.9671 42.7482 26.7482L29.4149 40.0815C28.6338 40.8626 27.3675 40.8626 26.5864 40.0815L21.2531 34.7482C20.4721 33.9672 20.4721 32.7008 21.2531 31.9198C22.0342 31.1387 23.3005 31.1387 24.0815 31.9198L28.0007 35.8389L33.9602 29.8793L39.9198 23.9198C40.7008 23.1387 41.9671 23.1387 42.7482 23.9198Z"
-        fill="#47B881"
+        fill="#BCBBC3"
       />
     </svg>
   );

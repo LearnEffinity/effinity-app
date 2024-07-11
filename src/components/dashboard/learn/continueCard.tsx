@@ -2,6 +2,7 @@ import React from "react";
 import DifficultyIcons from "./difficulty";
 import Link from "next/link";
 
+
 interface ContinueModuleCardProps {
   moduleID: Number;
   title: string;
@@ -10,6 +11,7 @@ interface ContinueModuleCardProps {
   progress: Number;
   image: string;
   slug: string;
+
 }
 
 export default function ContinueModule({
@@ -20,6 +22,7 @@ export default function ContinueModule({
   progress,
   image,
   slug,
+
 }: ContinueModuleCardProps) {
   return (
     <>

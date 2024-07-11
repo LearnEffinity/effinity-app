@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import Continue from "@/components/dashboard/learn/continue";
 import Recommended from "@/components/dashboard/learn/recommended";

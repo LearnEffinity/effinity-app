@@ -32,6 +32,7 @@ const topicsData: TopicProps[] = [
         description:
           "Discover techniques to optimize your budgeting and financial efficiency.",
         slug: "budgeting-strategies",
+
       },
       {
         moduleID: 4,
@@ -42,6 +43,7 @@ const topicsData: TopicProps[] = [
         description:
           "Learn to effectively manage your debt, paving the way to financial freedom",
         slug: "managing-debt",
+
       },
       {
         moduleID: 5,

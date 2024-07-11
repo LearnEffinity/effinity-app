@@ -13,6 +13,7 @@ interface ModuleData {
   progress: number;
   image: string;
   slug: string;
+
 }
 
 // Dummy Data

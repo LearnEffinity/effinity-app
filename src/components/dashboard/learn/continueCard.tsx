@@ -1,5 +1,7 @@
 import React from "react";
 import DifficultyIcons from "./difficulty";
+import Link from "next/link";
+
 
 interface ContinueModuleCardProps {
   moduleID: Number;
@@ -8,6 +10,8 @@ interface ContinueModuleCardProps {
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   progress: Number;
   image: string;
+  slug: string;
+
 }
 
 export default function ContinueModule({
@@ -17,6 +21,8 @@ export default function ContinueModule({
   difficulty,
   progress,
   image,
+  slug,
+
 }: ContinueModuleCardProps) {
   return (
     <>
@@ -50,12 +56,12 @@ export default function ContinueModule({
               ></div>
             </div>
             {/* Continue Button */}
-            <a
-              href=""
-              className=" rounded-lg bg-button px-5 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-button-hover"
+            <Link
+              href={`/learn/${slug}`}
+              className="rounded-lg bg-button px-5 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-button-hover"
             >
               Continue
-            </a>
+            </Link>
           </div>
         </div>
       </div>

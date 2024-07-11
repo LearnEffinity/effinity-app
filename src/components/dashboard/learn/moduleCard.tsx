@@ -8,6 +8,7 @@ interface RegularModuleCardProps {
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   image: string;
   description: string;
+  slug: string;
 }
 
 export default function RegModuleCard({
@@ -17,6 +18,7 @@ export default function RegModuleCard({
   difficulty,
   image,
   description,
+  slug,
 }: RegularModuleCardProps) {
   return (
     <>
@@ -49,7 +51,7 @@ export default function RegModuleCard({
 
           <div className="flex w-full justify-end">
             <a
-              href=""
+              href={`/learn/${slug}`}
               className=" inline-block bg-transparent px-4 py-2 text-brand-accent transition-colors duration-300 ease-in-out hover:text-brand-tertiary"
             >
               Start

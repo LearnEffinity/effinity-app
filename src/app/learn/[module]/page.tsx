@@ -1,4 +1,5 @@
 import LessonIntroCard from "@/components/dashboard/learn/module/lessonIntroCard";
+import LessonCard from "@/components/dashboard/learn/module/lessonCard";
 import React from "react";
 
 interface PageProps {
@@ -26,6 +27,32 @@ export default function ModulePage({ params, searchParams }: PageProps) {
     difficulty: "Beginner",
     duration: 20,
   };
+
+  const lessonData = [
+    {
+      lessonNumber: 1,
+      title: "Introduction to Budgeting",
+      description: "Learn the basics of creating and maintaining a budget.",
+      status: "completed" as const,
+      slug: "intro-to-budgeting",
+    },
+    {
+      lessonNumber: 2,
+      title: "Tracking Expenses",
+      description: "Discover effective ways to track your daily expenses.",
+      status: "in-progress" as const,
+      progress: 60,
+      slug: "tracking-expenses",
+    },
+    {
+      lessonNumber: 3,
+      title: "Setting Financial Goals",
+      description: "Learn how to set and achieve your financial goals.",
+      status: "not-started" as const,
+      slug: "setting-financial-goals",
+    },
+  ];
+
   return (
     <>
       <div className="mb-8 flex w-full justify-between">
@@ -73,6 +100,13 @@ export default function ModulePage({ params, searchParams }: PageProps) {
           {/* Top Card */}
           {/* ----------------------------------------------------------------------------*/}
           {/* Lesson Cards */}
+          {lessonData.map((lesson) => (
+            <LessonCard
+              key={lesson.slug}
+              {...lesson}
+              moduleSlug={params?.module || ""}
+            />
+          ))}
           {/* Lesson Cards */}
         </div>
       </div>

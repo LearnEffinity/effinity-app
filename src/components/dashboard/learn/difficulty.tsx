@@ -12,6 +12,7 @@ const DifficultyIcons: React.FC<DifficultyIconsProps> = ({ difficulty }) => {
     <div className="flex items-center">
       {[...Array(3)].map((_, index) => (
         <svg
+          key={index}
           width="20"
           height="20"
           viewBox="0 0 20 20"

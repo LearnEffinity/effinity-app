@@ -114,7 +114,7 @@ export default function ModulePage({ params }: PageProps) {
               lessonNumber={lesson.lesson_id}
               title={lesson.name}
               description={lesson.description}
-              status="not-started" 
+              status="not-started"
               slug={`${lesson.lesson_number}`}
               moduleSlug={params.module_number}
               topic={params.topic}

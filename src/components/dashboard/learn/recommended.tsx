@@ -8,6 +8,7 @@ interface Module {
   name: string;
   description: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
+  slug: string
   length: string;
   image: string;
   topic: string;
@@ -98,9 +99,10 @@ const Recommended: React.FC = () => {
               title={module.name}
               duration={module.length}
               difficulty={module.difficulty}
+              topic={module.topic}
               image={module.image}
               description={module.description}
-              slug={module.topic}
+              module_number={module.module_number}
             />
           ))}
         </div>

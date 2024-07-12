@@ -6,9 +6,10 @@ interface RegularModuleCardProps {
   title: string;
   duration: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
+  topic: string;
   image: string;
   description: string;
-  slug: string;
+  module_number: number;
 }
 
 export default function RegModuleCard({
@@ -17,8 +18,9 @@ export default function RegModuleCard({
   duration,
   difficulty,
   image,
+  topic,
   description,
-  slug,
+  module_number,
 }: RegularModuleCardProps) {
   return (
     <>
@@ -52,7 +54,7 @@ export default function RegModuleCard({
 
           <div className="flex w-full justify-end">
             <a
-              href={`/learn/${slug}`}
+              href={`/learn/${topic}/${module_number}`}
               className=" inline-block bg-transparent px-4 py-2 text-brand-accent transition-colors duration-300 ease-in-out hover:text-brand-tertiary"
             >
               Start

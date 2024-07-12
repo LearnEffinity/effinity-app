@@ -8,6 +8,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://mvp.effinity.ca"),
   title: "Effinity",
   description: "It's a secret",
   openGraph: {

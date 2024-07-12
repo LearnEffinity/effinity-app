@@ -1,10 +1,10 @@
+"use client";
+import React, { useState, useEffect } from "react";
 import LessonIntroCard from "@/components/dashboard/learn/module/lessonIntroCard";
 import LessonCard from "@/components/dashboard/learn/module/lessonCard";
 
-import React from "react";
-
 interface PageProps {
-  params?: { module_number: string; topic: string };
+  params: { module_number: string; topic: string };
 }
 
 interface LessonIntroProps {
@@ -15,42 +15,55 @@ interface LessonIntroProps {
   duration: number;
 }
 
+interface Lesson {
+  id: number;
+  module_number: string;
+  lesson_id: number;
+  name: string;
+  description: string;
+  markdown: string;
+  image: string;
+  topic: string;
+}
+
 export default function ModulePage({ params }: PageProps) {
-  console.log("Params:", params);
+  const [moduleInfo, setModuleInfo] = useState<LessonIntroProps | null>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const cardInfo: LessonIntroProps = {
-    title: params.module_number,
-    description:
-      "Master the fundamentals of budgeting to take control of your finances and achieve your financial goals.",
-    progress: 75,
-    difficulty: "Beginner",
-    duration: 20,
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          `/api/module/${params.topic}/${params.module_number}`,
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const data = await response.json();
 
-  const lessonData = [
-    {
-      lessonNumber: 1,
-      title: "Introduction to Budgeting",
-      description: "Learn the basics of creating and maintaining a budget.",
-      status: "completed" as const,
-      slug: "intro-to-budgeting",
-    },
-    {
-      lessonNumber: 2,
-      title: "Tracking Expenses",
-      description: "Discover effective ways to track your daily expenses.",
-      status: "in-progress" as const,
-      progress: 60,
-      slug: "tracking-expenses",
-    },
-    {
-      lessonNumber: 3,
-      title: "Setting Financial Goals",
-      description: "Learn how to set and achieve your financial goals.",
-      status: "not-started" as const,
-      slug: "setting-financial-goals",
-    },
-  ];
+        setModuleInfo({
+          title: data.module.name,
+          description: data.module.description,
+          progress: 0,
+          difficulty: data.module.difficulty,
+          duration: parseInt(data.module.length),
+        });
+
+        setLessons(data.lessons);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.module_number, params.topic]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
@@ -83,7 +96,6 @@ export default function ModulePage({ params }: PageProps) {
       </div>
 
       <div className="relative">
-        {/* Background div with image */}
         <div className="flex h-[312px] w-full items-end justify-center overflow-hidden rounded-2xl bg-brand-quaternary">
           <img
             className="max-h-full max-w-full object-cover"
@@ -92,35 +104,22 @@ export default function ModulePage({ params }: PageProps) {
           />
         </div>
 
-        {/* Cards container */}
         <div className="relative z-10 -mt-16 flex flex-col gap-4 px-8">
-          {/* Top Card */}
-          <LessonIntroCard {...cardInfo} />
-          {/* Top Card */}
-          {/* ----------------------------------------------------------------------------*/}
-          {/* Lesson Cards */}
+          {moduleInfo && <LessonIntroCard {...moduleInfo} />}
 
-          {lessonData.map((lesson) => (
+          {lessons.map((lesson) => (
             <LessonCard
-              key={lesson.slug}
-              {...lesson}
-              moduleSlug={params?.module_number || ""}
+              key={lesson.id}
+              lessonNumber={lesson.lesson_id}
+              title={lesson.name}
+              description={lesson.description}
+              status="not-started" 
+              slug={`${lesson.topic}-${lesson.lesson_id}`}
+              moduleSlug={params.module_number}
             />
           ))}
-
-          {/* Lesson Cards */}
         </div>
       </div>
     </>
   );
-}
-
-export async function generateStaticParams() {
-  return [
-    { slug: "budgeting-strategies" },
-    { slug: "managing-debt" },
-    { slug: "long-term-budgeting" },
-    { slug: "basics-to-budgeting" },
-    { slug: "creating-a-budget" },
-  ];
 }

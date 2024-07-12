@@ -4,8 +4,7 @@ import LessonCard from "@/components/dashboard/learn/module/lessonCard";
 import React from "react";
 
 interface PageProps {
-  params?: { module: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params?: { module_number: string; topic: string };
 }
 
 interface LessonIntroProps {
@@ -16,19 +15,17 @@ interface LessonIntroProps {
   duration: number;
 }
 
-export default function ModulePage({ params, searchParams }: PageProps) {
+export default function ModulePage({ params }: PageProps) {
   console.log("Params:", params);
-  console.log("SearchParams:", searchParams);
 
   const cardInfo: LessonIntroProps = {
-    title: params.module,
+    title: params.module_number,
     description:
       "Master the fundamentals of budgeting to take control of your finances and achieve your financial goals.",
     progress: 75,
     difficulty: "Beginner",
     duration: 20,
   };
-
 
   const lessonData = [
     {
@@ -54,7 +51,6 @@ export default function ModulePage({ params, searchParams }: PageProps) {
       slug: "setting-financial-goals",
     },
   ];
-
 
   return (
     <>
@@ -108,7 +104,7 @@ export default function ModulePage({ params, searchParams }: PageProps) {
             <LessonCard
               key={lesson.slug}
               {...lesson}
-              moduleSlug={params?.module || ""}
+              moduleSlug={params?.module_number || ""}
             />
           ))}
 

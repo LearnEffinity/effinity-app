@@ -1,11 +1,19 @@
 "use client";
+import { useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function SignOutPage() {
+  const router = useRouter();
   const supabase = createClient();
-  supabase.auth.signOut();
 
-  window.location.href = "/auth/login";
+  useEffect(() => {
+    const signOut = async () => {
+      await supabase.auth.signOut();
+      router.push("/auth/login");
+    };
+    signOut();
+  }, []);
 
-  return null;
+  return <p>Signing out...</p>;
 }

@@ -9,6 +9,7 @@ interface LessonCardProps {
   progress?: number;
   slug: string;
   moduleSlug: string;
+  topic: string;
 }
 
 export default function LessonCard({
@@ -19,6 +20,7 @@ export default function LessonCard({
   progress = 0,
   slug,
   moduleSlug,
+  topic,
 }: LessonCardProps) {
   return (
     <div className="flex h-[280px] w-full flex-row items-center rounded-xl bg-neutral-50">
@@ -42,7 +44,7 @@ export default function LessonCard({
         </h6>
 
         <div className="flex w-full justify-end">
-          {renderActionButton(status, progress, slug, moduleSlug)}
+          {renderActionButton(status, progress, slug, moduleSlug, topic)}
         </div>
       </div>
     </div>
@@ -65,12 +67,13 @@ function renderActionButton(
   progress: number,
   slug: string,
   moduleSlug: string,
+  topic: string
 ) {
   switch (status) {
     case "completed":
       return (
         <Link
-          href={`/learn/${moduleSlug}/${slug}`}
+          href={`/learn/${topic}/${moduleSlug}/${slug}`}
           className="mt-7 inline-block cursor-pointer bg-transparent px-4 py-2 font-semibold text-brand-accent transition-colors duration-300 ease-in-out hover:text-brand-tertiary"
         >
           Review
@@ -91,7 +94,7 @@ function renderActionButton(
             </div>
           </div>
           <Link
-            href={`/learn/${moduleSlug}/${slug}`}
+            href={`/learn/${topic}/${moduleSlug}/${slug}`}
             className="inline-block cursor-pointer rounded-md bg-brand-accent px-4 py-2 font-semibold text-white transition-colors duration-300 ease-in-out hover:bg-brand-tertiary"
           >
             Continue
@@ -101,7 +104,7 @@ function renderActionButton(
     case "not-started":
       return (
         <Link
-          href={`/learn/${moduleSlug}/${slug}`}
+          href={`/learn/${topic}/${moduleSlug}/${slug}`}
           className="mt-7 inline-block cursor-pointer rounded-md bg-brand-accent px-4 py-2 font-semibold text-white transition-colors duration-300 ease-in-out hover:bg-brand-tertiary"
         >
           Start

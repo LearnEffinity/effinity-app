@@ -21,6 +21,7 @@ interface Lesson {
   lesson_id: number;
   name: string;
   description: string;
+  lesson_number: number;
   markdown: string;
   image: string;
   topic: string;
@@ -114,8 +115,9 @@ export default function ModulePage({ params }: PageProps) {
               title={lesson.name}
               description={lesson.description}
               status="not-started" 
-              slug={`${lesson.topic}-${lesson.lesson_id}`}
+              slug={`${lesson.lesson_number}`}
               moduleSlug={params.module_number}
+              topic={params.topic}
             />
           ))}
         </div>

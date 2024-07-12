@@ -1,5 +1,6 @@
 import LessonIntroCard from "@/components/dashboard/learn/module/lessonIntroCard";
 import LessonCard from "@/components/dashboard/learn/module/lessonCard";
+
 import React from "react";
 
 interface PageProps {
@@ -28,6 +29,7 @@ export default function ModulePage({ params, searchParams }: PageProps) {
     duration: 20,
   };
 
+
   const lessonData = [
     {
       lessonNumber: 1,
@@ -52,6 +54,7 @@ export default function ModulePage({ params, searchParams }: PageProps) {
       slug: "setting-financial-goals",
     },
   ];
+
 
   return (
     <>
@@ -100,6 +103,7 @@ export default function ModulePage({ params, searchParams }: PageProps) {
           {/* Top Card */}
           {/* ----------------------------------------------------------------------------*/}
           {/* Lesson Cards */}
+
           {lessonData.map((lesson) => (
             <LessonCard
               key={lesson.slug}
@@ -107,6 +111,7 @@ export default function ModulePage({ params, searchParams }: PageProps) {
               moduleSlug={params?.module || ""}
             />
           ))}
+
           {/* Lesson Cards */}
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React from "react";
 
+
 interface PageProps {
   params?: { module: string; lesson: string };
   searchParams?: { [key: string]: string | string[] | undefined };

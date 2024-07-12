@@ -35,7 +35,6 @@ const Continue: React.FC = () => {
         } = await supabase.auth.getUser();
 
         if (user) {
-          // Fetch user's progress from Supabase
           const { data: progressData, error: progressError } = await supabase
             .from("progress")
             .select("*")
@@ -44,7 +43,6 @@ const Continue: React.FC = () => {
           if (progressError) throw progressError;
 
           if (progressData && progressData.length > 0) {
-            // Fetch modules based on user's progress
             const moduleIds = progressData.map((p) => p.module_id);
             const { data: modulesData, error: modulesError } = await supabase
               .from("modules")

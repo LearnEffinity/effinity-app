@@ -1,6 +1,6 @@
 import React from "react";
 import DifficultyIcons from "./difficulty";
-
+import SupabaseImage from "../supabaseImage";
 interface RegularModuleCardProps {
   moduleID: Number;
   title: string;
@@ -23,10 +23,11 @@ export default function RegModuleCard({
   return (
     <>
       <div className="flex h-[496px] w-[392px] flex-col items-center rounded-xl bg-neutral-50">
-        <img
-          src={image}
+        <SupabaseImage
+          filePath={image}
+          alt={title}
           className="h-[200px] w-[300px] px-9 py-5"
-          alt={`ModuleImage-${image}`}
+          type="module_images"
         />
         <div className="flex h-full w-full flex-col gap-y-4 rounded-b-xl bg-surface-base p-6">
           <div className="flex flex-col gap-y-2">

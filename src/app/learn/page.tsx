@@ -2,6 +2,7 @@
 import React from "react";
 import Sidebar from "@/components/dashboard/sidebar";
 import { usePathname } from "next/navigation";
+import Navbar from "@/components/dashboard/navbar";
 
 export default function Home() {
   const pathname = usePathname();
@@ -16,6 +17,7 @@ export default function Home() {
               LEARN PAGE
             </h1>
           </div>
+          <Navbar />
           <p>
             Lorem ipsum, dolor sit amet consectetur adipisicing elit. Odit
             assumenda quos sit quas omnis impedit praesentium corrupti, autem

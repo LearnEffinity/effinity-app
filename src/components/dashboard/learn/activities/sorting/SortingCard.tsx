@@ -1,15 +1,31 @@
 import React from "react";
 import Image from "next/image";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface SortingCardProps {
+  id: string;
   icon: string;
   item: string;
 }
 
-export default function SortingCard({ icon, item }: SortingCardProps) {
+export default function SortingCard({ id, icon, item }: SortingCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
   return (
     <>
-      <div className="w-[328px] rounded-md bg-surface-base px-5 py-[18px] text-text-primary">
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="w-[328px] rounded-md bg-surface-base px-5 py-[18px] text-text-primary"
+      >
         <div className="flex items-center justify-start">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-primary ">
             <Image alt="icon" width={40} height={40} src={icon} />

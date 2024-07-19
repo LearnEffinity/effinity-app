@@ -8,7 +8,7 @@ interface Module {
   name: string;
   description: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
-  slug: string
+  slug: string;
   length: string;
   image: string;
   topic: string;
@@ -86,7 +86,7 @@ const Recommended: React.FC = () => {
       </h1>
       <div className="mb-10">
         <h2 className="text-3xl font-medium text-text-primary">Budgeting</h2>
-        <h3 className="mb-6 w-1/2 text-lg font-medium text-text-secondary">
+        <h3 className="mb-6 w-3/4 text-lg font-medium text-text-secondary">
           Gain practical insights and essential skills to effectively manage
           your finances, ensuring financial stability and peace of mind in your
           daily life.

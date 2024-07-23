@@ -1,10 +1,11 @@
 import React from "react";
+import SortingCard from "./SortingCard";
 import { useDroppable } from "@dnd-kit/core";
 
 interface DropContainerProps {
   id: string;
   items: any[];
-  title: string;
+  title?: string;
 }
 
 export default function DropContainer({
@@ -18,14 +19,12 @@ export default function DropContainer({
     <>
       <div
         ref={setNodeRef}
-        className={`w-1/2 rounded-md border-2 p-4 ${isOver ? "border-blue-500 bg-blue-100" : "border-gray-100 bg-gray-100"}`}
+        className={`h-[485px] w-[370px] rounded-md border-2 p-4 ${isOver ? "border-blue-500 bg-blue-100" : "border-surface-primary bg-surface-primary"}`}
       >
-        <h2 className="mb-2 text-xl font-bold">{title}</h2>
+        <h2 className="mb-2 text-center text-xl font-bold">{title}</h2>
         <div className="space-y-2">
           {items.map((item) => (
-            <div key={item.id} className="rounded bg-white p-2 shadow">
-              {item.item}
-            </div>
+            <SortingCard key={item.id} id={item.id} icon={item.icon} item={item.item} />
           ))}
         </div>
       </div>

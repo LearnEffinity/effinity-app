@@ -42,6 +42,7 @@ const initialItems: SortingCardData[] = [
 ];
 
 export default function SortingActivity() {
+  const [items, setItems] = useState<SortingCardData[]>(initialItems);
   const [needs, setNeeds] = useState<SortingCardData[]>([]);
   const [wants, setWants] = useState<SortingCardData[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -54,17 +55,48 @@ export default function SortingActivity() {
     const { over, active } = event;
 
     if (over) {
-      const item = initialItems.find((item) => item.id === active.id);
-      if (item) {
+      const activeItem = findItemById(active.id);
+      if (activeItem) {
         if (over.id === "needs") {
-          setNeeds([...needs, item]);
+          moveItem(activeItem, "needs");
         } else if (over.id === "wants") {
-          setWants([...wants, item]);
+          moveItem(activeItem, "wants");
+        } else if (over.id === "items") {
+          moveItem(activeItem, "items");
         }
       }
     }
 
     setActiveId(null);
+  }
+
+  function findItemById(id: string): SortingCardData | undefined {
+    return (
+      items.find((item) => item.id === id) ||
+      needs.find((item) => item.id === id) ||
+      wants.find((item) => item.id === id)
+    );
+  }
+
+  function moveItem(
+    item: SortingCardData,
+    destination: "items" | "needs" | "wants",
+  ) {
+    setItems(items.filter((i) => i.id !== item.id));
+    setNeeds(needs.filter((i) => i.id !== item.id));
+    setWants(wants.filter((i) => i.id !== item.id));
+
+    switch (destination) {
+      case "items":
+        setItems((prev) => [...prev, item]);
+        break;
+      case "needs":
+        setNeeds((prev) => [...prev, item]);
+        break;
+      case "wants":
+        setWants((prev) => [...prev, item]);
+        break;
+    }
   }
 
   return (
@@ -74,7 +106,7 @@ export default function SortingActivity() {
         onDragEnd={handleDragEnd}
         collisionDetection={closestCorners}
       >
-        <div className="flex flex-col items-start px-36 pb-14">
+        <div className="flex flex-col items-start px-36 pb-10">
           <div className=" pb-8 pt-10">
             <h3 className="text-xl font-medium">Sorting</h3>
             <h1 className="text-4xl font-medium text-text-primary">
@@ -82,42 +114,30 @@ export default function SortingActivity() {
             </h1>
             <h2>Sort each option into the correct category.</h2>
           </div>
-          <div className="flex gap-4">
-            <DropContainer
-              id="needs"
-              items={needs}
-              title="Needs"
-            ></DropContainer>
-            <DropContainer
-              id="wants"
-              items={wants}
-              title="Wants"
-            ></DropContainer>
-          </div>
-          <SortableContext items={initialItems} strategy={rectSortingStrategy}>
-            <div className="mt-4 flex flex-wrap gap-4">
-              {initialItems.map((item) => (
-                <SortingCard
-                  key={item.id}
-                  id={item.id}
-                  icon={item.icon}
-                  item={item.item}
-                />
-              ))}
+          <div className="flex flex-row items-start">
+            <DropContainer id="items" items={items} />
+
+            <div className="ml-6 flex h-full gap-x-4 rounded-2xl bg-surface-base p-5">
+              <DropContainer
+                id="needs"
+                items={needs}
+                title="Needs"
+              ></DropContainer>
+              <DropContainer
+                id="wants"
+                items={wants}
+                title="Wants"
+              ></DropContainer>
             </div>
-          </SortableContext>
+          </div>
           {/* That actual activity stuff */}
         </div>
         <DragOverlay>
           {activeId ? (
             <SortingCard
               id={activeId}
-              icon={
-                initialItems.find((item) => item.id === activeId)?.icon || ""
-              }
-              item={
-                initialItems.find((item) => item.id === activeId)?.item || ""
-              }
+              icon={findItemById(activeId)?.icon || ""}
+              item={findItemById(activeId)?.item || ""}
             />
           ) : null}
         </DragOverlay>

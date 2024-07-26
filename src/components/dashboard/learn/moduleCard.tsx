@@ -5,7 +5,7 @@ interface RegularModuleCardProps {
   moduleID: Number;
   title: string;
   duration: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  difficulty: "1" | "2" | "3";
   topic: string;
   image: string;
   description: string;

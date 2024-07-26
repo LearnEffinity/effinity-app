@@ -6,6 +6,8 @@ import SortingActivity from "@/components/dashboard/learn/activities/sorting/Sor
 import FillBlankActivity from "@/components/dashboard/learn/activities/FillBlankActivity";
 import MatchingActivity from "@/components/dashboard/learn/activities/MatchingActivity";
 import IntroContent from "@/components/dashboard/learn/lessons/IntroContent";
+import { LessonProvider } from "@/components/dashboard/learn/lessons/LessonContext";
+import BottomBar from "@/components/dashboard/learn/lessons/BottomBar";
 
 type ScreenType =
   | "intro"
@@ -107,51 +109,42 @@ export default function LessonPage({ params }: PageProps) {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col">
-        <main className="flex flex-grow flex-col">
-          <div className="flex flex-row items-center justify-between px-8 py-7 shadow-xl">
-            <CloseIcon />
-            <div className="h-2 w-1/2 rounded-full bg-neutral-100">
-              <div
-                className="h-full rounded-full bg-brand-accent transition-all duration-500 ease-in-out"
-                style={{
-                  width: `${progressWidth}%`,
-                }}
-              ></div>
+      <LessonProvider>
+        <div className="flex min-h-screen flex-col">
+          <main className="flex flex-grow flex-col">
+            <div className="flex flex-row items-center justify-between px-8 py-7 shadow-xl">
+              <CloseIcon />
+              <div className="h-2 w-1/2 rounded-full bg-neutral-100">
+                <div
+                  className="h-full rounded-full bg-brand-accent transition-all duration-500 ease-in-out"
+                  style={{
+                    width: `${progressWidth}%`,
+                  }}
+                ></div>
+              </div>
+              <div className="flex items-center ">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 40 40"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3.33398 15.2292C3.33398 23.3341 10.033 27.6531 14.9369 31.5189C16.6673 32.883 18.334 34.1674 20.0007 34.1674C21.6673 34.1674 23.334 32.883 25.0644 31.5189C29.9683 27.6531 36.6673 23.3341 36.6673 15.2292C36.6673 7.12434 27.5004 1.37651 20.0007 9.16845C12.5009 1.37651 3.33398 7.12434 3.33398 15.2292Z"
+                    fill="#EC2D30"
+                  />
+                </svg>
+                <p className="ml-1 text-xl font-normal text-text-secondary">
+                  6
+                </p>
+              </div>
             </div>
-            <div className="flex items-center ">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 40 40"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M3.33398 15.2292C3.33398 23.3341 10.033 27.6531 14.9369 31.5189C16.6673 32.883 18.334 34.1674 20.0007 34.1674C21.6673 34.1674 23.334 32.883 25.0644 31.5189C29.9683 27.6531 36.6673 23.3341 36.6673 15.2292C36.6673 7.12434 27.5004 1.37651 20.0007 9.16845C12.5009 1.37651 3.33398 7.12434 3.33398 15.2292Z"
-                  fill="#EC2D30"
-                />
-              </svg>
-              <p className="ml-1 text-xl font-normal text-text-secondary">6</p>
-            </div>
-          </div>
-          <div className="flex-grow">{renderScreen()}</div>
-          <div className="flex flex-row items-center justify-between border-t border-surface-secondary px-8 py-6">
-            <button className="flex items-center gap-x-2 rounded-lg px-4 py-2 hover:bg-neutral-200">
-              <FlagIcon />
-              <p className="text-xl font-medium text-text-secondary">Report</p>
-            </button>
-            {currentScreenIndex < screens.length - 1 && (
-              <button
-                onClick={handleContinue}
-                className="rounded-lg bg-button px-7 py-3 text-surface-primary"
-              >
-                Continue
-              </button>
-            )}
-          </div>
-        </main>
-      </div>
+            <div className="flex-grow">{renderScreen()}</div>
+            <BottomBar onContinue={handleContinue} />
+          </main>
+        </div>
+      </LessonProvider>
     </>
   );
 }

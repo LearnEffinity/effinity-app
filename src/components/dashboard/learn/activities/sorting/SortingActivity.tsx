@@ -1,9 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
-import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import DropContainer from "./DropContainer";
 import SortingCard from "./SortingCard";
+import { useLessonContext } from "../../lessons/LessonContext";
 
 // interface SortingActivityProps {}
 
@@ -46,6 +46,16 @@ export default function SortingActivity() {
   const [needs, setNeeds] = useState<SortingCardData[]>([]);
   const [wants, setWants] = useState<SortingCardData[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const { setBottomBarState } = useLessonContext();
+
+  useEffect(() => {
+    // Enable the check button when all items have been sorted
+    if (items.length === 0) {
+      setBottomBarState("checkEnabled");
+    } else {
+      setBottomBarState("checkDisabled");
+    }
+  }, [items, setBottomBarState]);
 
   function handleDragStart(event: any) {
     setActiveId(event.active.id);

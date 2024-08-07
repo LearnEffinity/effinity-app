@@ -15,11 +15,11 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@supabase/ssr": "^0.3.0",
-    "@supabase/supabase-js": "^2.42.5",
+    "@supabase/supabase-js": "^2.45.1",
     "autoprefixer": "^10.4.19",
     "framer-motion": "^11.1.7",
     "next": "^14.2.5",
-    "openai": "^4.0.0",
+    "openai": "^4.55.0",
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^5.2.1"

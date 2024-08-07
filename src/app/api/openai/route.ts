@@ -31,19 +31,22 @@ type ResponseData = {
 };
 
 export async function GET(request: Request,
-  { params }: { params: { userId: string} },
+  /*{ params }: { params: { userId: string} }*/
   ) {
 
-  if (!params.userId) {
+  /*
+  if (!userId) {
     return NextResponse.json({ message: "User ID is required" }, { status: 400 });
   }
+  */
 
   const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY!,
   });
 
   try {
-    const title = await fetchTopic(params.userId);
+    //until integrated with main site, put user id in here - Akshitha
+    const title = await fetchTopic("6c651c85-51d9-4923-9f58-ba97ce98cdd5");
 
     if (!title) {
       return NextResponse.json({ message: "Title not found" }, { status: 404 });
@@ -79,7 +82,7 @@ export async function GET(request: Request,
     };
 
     return NextResponse.json<ResponseData>(formattedResponse);
-    
+
   } catch (error) {
     console.error('Error calling OpenAI API:', error);
     return NextResponse.json<ResponseData>({ message: "Internal Server Error" }, { status: 500 });

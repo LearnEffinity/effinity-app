@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from '@supabase/supabase-js';
 import { OpenAI } from "openai";
-
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-);
+import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 
 async function fetchTopic(userId: string): Promise<string | null> {
+  const supabase = createServerSupabaseClient(cookies());
   const { data, error } = await supabase
     .from('users')
     .select('onboardingData')
@@ -30,23 +26,25 @@ type ResponseData = {
   Explanation?: string;
 };
 
-export async function GET(request: Request,
-  /*{ params }: { params: { userId: string} }*/
-  ) {
+export async function GET(request: Request) {
+  const supabase = createServerSupabaseClient(cookies());
 
-  /*
-  if (!userId) {
-    return NextResponse.json({ message: "User ID is required" }, { status: 400 });
+  // Get the user data from Supabase using the auth.getUser method
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData?.user) {
+    console.error('Error fetching user data:', userError);
+    return NextResponse.json({ message: "User not authenticated" }, { status: 401 });
   }
-  */
+
+  // console.log("Authenticated User Data:", userData.user);
 
   const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY!,
   });
 
   try {
-    //until integrated with main site, put user id in here - Akshitha
-    const title = await fetchTopic("6c651c85-51d9-4923-9f58-ba97ce98cdd5");
+    const title = await fetchTopic(userData.user.id);
 
     if (!title) {
       return NextResponse.json({ message: "Title not found" }, { status: 404 });
@@ -69,7 +67,7 @@ export async function GET(request: Request,
 
     try {
       parsedResponse = JSON.parse(message);
-
+      console.log('Parsed OpenAI Response:', parsedResponse);
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
       return NextResponse.json<ResponseData>({ message: "Invalid response format" }, { status: 400 });

@@ -8,7 +8,15 @@ interface BottomBarProps {
 }
 
 export default function BottomBar({ onContinue }: BottomBarProps) {
-  const { bottomBarState, setBottomBarState } = useLessonContext();
+  const {
+    bottomBarState,
+    setBottomBarState,
+    userNeeds,
+    userWants,
+    correctNeeds,
+    correctWants,
+    explanation,
+  } = useLessonContext();  
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
 
   const handleExplanationToggle = () => {
@@ -25,9 +33,28 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
   };
 
   const handleCheck = () => {
-    //TODO: This is where you'd implement the logic to check the answer @Aditya
-    setBottomBarState("correctAnswer");
+    console.log("Checking...");
+    console.log("User Needs: ", userNeeds);
+    console.log("User Wants: ", userWants);
+    console.log("Correct Needs: ", correctNeeds);
+    console.log("Correct Wants: ", correctWants);
+  
+    // Flatten userNeeds and userWants to just the 'item' field and sort them
+    const flattenedUserNeeds = userNeeds.map((need) => need.item).sort();
+    const flattenedUserWants = userWants.map((want) => want.item).sort();
+  
+    // Compare the sorted arrays
+    const sortedCorrectly =
+      JSON.stringify(flattenedUserNeeds) === JSON.stringify(correctNeeds) &&
+      JSON.stringify(flattenedUserWants) === JSON.stringify(correctWants);
+  
+    if (sortedCorrectly) {
+      setBottomBarState("correctAnswer");
+    } else {
+      setBottomBarState("wrongAnswer");
+    }
   };
+  
 
   const handleTryAgain = () => {
     setBottomBarState("checkDisabled");
@@ -137,7 +164,7 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
       <ExplanationTray
         isOpen={isExplanationOpen}
         onClose={handleExplanationToggle}
-        explanation={explanationText}
+        explanation={explanation}
       />
     </>
   );

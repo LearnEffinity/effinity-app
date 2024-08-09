@@ -5,8 +5,6 @@ import DropContainer from "./DropContainer";
 import SortingCard from "./SortingCard";
 import { useLessonContext } from "../../lessons/LessonContext";
 
-// interface SortingActivityProps {}
-
 interface SortingCardData {
   id: string;
   icon: string;
@@ -42,14 +40,66 @@ const initialItems: SortingCardData[] = [
 ];
 
 export default function SortingActivity() {
+  const {
+    setUserNeeds,
+    setUserWants,
+    setCorrectNeeds,
+    setCorrectWants,
+    setExplanation,
+    setBottomBarState,
+    userNeeds,
+    userWants,
+  } = useLessonContext();
+
   const [items, setItems] = useState<SortingCardData[]>(initialItems);
-  const [needs, setNeeds] = useState<SortingCardData[]>([]);
-  const [wants, setWants] = useState<SortingCardData[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const { setBottomBarState } = useLessonContext();
+
+  const tempData = {
+    Needs: ["Pickaxe", "Shovel", "Food"],
+    Wants: ["Armor", "Enchanting Table", "Bed"],
+    Explanation:
+      "To play Minecraft effectively, you need tools like a pickaxe and shovel for mining and digging, as well as food to sustain your character. The wants, such as armor for protection, an enchanting table for enhancing tools, and a bed for setting spawn points, enhance the gaming experience but are not absolutely necessary for survival.",
+  };
 
   useEffect(() => {
-    // Enable the check button when all items have been sorted
+    const fetchSortingData = async () => {
+      try {
+        // const data = tempData;
+        // const response = { ok: true };
+        const response = await fetch("/api/openai");
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log("API Response:", data);
+
+          const allItems = [...data.Needs, ...data.Wants].map(
+            (item: string, index: number) => ({
+              id: `item-${index}`,
+              icon: "/activity/wrench.png", // Update icon path as needed
+              item,
+            })
+          );
+
+          setItems(allItems);
+          setCorrectNeeds(data.Needs.sort());
+          setCorrectWants(data.Wants.sort());
+          setExplanation(data.Explanation);
+
+          console.log("Needs:", needsData);
+          console.log("Wants:", wantsData);
+          console.log("Explanation:", data.Explanation);
+        } else {
+          console.error("Error fetching sorting data:", data.message);
+        }
+      } catch (error) {
+        console.error("Error calling API:", error);
+      }
+    };
+
+    fetchSortingData();
+  }, [setCorrectNeeds, setCorrectWants, setExplanation]);
+
+  useEffect(() => {
     if (items.length === 0) {
       setBottomBarState("checkEnabled");
     } else {
@@ -83,30 +133,33 @@ export default function SortingActivity() {
   function findItemById(id: string): SortingCardData | undefined {
     return (
       items.find((item) => item.id === id) ||
-      needs.find((item) => item.id === id) ||
-      wants.find((item) => item.id === id)
+      userNeeds.find((item) => item.id === id) ||
+      userWants.find((item) => item.id === id)
     );
   }
 
   function moveItem(
     item: SortingCardData,
-    destination: "items" | "needs" | "wants",
+    destination: "items" | "needs" | "wants"
   ) {
     setItems(items.filter((i) => i.id !== item.id));
-    setNeeds(needs.filter((i) => i.id !== item.id));
-    setWants(wants.filter((i) => i.id !== item.id));
+    setUserNeeds(userNeeds.filter((i) => i.id !== item.id));
+    setUserWants(userWants.filter((i) => i.id !== item.id));
 
     switch (destination) {
       case "items":
         setItems((prev) => [...prev, item]);
         break;
       case "needs":
-        setNeeds((prev) => [...prev, item]);
+        setUserNeeds((prev) => [...prev, item]);
         break;
       case "wants":
-        setWants((prev) => [...prev, item]);
+        setUserWants((prev) => [...prev, item]);
         break;
     }
+
+    console.log("User Needs:", userNeeds);
+    console.log("User Wants:", userWants);
   }
 
   return (
@@ -123,24 +176,18 @@ export default function SortingActivity() {
               Distinguished between {"Needs"} and {"Wants"}
             </h1>
             <h2>Sort each option into the correct category.</h2>
+            {/* {explanation && (
+              <p className="text-sm text-gray-600 mt-4">{explanation}</p>
+            )} */}
           </div>
           <div className="flex flex-row items-start">
             <DropContainer id="items" items={items} />
 
             <div className="ml-6 flex h-full gap-x-4 rounded-2xl bg-surface-base p-5">
-              <DropContainer
-                id="needs"
-                items={needs}
-                title="Needs"
-              ></DropContainer>
-              <DropContainer
-                id="wants"
-                items={wants}
-                title="Wants"
-              ></DropContainer>
+              <DropContainer id="needs" items={userNeeds} title="Needs" />
+              <DropContainer id="wants" items={userWants} title="Wants" />
             </div>
           </div>
-          {/* That actual activity stuff */}
         </div>
         <DragOverlay>
           {activeId ? (

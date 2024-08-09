@@ -62,7 +62,8 @@ export default function LessonPage({ params }: PageProps) {
   const [progressWidth, setProgressWidth] = useState(0);
 
   useEffect(() => {
-    setScreens(shuffleActivities([...baseScreens]));
+    // setScreens(shuffleActivities([...baseScreens]));
+    setScreens([...baseScreens]);
   }, []);
 
   useEffect(() => {

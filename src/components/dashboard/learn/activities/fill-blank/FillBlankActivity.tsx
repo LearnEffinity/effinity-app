@@ -90,35 +90,37 @@ export default function FillBlankActivity() {
 
   return (
     <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
-      <div className="flex flex-col items-start px-36 pb-10">
-        <div className="pb-8 pt-10">
-          <h3 className="text-xl font-medium text-text-secondary">
-            Fill in the Blank
-          </h3>
-          <h1 className="text-4xl font-medium text-text-primary">
-            What is {"effective budgeting"}?
-          </h1>
-          <h2>Drag and place each word into the correct blank box.</h2>
-        </div>
-        <div className="mt-20 w-full">
-          <p className="flex w-full flex-wrap items-center gap-3 text-3xl font-medium leading-[80px]">
-            {sentenceFragments.map((fragment) => {
-              return fragment.blank ? (
-                <Blank
-                  key={fragment.id}
-                  fragment={fragment}
-                  answer={blanks[fragment.id]}
-                />
-              ) : (
-                <span>{fragment.text}</span>
-              );
+      <div className="flex w-full justify-center px-8 pb-10">
+        <div className="flex w-full max-w-[1500px] flex-col items-start">
+          <div className="pb-8 pt-10">
+            <h3 className="text-xl font-medium text-text-secondary">
+              Fill in the Blank
+            </h3>
+            <h1 className="text-4xl font-medium text-text-primary">
+              What is {"effective budgeting"}?
+            </h1>
+            <h2>Drag and place each word into the correct blank box.</h2>
+          </div>
+          <div className="mt-20 w-full">
+            <p className="flex w-full flex-wrap items-center gap-3 text-3xl font-medium leading-[80px]">
+              {sentenceFragments.map((fragment) => {
+                return fragment.blank ? (
+                  <Blank
+                    key={fragment.id}
+                    fragment={fragment}
+                    answer={blanks[fragment.id]}
+                  />
+                ) : (
+                  <span>{fragment.text}</span>
+                );
+              })}
+            </p>
+          </div>
+          <div className="mt-20 flex w-full flex-wrap items-center justify-center gap-8">
+            {options.map((option, i) => {
+              return <FillBlankOption option={option} key={i} />;
             })}
-          </p>
-        </div>
-        <div className="mt-20 flex w-full items-center justify-center gap-8">
-          {options.map((option, i) => {
-            return <FillBlankOption option={option} key={i} />;
-          })}
+          </div>
         </div>
       </div>
     </DndContext>

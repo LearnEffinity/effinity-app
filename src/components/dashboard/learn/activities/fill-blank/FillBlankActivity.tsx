@@ -1,7 +1,7 @@
 "use client";
 
 import { closestCorners, DndContext } from "@dnd-kit/core";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLessonContext } from "../../lessons/LessonContext";
 import Blank from "./blank";
 import FillBlankOption from "./FillBlankOption";
@@ -49,6 +49,14 @@ export default function FillBlankActivity() {
   const [blanks, setBlanks] = useState<(BlankOption | null)[]>(
     Array(sentence.split("{").length - 1).fill(null),
   );
+
+  useEffect(() => {
+    if (blanks.every((blank) => blank !== null)) {
+      setBottomBarState("checkEnabled");
+    } else {
+      setBottomBarState("checkDisabled");
+    }
+  }, [blanks, setBottomBarState]);
 
   function handleDragStart(event: any) {
     setActiveId(event.active.id);

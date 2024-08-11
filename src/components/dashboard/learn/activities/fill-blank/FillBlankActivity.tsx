@@ -27,9 +27,12 @@ const blankOptions = [
   { id: "4", text: "income" },
 ];
 
+// I, Landon Harter, formally apologize for the following code. I am sorry.
 export default function FillBlankActivity() {
   const { setBottomBarState } = useLessonContext();
-  const sentenceFragments = sentence.split(" ").map((fragment, index) => {
+
+  // parse sentence into fragments using the format {id} for blanks
+  const sentenceFragments = sentence.split(" ").map((fragment) => {
     const isBlank = fragment.includes("{");
 
     return {
@@ -44,23 +47,19 @@ export default function FillBlankActivity() {
     };
   });
 
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [options, setOptions] = useState(blankOptions);
   const [blanks, setBlanks] = useState<(BlankOption | null)[]>(
     Array(sentence.split("{").length - 1).fill(null),
   );
 
   useEffect(() => {
+    // Enable the check button when all blanks have been filled
     if (blanks.every((blank) => blank !== null)) {
       setBottomBarState("checkEnabled");
     } else {
       setBottomBarState("checkDisabled");
     }
   }, [blanks, setBottomBarState]);
-
-  function handleDragStart(event: any) {
-    setActiveId(event.active.id);
-  }
 
   function handleDragEnd(event: any) {
     const { over, active } = event;
@@ -72,27 +71,25 @@ export default function FillBlankActivity() {
     );
 
     if (activeOption && overBlank) {
-      const currentBlank = blanks[parseInt(overBlank.id as string)];
+      // remove the option from the list of options
       const newOptions = options.filter((option) => option.id !== active.id);
+
+      // if blank already has an option, add it back to the options list
+      const currentBlank = blanks[parseInt(overBlank.id as string)];
       if (currentBlank) {
         newOptions.push(currentBlank);
       }
       setOptions(newOptions);
 
+      // set the option to the blank
       const newBlanks = [...blanks];
       newBlanks[parseInt(overBlank.blankId as string) - 1] = activeOption;
       setBlanks(newBlanks);
     }
-
-    setActiveId(null);
   }
 
   return (
-    <DndContext
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      collisionDetection={closestCorners}
-    >
+    <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
       <div className="flex flex-col items-start px-36 pb-10">
         <div className="pb-8 pt-10">
           <h3 className="text-xl font-medium text-text-secondary">

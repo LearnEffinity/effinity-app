@@ -4,6 +4,7 @@ import { closestCorners, DndContext } from "@dnd-kit/core";
 import React from "react";
 import { useLessonContext } from "../../lessons/LessonContext";
 import Blank from "./blank";
+import FillBlankOption from "./FillBlankOption";
 
 export interface SentenceFragment {
   id: string;
@@ -12,13 +13,18 @@ export interface SentenceFragment {
   blankId?: string;
 }
 
+export interface BlankOption {
+  id?: string;
+  text: string;
+}
+
 const sentence =
-  "Effective budgeting involves prioritizing {1} to achieve financial goals while managing {2} to mantain financial health.";
+  "Effective budgeting involves prioritizing {3} to achieve financial goals while managing {1} to mantain financial health.";
 const blankOptions = [
-  { id: "2", text: "savings" },
-  { id: undefined, text: "investments" },
-  { id: "1", text: "expenses" },
-  { id: undefined, text: "income" },
+  { id: "1", text: "savings" },
+  { id: "2", text: "investments" },
+  { id: "3", text: "expenses" },
+  { id: "4", text: "income" },
 ];
 
 export default function FillBlankActivity() {
@@ -54,7 +60,7 @@ export default function FillBlankActivity() {
           </h1>
           <h2>Drag and place each word into the correct blank box.</h2>
         </div>
-        <div className="mt-24 w-full">
+        <div className="mt-20 w-full">
           <p className="flex w-full flex-wrap items-center gap-3 text-3xl font-medium leading-[80px]">
             {sentenceFragments.map((fragment, i) => {
               return fragment.blank ? (
@@ -64,6 +70,11 @@ export default function FillBlankActivity() {
               );
             })}
           </p>
+        </div>
+        <div className="mt-20 flex w-full items-center justify-center gap-8">
+          {blankOptions.map((option, i) => {
+            return <FillBlankOption option={option} key={i} />;
+          })}
         </div>
       </div>
     </DndContext>

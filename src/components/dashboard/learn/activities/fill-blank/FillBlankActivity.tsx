@@ -1,7 +1,7 @@
 "use client";
 
 import { closestCorners, DndContext } from "@dnd-kit/core";
-import React from "react";
+import React, { useState } from "react";
 import { useLessonContext } from "../../lessons/LessonContext";
 import Blank from "./blank";
 import FillBlankOption from "./FillBlankOption";
@@ -14,12 +14,12 @@ export interface SentenceFragment {
 }
 
 export interface BlankOption {
-  id?: string;
+  id: string;
   text: string;
 }
 
 const sentence =
-  "Effective budgeting involves prioritizing {3} to achieve financial goals while managing {1} to mantain financial health.";
+  "Effective budgeting involves prioritizing {1} to achieve financial goals while managing {2} to mantain financial health.";
 const blankOptions = [
   { id: "1", text: "savings" },
   { id: "2", text: "investments" },
@@ -30,8 +30,12 @@ const blankOptions = [
 export default function FillBlankActivity() {
   const { setBottomBarState } = useLessonContext();
   const sentenceFragments = sentence.split(" ").map((fragment, index) => {
+    const isBlank = fragment.includes("{");
+
     return {
-      id: index.toString(),
+      id: isBlank
+        ? (parseInt(fragment.replace("{", "").replace("}", "")) - 1).toString()
+        : Math.round(Math.random() * 10000).toString(),
       text: fragment,
       blank: fragment.includes("{"),
       blankId: fragment.includes("{")
@@ -40,9 +44,40 @@ export default function FillBlankActivity() {
     };
   });
 
-  function handleDragStart(event: any) {}
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [options, setOptions] = useState(blankOptions);
+  const [blanks, setBlanks] = useState<(BlankOption | null)[]>(
+    Array(sentence.split("{").length - 1).fill(null),
+  );
 
-  function handleDragEnd(event: any) {}
+  function handleDragStart(event: any) {
+    setActiveId(event.active.id);
+  }
+
+  function handleDragEnd(event: any) {
+    const { over, active } = event;
+    if (!over) return;
+
+    const activeOption = options.find((option) => option.id === active.id);
+    const overBlank = sentenceFragments.find(
+      (fragment) => fragment.id === over.id,
+    );
+
+    if (activeOption && overBlank) {
+      const currentBlank = blanks[parseInt(overBlank.id as string)];
+      const newOptions = options.filter((option) => option.id !== active.id);
+      if (currentBlank) {
+        newOptions.push(currentBlank);
+      }
+      setOptions(newOptions);
+
+      const newBlanks = [...blanks];
+      newBlanks[parseInt(overBlank.blankId as string) - 1] = activeOption;
+      setBlanks(newBlanks);
+    }
+
+    setActiveId(null);
+  }
 
   return (
     <DndContext
@@ -62,9 +97,13 @@ export default function FillBlankActivity() {
         </div>
         <div className="mt-20 w-full">
           <p className="flex w-full flex-wrap items-center gap-3 text-3xl font-medium leading-[80px]">
-            {sentenceFragments.map((fragment, i) => {
+            {sentenceFragments.map((fragment) => {
               return fragment.blank ? (
-                <Blank key={i} {...fragment} />
+                <Blank
+                  key={fragment.id}
+                  fragment={fragment}
+                  answer={blanks[fragment.id]}
+                />
               ) : (
                 <span>{fragment.text}</span>
               );
@@ -72,7 +111,7 @@ export default function FillBlankActivity() {
           </p>
         </div>
         <div className="mt-20 flex w-full items-center justify-center gap-8">
-          {blankOptions.map((option, i) => {
+          {options.map((option, i) => {
             return <FillBlankOption option={option} key={i} />;
           })}
         </div>

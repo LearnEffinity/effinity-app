@@ -37,14 +37,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentRoute, onWidthChange }) => {
   };
 
   useEffect(() => {
-    onWidthChange(isCollapsed ? 100 : 245);
+    onWidthChange(isCollapsed ? 112 : 245);
   }, [isCollapsed, onWidthChange]);
 
   return (
     <motion.div
       className="sidebar fixed left-0 top-0 flex h-screen flex-col bg-white px-8 shadow-lg"
       initial={{ width: 245 }}
-      animate={{ width: isCollapsed ? 100 : 245 }}
+      animate={{ width: isCollapsed ? 112 : 245 }}
       transition={{ duration: 0.25, ease: "easeInOut" }}
     >
       <div className={`mt-5 flex flex-col items-center justify-center`}>

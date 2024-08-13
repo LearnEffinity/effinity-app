@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLessonContext } from "../../lessons/LessonContext";
+import { CountdownCircleTimer } from "react-countdown-circle-timer";
 
 interface QuizQuestion {
   id: string;
@@ -26,6 +27,12 @@ const question: QuizQuestion = {
 export default function QuizActivity() {
   const { bottomBarState, setBottomBarState } = useLessonContext();
 
+  const [selected, setSelected] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (selected !== null) setBottomBarState("checkEnabled");
+  }, [selected, setBottomBarState]);
+
   return (
     <div className="flex w-full justify-center px-8 pb-10">
       <div className="flex w-full max-w-[1500px] flex-col items-start">
@@ -38,19 +45,60 @@ export default function QuizActivity() {
         </div>
         <div className="mt-12 grid w-full grid-cols-2 grid-rows-2 gap-4">
           {question.options.map((option, i) => {
-            const correct = i === question.correctAnswer;
+            const userIsCorrect = selected === question.correctAnswer;
+            const isSelected = selected === i;
 
             return (
               <div
-                className="flex h-[200px] w-full cursor-pointer items-center rounded-lg bg-surface-base p-8"
+                className={
+                  "flex h-[200px] w-full cursor-pointer items-center rounded-lg border-2 bg-surface-base p-8 transition-all " +
+                  (isSelected ? "border-brand-accent" : "border-surface-base")
+                }
                 key={i}
+                onClick={() => {
+                  if (
+                    bottomBarState === "checkDisabled" ||
+                    bottomBarState === "checkEnabled"
+                  )
+                    setSelected(i);
+                }}
               >
-                <span className="text-2xl">
+                <span
+                  className={"text-2xl " + (isSelected && "text-brand-accent")}
+                >
                   <b>{String.fromCharCode(65 + i)}.</b> {option}
                 </span>
               </div>
             );
           })}
+        </div>
+        <div className="mt-12 flex w-full justify-center">
+          <CountdownCircleTimer
+            isPlaying={
+              !(
+                bottomBarState === "continue" ||
+                bottomBarState === "correctAnswer" ||
+                bottomBarState === "wrongAnswer"
+              )
+            }
+            duration={30}
+            colors="#583AFE"
+            size={96}
+            rotation="counterclockwise"
+            trailColor="#EFEEF6"
+            trailStrokeWidth={8}
+            onComplete={() => {
+              setBottomBarState(
+                selected && selected === question.correctAnswer
+                  ? "correctAnswer"
+                  : "wrongAnswer",
+              );
+            }}
+          >
+            {({ remainingTime }) => (
+              <span className="text-3xl font-bold">{remainingTime}</span>
+            )}
+          </CountdownCircleTimer>
         </div>
       </div>
     </div>

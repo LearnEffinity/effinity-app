@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import QuizActivity from "@/components/dashboard/learn/activities/QuizActivity";
+import QuizActivity from "@/components/dashboard/learn/activities/quiz/QuizActivity";
 import SortingActivity from "@/components/dashboard/learn/activities/sorting/SortingActivity";
 import FillBlankActivity from "@/components/dashboard/learn/activities/fill-blank/FillBlankActivity";
 import MatchingActivity from "@/components/dashboard/learn/activities/matching/MatchingActivity";

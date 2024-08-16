@@ -13,6 +13,18 @@ interface LessonContextType {
   bottomBarState: BottomBarState;
   setBottomBarState: (state: BottomBarState) => void;
   // Add more state and functions as needed
+
+  //sorting activity states
+  userNeeds: [];
+  setUserNeeds: React.Dispatch<React.SetStateAction<[]>>;
+  userWants: [];
+  setUserWants: React.Dispatch<React.SetStateAction<[]>>;
+  correctNeeds: [];
+  setCorrectNeeds: React.Dispatch<React.SetStateAction<[]>>;
+  correctWants: [];
+  setCorrectWants: React.Dispatch<React.SetStateAction<[]>>;
+  explanation: string;
+  setExplanation: (explanation: string) => void;
 }
 
 const LessonContext = createContext<LessonContextType | undefined>(undefined);
@@ -22,10 +34,25 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [bottomBarState, setBottomBarState] =
     useState<BottomBarState>("continue");
-
-  const value = {
-    bottomBarState,
-    setBottomBarState,
+    const [userNeeds, setUserNeeds] = useState<[]>([]);
+    const [userWants, setUserWants] = useState<[]>([]);
+    const [correctNeeds, setCorrectNeeds] = useState<[]>([]);
+    const [correctWants, setCorrectWants] = useState<[]>([]);
+    const [explanation, setExplanation] = useState<string>("");
+  
+    const value = {
+      bottomBarState,
+      setBottomBarState,
+      userNeeds,
+      setUserNeeds,
+      userWants,
+      setUserWants,
+      correctNeeds,
+      setCorrectNeeds,
+      correctWants,
+      setCorrectWants,
+      explanation,
+      setExplanation,
     //* Add more state and functions as needed
   };
 

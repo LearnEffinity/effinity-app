@@ -6,13 +6,13 @@ import { cookies } from "next/headers";
 async function fetchTopic(userId: string): Promise<string | null> {
   const supabase = createServerSupabaseClient(cookies());
   const { data, error } = await supabase
-    .from('users')
-    .select('onboardingData')
-    .eq('id', userId)
+    .from("users")
+    .select("onboardingData")
+    .eq("id", userId)
     .single();
 
   if (error) {
-    console.error('Error fetching data from Supabase:', error);
+    console.error("Error fetching data from Supabase:", error);
     return null;
   }
 
@@ -33,8 +33,11 @@ export async function GET(request: Request) {
   const { data: userData, error: userError } = await supabase.auth.getUser();
 
   if (userError || !userData?.user) {
-    console.error('Error fetching user data:', userError);
-    return NextResponse.json({ message: "User not authenticated" }, { status: 401 });
+    console.error("Error fetching user data:", userError);
+    return NextResponse.json(
+      { message: "User not authenticated" },
+      { status: 401 },
+    );
   }
 
   // console.log("Authenticated User Data:", userData.user);
@@ -51,26 +54,30 @@ export async function GET(request: Request) {
     }
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: "gpt-4o-mini",
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: `I like to ${title}, generate a list of 6 items of 3 wants and 3 needs. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items, and send me the response in this format: {"Needs": ["Item1", "Item2"], "Wants": ["Item1", "Item2"], "Explanation": "Explanation only if the user does everything correctly."}`,
-        }
+        },
       ],
       temperature: 0.7,
     });
 
-    const message = response.choices[0]?.message?.content || "No response from OpenAI";
+    const message =
+      response.choices[0]?.message?.content || "No response from OpenAI";
 
     let parsedResponse: ResponseData;
 
     try {
       parsedResponse = JSON.parse(message);
-      console.log('Parsed OpenAI Response:', parsedResponse);
+      console.log("Parsed OpenAI Response:", parsedResponse);
     } catch (error) {
-      console.error('Error parsing OpenAI response:', error);
-      return NextResponse.json<ResponseData>({ message: "Invalid response format" }, { status: 400 });
+      console.error("Error parsing OpenAI response:", error);
+      return NextResponse.json(
+        { Needs: [], Wants: [], Explanation: "Invalid response format" },
+        { status: 400 },
+      );
     }
 
     const formattedResponse: ResponseData = {
@@ -80,9 +87,11 @@ export async function GET(request: Request) {
     };
 
     return NextResponse.json<ResponseData>(formattedResponse);
-
   } catch (error) {
-    console.error('Error calling OpenAI API:', error);
-    return NextResponse.json<ResponseData>({ message: "Internal Server Error" }, { status: 500 });
+    console.error("Error calling OpenAI API:", error);
+    return NextResponse.json<ResponseData>(
+      { Needs: [], Wants: [], Explanation: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

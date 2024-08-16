@@ -77,7 +77,7 @@ export default function SortingActivity() {
               id: `item-${index}`,
               icon: "/activity/wrench.png", // Update icon path as needed
               item,
-            })
+            }),
           );
 
           setItems(allItems);
@@ -85,8 +85,8 @@ export default function SortingActivity() {
           setCorrectWants(data.Wants.sort());
           setExplanation(data.Explanation);
 
-          console.log("Needs:", needsData);
-          console.log("Wants:", wantsData);
+          console.log("Needs:", data.Needs);
+          console.log("Wants:", data.Wants);
           console.log("Explanation:", data.Explanation);
         } else {
           console.error("Error fetching sorting data:", data.message);
@@ -140,11 +140,11 @@ export default function SortingActivity() {
 
   function moveItem(
     item: SortingCardData,
-    destination: "items" | "needs" | "wants"
+    destination: "items" | "needs" | "wants",
   ) {
-    setItems(items.filter((i) => i.id !== item.id));
-    setUserNeeds(userNeeds.filter((i) => i.id !== item.id));
-    setUserWants(userWants.filter((i) => i.id !== item.id));
+    setItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
+    setUserNeeds((prevNeeds) => prevNeeds.filter((i) => i.id !== item.id));
+    setUserWants((prevWants) => prevWants.filter((i) => i.id !== item.id));
 
     switch (destination) {
       case "items":

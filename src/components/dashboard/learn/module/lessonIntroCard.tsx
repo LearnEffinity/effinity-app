@@ -54,7 +54,15 @@ export default function LessonIntroCard({
         <ProgressCircle percentage={progress} />
       </div>
       <div className="mt-9 flex flex-row items-center gap-x-8">
-        <DifficultyIcons difficulty={difficulty} />
+        <DifficultyIcons
+          difficulty={
+            difficulty === "Beginner"
+              ? "1"
+              : difficulty === "Intermediate"
+                ? "2"
+                : "3"
+          }
+        />
         <div className="flex gap-x-2">
           <img src="/icons/clock.svg" alt="duration" />
           <p className="pl-[2px] text-xs font-normal leading-5">

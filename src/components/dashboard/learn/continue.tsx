@@ -13,6 +13,7 @@ interface Module {
   length: string;
   image: string;
   topic: string;
+  progress: number;
 }
 
 interface Progress {
@@ -94,7 +95,7 @@ const Continue: React.FC = () => {
             title={module.name}
             duration={module.length}
             difficulty={module.difficulty}
-            progress={module.progress}
+            progress={module.progress || 0}
             image={module.image}
             slug={module.topic}
           />

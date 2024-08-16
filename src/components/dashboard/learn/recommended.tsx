@@ -98,7 +98,7 @@ const Recommended: React.FC = () => {
               moduleID={module.module_id}
               title={module.name}
               duration={module.length}
-              difficulty={module.difficulty}
+              difficulty={module.difficulty as "1" | "2" | "3"}
               topic={module.topic}
               image={module.image}
               description={module.description}

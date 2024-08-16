@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-
 //+ these are the possible states f
 export type BottomBarState =
   | "continue"
@@ -8,21 +7,27 @@ export type BottomBarState =
   | "correctAnswer"
   | "wrongAnswer";
 
+interface SortingCardData {
+  id: string;
+  icon: string;
+  item: string;
+}
+
 // defining shape of our context
 interface LessonContextType {
+  // Bottom Bar states
   bottomBarState: BottomBarState;
   setBottomBarState: (state: BottomBarState) => void;
-  // Add more state and functions as needed
 
-  //sorting activity states
-  userNeeds: [];
-  setUserNeeds: React.Dispatch<React.SetStateAction<[]>>;
-  userWants: [];
-  setUserWants: React.Dispatch<React.SetStateAction<[]>>;
-  correctNeeds: [];
-  setCorrectNeeds: React.Dispatch<React.SetStateAction<[]>>;
-  correctWants: [];
-  setCorrectWants: React.Dispatch<React.SetStateAction<[]>>;
+  // Sorting Activity States
+  userNeeds: SortingCardData[];
+  setUserNeeds: React.Dispatch<React.SetStateAction<SortingCardData[]>>;
+  userWants: SortingCardData[];
+  setUserWants: React.Dispatch<React.SetStateAction<SortingCardData[]>>;
+  correctNeeds: string[];
+  setCorrectNeeds: React.Dispatch<React.SetStateAction<string[]>>;
+  correctWants: string[];
+  setCorrectWants: React.Dispatch<React.SetStateAction<string[]>>;
   explanation: string;
   setExplanation: (explanation: string) => void;
 }
@@ -34,25 +39,25 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [bottomBarState, setBottomBarState] =
     useState<BottomBarState>("continue");
-    const [userNeeds, setUserNeeds] = useState<[]>([]);
-    const [userWants, setUserWants] = useState<[]>([]);
-    const [correctNeeds, setCorrectNeeds] = useState<[]>([]);
-    const [correctWants, setCorrectWants] = useState<[]>([]);
-    const [explanation, setExplanation] = useState<string>("");
-  
-    const value = {
-      bottomBarState,
-      setBottomBarState,
-      userNeeds,
-      setUserNeeds,
-      userWants,
-      setUserWants,
-      correctNeeds,
-      setCorrectNeeds,
-      correctWants,
-      setCorrectWants,
-      explanation,
-      setExplanation,
+  const [userNeeds, setUserNeeds] = useState<SortingCardData[]>([]);
+  const [userWants, setUserWants] = useState<SortingCardData[]>([]);
+  const [correctNeeds, setCorrectNeeds] = useState<string[]>([]);
+  const [correctWants, setCorrectWants] = useState<string[]>([]);
+  const [explanation, setExplanation] = useState<string>("");
+
+  const value = {
+    bottomBarState,
+    setBottomBarState,
+    userNeeds,
+    setUserNeeds,
+    userWants,
+    setUserWants,
+    correctNeeds,
+    setCorrectNeeds,
+    correctWants,
+    setCorrectWants,
+    explanation,
+    setExplanation,
     //* Add more state and functions as needed
   };
 

@@ -1,13 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import Image from "next/image";
+
 
 interface SupabaseImageProps {
   filePath: string;
   alt: string;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   type: "module_images" | "lesson_images";
   className?: string;
 }
@@ -50,7 +50,7 @@ const SupabaseImage: React.FC<SupabaseImageProps> = ({
   }
 
   return (
-    <Image
+    <img
       src={imageUrl}
       alt={alt}
       width={width}

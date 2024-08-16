@@ -2,7 +2,6 @@ import React from "react";
 import DifficultyIcons from "./difficulty";
 import Link from "next/link";
 
-
 interface ContinueModuleCardProps {
   moduleID: Number;
   title: string;
@@ -11,7 +10,6 @@ interface ContinueModuleCardProps {
   progress: Number;
   image: string;
   slug: string;
-
 }
 
 export default function ContinueModule({
@@ -22,7 +20,6 @@ export default function ContinueModule({
   progress,
   image,
   slug,
-
 }: ContinueModuleCardProps) {
   return (
     <>
@@ -42,7 +39,15 @@ export default function ContinueModule({
                 </p>
               </div>
               <div className=" mx-3 h-1 w-1 rounded-full bg-icon-secondary"></div>
-              <DifficultyIcons difficulty={difficulty} />
+              <DifficultyIcons
+                difficulty={
+                  difficulty === "Beginner"
+                    ? "1"
+                    : difficulty === "Intermediate"
+                      ? "2"
+                      : "3"
+                }
+              />
             </div>
           </div>
           <div className="w-full">

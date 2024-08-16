@@ -1,14 +1,15 @@
 import React from "react";
 import DifficultyIcons from "./difficulty";
-
+import SupabaseImage from "../supabaseImage";
 interface RegularModuleCardProps {
   moduleID: Number;
   title: string;
   duration: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  difficulty: "1" | "2" | "3";
+  topic: string;
   image: string;
   description: string;
-  slug: string;
+  module_number: number;
 }
 
 export default function RegModuleCard({
@@ -17,16 +18,18 @@ export default function RegModuleCard({
   duration,
   difficulty,
   image,
+  topic,
   description,
-  slug,
+  module_number,
 }: RegularModuleCardProps) {
   return (
     <>
       <div className="flex h-[496px] w-[392px] flex-col items-center rounded-xl bg-neutral-50">
-        <img
-          src={image}
+        <SupabaseImage
+          filePath={image}
+          alt={title}
           className="h-[200px] w-[300px] px-9 py-5"
-          alt={`ModuleImage-${image}`}
+          type="module_images"
         />
         <div className="flex h-full w-full flex-col gap-y-4 rounded-b-xl bg-surface-base p-6">
           <div className="flex flex-col gap-y-2">
@@ -51,7 +54,7 @@ export default function RegModuleCard({
 
           <div className="flex w-full justify-end">
             <a
-              href={`/learn/${slug}`}
+              href={`/learn/${topic}/${module_number}`}
               className=" inline-block bg-transparent px-4 py-2 text-brand-accent transition-colors duration-300 ease-in-out hover:text-brand-tertiary"
             >
               Start

@@ -1,89 +1,89 @@
+import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
-import { cookies } from "next/headers";
 
 export async function middleware(request: NextRequest) {
   console.log("Middleware function called for path:", request.nextUrl.pathname);
-  const cookieStore = cookies();
-  const { pathname } = request.nextUrl;
+
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
   const supabase = createServerClient(
-    "https://lgsfvkelrdcyiezhayoz.supabase.co/",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2Z2a2VscmRjeWllemhheW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTMzMDg3ODYsImV4cCI6MjAyODg4NDc4Nn0.ueUfLllxnBQ4fpEaynvj3mprryoxDFIu5w3Bxyr7W5g",
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (name: string) => cookieStore.get(name)?.value,
+        get: (name: string) => request.cookies.get(name)?.value,
         set: (name: string, value: string, options: any) => {
-          cookieStore.set({ name, value, ...options });
+          response.cookies.set({ name, value, ...options });
         },
         remove: (name: string, options: any) => {
-          cookieStore.set({ name, value: "", ...options });
+          response.cookies.set({ name, value: "", ...options });
         },
       },
     },
   );
-  if (pathname.startsWith("/auth/callback")) {
-    console.log("Skipping middleware for /auth/callback/route.ts");
-    return;
-  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  console.log("User data:", user);
   console.log(
     "User authentication status:",
     user ? "Authenticated" : "Not authenticated",
   );
 
+  const pathname = request.nextUrl.pathname;
   console.log("Current pathname:", pathname);
 
-  if (pathname === "/signout" || pathname.startsWith("/auth/reset")) {
-    console.log("Allowing access to /signout or /auth/reset");
-    return;
+  if (pathname.startsWith("/auth/reset")) {
+    console.log("Allowing access to /auth/reset");
+    return response;
+  }
+
+  if (!user && (pathname === "/" || !pathname.startsWith("/auth"))) {
+    console.log("No user, redirecting to login");
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   if (!user && !pathname.startsWith("/auth")) {
     console.log("No user, redirecting to login");
-    return Response.redirect(new URL("/auth/login", request.url));
-  }
-
-  if (user && pathname.startsWith("/auth") && pathname !== "/auth/reset") {
-    console.log("Authenticated user accessing auth page, redirecting to home");
-    return Response.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   if (user) {
-    const { data: onboardingStage, error: onboardingError } = await supabase
+    console.log("User authenticated, fetching role");
+    const { data: userData } = await supabase
       .from("users")
-      .select("onboardingStage")
+      .select("role")
       .eq("id", user.id)
       .single();
 
-    const onboardingData = parseInt(onboardingStage?.onboardingStage);
-    console.log("Onboarding data:", onboardingData, typeof onboardingData);
+    const userRole = userData?.role;
+    console.log("User role:", userRole);
 
-    if (onboardingError) {
-      console.error("Error fetching onboarding data:", onboardingError);
-    } else if (
-      onboardingData !== null &&
-      onboardingData !== undefined &&
-      onboardingData !== -1
-    ) {
-      if (!pathname.startsWith("/onboarding") && pathname !== "/signout") {
-        console.log("Redirecting to onboarding");
-        return Response.redirect(new URL("/onboarding", request.url));
-      }
-    } else if (pathname.startsWith("/onboarding")) {
-      if (onboardingData === -1) {
-        console.log("Onboarding already completed, redirecting to home");
-        return Response.redirect(new URL("/", request.url));
-      }
-      return;
+    // Uncomment this block if you want to restrict non-admin access
+    // if (
+    //   userRole !== "admin" &&
+    //   !pathname.startsWith("/auth") &&
+    //   pathname !== "/no"
+    // ) {
+    //   console.log("Non-admin accessing protected route, redirecting to /no");
+    //   return NextResponse.redirect(new URL("/no", request.url));
+    // }
+
+    if (pathname.startsWith("/auth") && pathname !== "/auth/reset") {
+      console.log(
+        "Authenticated user accessing auth page, redirecting to home",
+      );
+      return NextResponse.redirect(new URL("/", request.url));
     }
   }
 
   console.log("Middleware completed, no redirection needed");
+  return response;
 }
 
 export const config = {

@@ -1,98 +1,114 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 import RegModuleCard from "./moduleCard";
 
-interface ModuleCardProps {
-  moduleID: number;
-  title: string;
-  duration: string;
+interface Module {
+  module_id: number;
+  module_number: number;
+  name: string;
+  description: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
-  image: string;
-  description: string;
   slug: string;
+  length: string;
+  image: string;
+  topic: string;
 }
 
-interface TopicProps {
-  title: string;
-  description: string;
-  modules: ModuleCardProps[];
+interface Progress {
+  user_id: string;
+  module_id: number;
+  progress_percentage: number;
 }
 
-const topicsData: TopicProps[] = [
-  {
-    title: "Budgeting",
-    description:
-      "Gain practical insights and essential skills to effectively manage your finances, ensuring financial stability and peace of mind in your daily life.",
-    modules: [
-      {
-        moduleID: 3,
-        title: "Budgeting Strategies",
-        duration: "20",
-        difficulty: "Beginner",
-        image: "/screen-3/Budget.png",
-        description:
-          "Discover techniques to optimize your budgeting and financial efficiency.",
-        slug: "budgeting-strategies",
+const supabase = createClient();
 
-      },
-      {
-        moduleID: 4,
-        title: "Managing Debt",
-        duration: "60",
-        difficulty: "Advanced",
-        image: "/screen-3/Debt.png",
-        description:
-          "Learn to effectively manage your debt, paving the way to financial freedom",
-        slug: "managing-debt",
+const Recommended: React.FC = () => {
+  const [modules, setModules] = useState<Module[]>([]);
+  const [userProgress, setUserProgress] = useState<Progress | null>(null);
+  const [loading, setLoading] = useState(true);
 
-      },
-      {
-        moduleID: 5,
-        title: "Long-Term Budgeting",
-        duration: "45",
-        difficulty: "Advanced",
-        image: "/screen-3/Insurance.png",
-        description:
-          "Explore strategies for long-term budgeting and build wealth over time",
-        slug: "long-term-budgeting",
-      },
-      // !Add more modules for Budgeting
-    ],
-  },
-  // !You can add more topics here
-];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: modulesData, error: modulesError } = await supabase
+          .from("modules")
+          .select("*")
+          .eq("topic", "budgeting")
+          .order("module_number");
+        console.log(modulesData);
 
-export default function Recommended() {
+        if (modulesError) throw modulesError;
+
+        if (modulesData) {
+          setModules(modulesData);
+        }
+
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user) {
+          const { data: progressData, error: progressError } = await supabase
+            .from("progress")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("module_id", { ascending: false })
+            .limit(1);
+
+          if (progressError) throw progressError;
+
+          if (progressData && progressData.length > 0) {
+            setUserProgress(progressData[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  const modulesToShow = userProgress
+    ? modules.filter((module) => module.module_number > userProgress.module_id)
+    : modules;
+
   return (
-    <>
-      <div className="mt-10">
-        <h1 className="mb-6 text-4xl font-semibold text-text-primary ">
-          Recommended for You
-        </h1>
-        {topicsData.map((topic, index) => (
-          <div key={index} className="mb-10">
-            <h2 className="text-3xl font-medium text-text-primary">
-              {topic.title}
-            </h2>
-            <h3 className="mb-6 w-1/2 text-lg font-medium text-text-secondary">
-              {topic.description}
-            </h3>
-            <div className="flex flex-wrap gap-6">
-              {topic.modules.map((module) => (
-                <RegModuleCard
-                  key={module.moduleID}
-                  moduleID={module.moduleID}
-                  title={module.title}
-                  duration={module.duration}
-                  difficulty={module.difficulty}
-                  image={module.image}
-                  description={module.description}
-                  slug={module.slug}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
+    <div className="mt-10">
+      <h1 className="mb-6 text-4xl font-semibold text-text-primary">
+        Recommended for You
+      </h1>
+      <div className="mb-10">
+        <h2 className="text-3xl font-medium text-text-primary">Budgeting</h2>
+        <h3 className="mb-6 w-3/4 text-lg font-medium text-text-secondary">
+          Gain practical insights and essential skills to effectively manage
+          your finances, ensuring financial stability and peace of mind in your
+          daily life.
+        </h3>
+        <div className="flex flex-wrap gap-6">
+          {modulesToShow.map((module) => (
+            <RegModuleCard
+              key={module.module_id}
+              moduleID={module.module_id}
+              title={module.name}
+              duration={module.length}
+              difficulty={module.difficulty as "1" | "2" | "3"}
+              topic={module.topic}
+              image={module.image}
+              description={module.description}
+              module_number={module.module_number}
+            />
+          ))}
+        </div>
       </div>
-    </>
+    </div>
   );
-}
+};
+
+export default Recommended;

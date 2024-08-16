@@ -46,18 +46,20 @@ const TopProfileDetails = ({ profile }) => {
         <img className="h-7 w-7" src="/icons/heart.svg" alt="lives" />
         <p className="text-lg font-medium text-text-secondary">5</p>
       </div>
-      <div className="flex h-[60px] w-[168px] flex-row items-center gap-x-2 rounded-xl border px-4 py-8">
-        <div className="rounded-full border border-brand-primary bg-white/0 p-[2px]">
+      <div className="grid !h-[60px] max-w-[200px] grid-cols-[36px_1fr] items-center gap-x-4 overflow-hidden rounded-xl border px-4">
+        <div className="flex h-9 w-full items-center justify-center rounded-full border border-brand-primary bg-white/0">
           <div className="relative h-8 w-8 rounded-full bg-green-500" />
         </div>
-        <div className="flex flex-col items-start gap-y-1 overflow-ellipsis">
-          <h1 className="overflow-hidden text-base font-medium text-text-primary">
+        <div className="flex w-[116px] flex-col items-start gap-y-1 overflow-ellipsis">
+          <h1 className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-base font-medium text-text-primary">
             {profile.user_metadata?.name ||
               profile.user_metadata?.first_name ||
               profile.user_metadata?.full_name ||
               "User"}
           </h1>
-          <p className="text-xs font-normal text-text-secondary">Level 0</p>
+          <p className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs font-normal text-text-secondary">
+            Level 0
+          </p>
         </div>
       </div>
     </div>

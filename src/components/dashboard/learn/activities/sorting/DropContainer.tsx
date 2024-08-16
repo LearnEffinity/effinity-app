@@ -24,7 +24,12 @@ export default function DropContainer({
         <h2 className="mb-2 text-center text-xl font-bold">{title}</h2>
         <div className="space-y-2">
           {items.map((item) => (
-            <SortingCard key={item.id} id={item.id} icon={item.icon} item={item.item} />
+            <SortingCard
+              key={item.id}
+              id={item.id}
+              icon={item.icon}
+              item={item.item}
+            />
           ))}
         </div>
       </div>

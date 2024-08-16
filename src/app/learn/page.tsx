@@ -22,7 +22,10 @@ export default function Home() {
           onWidthChange={handleSidebarWidthChange}
         />
       </div>
-      <main className="flex-1" style={{ marginLeft: `${sidebarWidth}px` }}>
+      <main
+        className="flex-1 transition-all duration-[325ms]"
+        style={{ marginLeft: `${sidebarWidth}px` }}
+      >
         <div className="px-8 py-10">
           {/* MAIN CONTENT */}
           <div className="mx-auto ">

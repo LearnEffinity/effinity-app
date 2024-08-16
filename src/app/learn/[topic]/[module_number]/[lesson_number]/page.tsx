@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import QuizActivity from "@/components/dashboard/learn/activities/QuizActivity";
+import QuizActivity from "@/components/dashboard/learn/activities/quiz/QuizActivity";
 import SortingActivity from "@/components/dashboard/learn/activities/sorting/SortingActivity";
-import FillBlankActivity from "@/components/dashboard/learn/activities/FillBlankActivity";
-import MatchingActivity from "@/components/dashboard/learn/activities/MatchingActivity";
+import FillBlankActivity from "@/components/dashboard/learn/activities/fill-blank/FillBlankActivity";
+import MatchingActivity from "@/components/dashboard/learn/activities/matching/MatchingActivity";
 import IntroContent from "@/components/dashboard/learn/lessons/IntroContent";
 import { LessonProvider } from "@/components/dashboard/learn/lessons/LessonContext";
 import BottomBar from "@/components/dashboard/learn/lessons/BottomBar";

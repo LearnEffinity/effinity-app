@@ -18,20 +18,49 @@ export interface BlankOption {
   text: string;
 }
 
-const sentence =
-  "Effective budgeting involves prioritizing {1} to achieve financial goals while managing {2} to mantain financial health.";
-const blankOptions = [
-  { id: "1", text: "savings" },
-  { id: "2", text: "investments" },
-  { id: "3", text: "expenses" },
-  { id: "4", text: "income" },
-];
-
-// I, Landon Harter, formally apologize for the following code. I am sorry.
 export default function FillBlankActivity() {
-  const { setBottomBarState } = useLessonContext();
+  const {
+    setBottomBarState,
+    sentence,
+    setSentence,
+    correctBlanks,
+    setCorrectBlanks,
+    userBlanks,
+    setUserBlanks,
+    setExplanation,
+  } = useLessonContext();
 
-  // parse sentence into fragments using the format {id} for blanks
+  const [options, setOptions] = useState<BlankOption[]>([]);
+
+  // Fetch sentence and correct options from the API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/api/fillinblanks");
+        const data = await response.json();
+
+        setSentence(data.sentence);
+        setCorrectBlanks(data.correctOptions);
+        setExplanation(data.explanation);
+
+        // Initialize user blanks with null values
+        setUserBlanks(Array(data.correctOptions.length).fill(null));
+
+        // Set initial options
+        const initialOptions = data.correctOptions.concat(data.incorrectOptions).map((text, index) => ({
+          id: `option-${index}`,
+          text: text,
+        }));
+        setOptions(initialOptions);
+      } catch (error) {
+        console.error("Error fetching fill-in-the-blank data:", error);
+      }
+    };
+
+    fetchData();
+  }, [setSentence, setCorrectBlanks, setUserBlanks, setExplanation]);
+
+  // Parse sentence into fragments using the format {id} for blanks
   const sentenceFragments = sentence.split(" ").map((fragment) => {
     const isBlank = fragment.includes("{");
 
@@ -39,27 +68,20 @@ export default function FillBlankActivity() {
       id: isBlank
         ? (parseInt(fragment.replace("{", "").replace("}", "")) - 1).toString()
         : Math.round(Math.random() * 10000).toString(),
-      text: fragment,
-      blank: fragment.includes("{"),
-      blankId: fragment.includes("{")
-        ? fragment.replace("{", "").replace("}", "")
-        : undefined,
+      text: fragment.replace("{", "").replace("}", ""),
+      blank: isBlank,
+      blankId: isBlank ? fragment.replace("{", "").replace("}", "") : undefined,
     };
   });
 
-  const [options, setOptions] = useState(blankOptions);
-  const [blanks, setBlanks] = useState<(BlankOption | null)[]>(
-    Array(sentence.split("{").length - 1).fill(null),
-  );
-
   useEffect(() => {
     // Enable the check button when all blanks have been filled
-    if (blanks.every((blank) => blank !== null)) {
+    if (userBlanks.every((blank) => blank !== null)) {
       setBottomBarState("checkEnabled");
     } else {
       setBottomBarState("checkDisabled");
     }
-  }, [blanks, setBottomBarState]);
+  }, [userBlanks, setBottomBarState]);
 
   function handleDragEnd(event: any) {
     const { over, active } = event;
@@ -67,24 +89,27 @@ export default function FillBlankActivity() {
 
     const activeOption = options.find((option) => option.id === active.id);
     const overBlank = sentenceFragments.find(
-      (fragment) => fragment.id === over.id,
+      (fragment) => fragment.id === over.id
     );
 
     if (activeOption && overBlank) {
-      // remove the option from the list of options
+      // Remove the option from the list of options
       const newOptions = options.filter((option) => option.id !== active.id);
 
-      // if blank already has an option, add it back to the options list
-      const currentBlank = blanks[parseInt(overBlank.id as string)];
+      // If the blank already has an option, add it back to the options list
+      const currentBlank = userBlanks[parseInt(overBlank.id as string)];
       if (currentBlank) {
         newOptions.push(currentBlank);
       }
-      setOptions(newOptions);
 
-      // set the option to the blank
-      const newBlanks = [...blanks];
-      newBlanks[parseInt(overBlank.blankId as string) - 1] = activeOption;
-      setBlanks(newBlanks);
+      // Set the option to the blank
+      const newBlanks = [...userBlanks];
+      newBlanks[parseInt(overBlank.blankId as string) - 1] = {
+        id: activeOption.id,
+        text: activeOption.text,
+      };
+      setUserBlanks(newBlanks);
+      setOptions(newOptions);
     }
   }
 
@@ -108,10 +133,10 @@ export default function FillBlankActivity() {
                   <Blank
                     key={fragment.id}
                     fragment={fragment}
-                    answer={blanks[fragment.id]}
+                    answer={userBlanks[parseInt(fragment.id)]}
                   />
                 ) : (
-                  <span>{fragment.text}</span>
+                  <span key={fragment.id}>{fragment.text}</span>
                 );
               })}
             </p>

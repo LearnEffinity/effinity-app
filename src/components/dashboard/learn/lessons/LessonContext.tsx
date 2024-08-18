@@ -13,6 +13,11 @@ interface SortingCardData {
   item: string;
 }
 
+export interface BlankOption {
+  id: string;
+  text: string;
+}
+
 // defining shape of our context
 interface LessonContextType {
   // Bottom Bar states
@@ -28,8 +33,21 @@ interface LessonContextType {
   setCorrectNeeds: React.Dispatch<React.SetStateAction<string[]>>;
   correctWants: string[];
   setCorrectWants: React.Dispatch<React.SetStateAction<string[]>>;
+  // explanation: string;
+  // setExplanation: (explanation: string) => void;
+
+  // Fill in the blank states
+  userBlanks: (BlankOption | null)[];
+  setUserBlanks: React.Dispatch<React.SetStateAction<(BlankOption | null)[]>>;
+  correctBlanks: BlankOption[];
+  setCorrectBlanks: React.Dispatch<React.SetStateAction<BlankOption[]>>;
+  sentence: string;
+  setSentence: (sentence: string) => void;
+
+  // universal explanation
   explanation: string;
   setExplanation: (explanation: string) => void;
+  mode: string;
 }
 
 const LessonContext = createContext<LessonContextType | undefined>(undefined);
@@ -45,6 +63,14 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
   const [correctWants, setCorrectWants] = useState<string[]>([]);
   const [explanation, setExplanation] = useState<string>("");
 
+
+  // Fill in the blank states
+  const [userBlanks, setUserBlanks] = useState<(BlankOption | null)[]>([]);
+  const [correctBlanks, setCorrectBlanks] = useState<BlankOption[]>([]);
+  const [sentence, setSentence] = useState<string>("");
+
+  const [mode, setMode] = useState<string>("fib");
+
   const value = {
     bottomBarState,
     setBottomBarState,
@@ -59,6 +85,17 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
     explanation,
     setExplanation,
     //* Add more state and functions as needed
+    mode,
+    setMode,
+
+    // Fill in the blank states
+    userBlanks,
+    setUserBlanks,
+    correctBlanks,
+    setCorrectBlanks,
+    sentence,
+    setSentence,
+
   };
 
   return (

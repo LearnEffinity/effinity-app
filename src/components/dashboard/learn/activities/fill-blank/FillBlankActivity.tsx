@@ -28,6 +28,7 @@ export default function FillBlankActivity() {
     userBlanks,
     setUserBlanks,
     setExplanation,
+    setMode,
   } = useLessonContext();
 
   const [options, setOptions] = useState<BlankOption[]>([]);
@@ -58,6 +59,7 @@ export default function FillBlankActivity() {
     };
 
     fetchData();
+    setMode("fib");
   }, [setSentence, setCorrectBlanks, setUserBlanks, setExplanation]);
 
   // Parse sentence into fragments using the format {id} for blanks

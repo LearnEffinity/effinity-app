@@ -48,6 +48,7 @@ interface LessonContextType {
   explanation: string;
   setExplanation: (explanation: string) => void;
   mode: string;
+  setMode: (mode: string) => void;
 }
 
 const LessonContext = createContext<LessonContextType | undefined>(undefined);

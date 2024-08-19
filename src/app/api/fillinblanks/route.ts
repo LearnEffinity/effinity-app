@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import onboardingDataReference from "@/utils/onboardingDataReference";
 
 async function fetchTopic(userId: string): Promise<string | null> {
   const supabase = createServerSupabaseClient(cookies());
@@ -17,7 +18,7 @@ async function fetchTopic(userId: string): Promise<string | null> {
   }
 
   const jsonData = data.onboardingData as any;
-  return jsonData?.subHobby?.hob?.title || null;
+  return jsonData|| null;
 }
 
 type ResponseData = {
@@ -46,11 +47,43 @@ export async function GET(request: Request) {
   });
 
   try {
-    const title = await fetchTopic(userData.user.id);
+    const userPreference = await fetchTopic(userData.user.id);
+    console.log("User Preference:", userPreference);
 
-    if (!title) {
-      return NextResponse.json({ message: "Title not found" }, { status: 404 });
+    if (!userPreference) {
+      return NextResponse.json({ message: "userPreference not found" }, { status: 404 });
     }
+
+    const { stage1, stage2, stage3, stage4, subHobby } = userPreference;
+    // console.log("User Preference Stages:", stage1, stage2, stage3, stage4, subHobby);
+
+       // Validate and retrieve titles for stage1
+       const selectedGoalTitles = stage1
+       .filter((index: number) => index < onboardingDataReference.stage1.length)
+       .map((index: number) => onboardingDataReference.stage1[index].title)
+       .join(", ");
+ 
+     // Validate and retrieve titles for stage2
+     const experienceLevel = stage2 < onboardingDataReference.stage2.length
+       ? onboardingDataReference.stage2[stage2].title
+       : "Unknown Experience Level";
+ 
+     // Validate and retrieve titles for stage3
+     const selectedInterestTitles = stage3
+       .filter((index: number) => index < onboardingDataReference.stage3.length)
+       .map((index: number) => onboardingDataReference.stage3[index].title)
+       .join(", ");
+ 
+     // Validate and retrieve hobby
+     const hobbyCategory = onboardingDataReference.stage4[stage4]?.title || "Unknown Hobby";
+     const hobby = subHobby && onboardingDataReference.subHobbies[hobbyCategory]?.[subHobby.ind]?.title
+       ? onboardingDataReference.subHobbies[hobbyCategory][subHobby.ind].title
+       : "Unknown Hobby";
+ 
+    //  console.log("Selected Goals:", selectedGoalTitles);
+    //  console.log("Experience Level:", experienceLevel);
+    //  console.log("Selected Interests:", selectedInterestTitles);
+    //  console.log("Hobby:", hobby);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -58,7 +91,7 @@ export async function GET(request: Request) {
         {
           role: "user",
           content: `
-          I am creating a fill-in-the-blank activity for budgeting. Please provide a sentence related to budgeting with two blanks, along with the correct words to fill those blanks. Also, provide a list of incorrect options that could fit into the blanks. Return the response in this format: 
+          I am creating a fill-in-the-blank activity related to budgeting. The user is interested in ${selectedGoalTitles}, with an experience level of ${experienceLevel}, and has interests in ${selectedInterestTitles}. They also have a hobby in ${hobby}. Please provide a sentence related to budgeting with two blanks, along with the correct words to fill those blanks.Personalize it given their experience, hobby and so on. Also, provide a list of incorrect options that could fit into the blanks. Return the response in this format: 
           {
             "sentence": "Effective budgeting involves prioritizing {1} to achieve financial goals while managing {2} to maintain financial health.",
             "correctOptions": ["example", "test"],

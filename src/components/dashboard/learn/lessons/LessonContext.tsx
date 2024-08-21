@@ -28,8 +28,12 @@ interface LessonContextType {
   setCorrectNeeds: React.Dispatch<React.SetStateAction<string[]>>;
   correctWants: string[];
   setCorrectWants: React.Dispatch<React.SetStateAction<string[]>>;
+  userTerms_Defs: { [key: string]: string };
+  setUserTerms_Defs: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
   explanation: string;
   setExplanation: (explanation: string) => void;
+  mode: string;
+  setMode: (mode: string) => void;
 }
 
 const LessonContext = createContext<LessonContextType | undefined>(undefined);
@@ -43,7 +47,9 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
   const [userWants, setUserWants] = useState<SortingCardData[]>([]);
   const [correctNeeds, setCorrectNeeds] = useState<string[]>([]);
   const [correctWants, setCorrectWants] = useState<string[]>([]);
+  const [userTerms_Defs, setUserTerms_Defs] = useState<{ [key: string]: string }>({});
   const [explanation, setExplanation] = useState<string>("");
+  const [mode, setMode] = useState<string>("sorting");
 
   const value = {
     bottomBarState,
@@ -58,7 +64,10 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
     setCorrectWants,
     explanation,
     setExplanation,
-    //* Add more state and functions as needed
+    userTerms_Defs,
+    setUserTerms_Defs,
+    mode,
+    setMode,
   };
 
   return (

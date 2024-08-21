@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   DndContext,
@@ -46,10 +47,17 @@ const initialItems: MatchingItem[] = [
 ];
 
 export default function MatchingActivity() {
-  const [items] = useState<MatchingItem[]>(initialItems);
+  const {
+    setUserTerms_Defs,
+    setExplanation,
+    setBottomBarState,
+    setMode,
+  } = useLessonContext();
+
+  const [items, setItems] = useState<MatchingItem[]>(initialItems);
   const [matches, setMatches] = useState<{ [key: string]: string | null }>({});
   const [activeId, setActiveId] = useState<string | null>(null);
-  const { setBottomBarState } = useLessonContext();
+
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -59,7 +67,48 @@ export default function MatchingActivity() {
     }),
   );
 
+  console.log("i am here");
+
   useEffect(() => {
+    const fetchMatchingData = async () => {
+      try {
+        const response = await fetch("/api/matching");
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log("API Response:", data);
+
+          const termItems = Object.entries(data.terms).map(
+            ([term, definition], index) => ({
+              id: `item-${index}`,
+              term,
+              icon: "/activity/wrench.png",
+              definition: definition as string,
+            })
+          );
+
+          setItems(termItems);
+
+          setUserTerms_Defs(termItems.reduce((acc, item) => {
+            acc[item.term] = item.definition as string;
+            return acc;
+          }, {} as { [key: string]: string }));
+          setExplanation(data.Explanation);
+
+        } else {
+          console.error("Error fetching sorting data:", data.message);
+        }
+      } catch (error) {
+        console.error("Error calling API:", error);
+      }
+    };
+
+    fetchMatchingData();
+    setMode("sorting");
+  }, [setUserTerms_Defs, setExplanation]);
+
+  useEffect(() => {
+    
     const allMatched = Object.values(matches).every((match) => match !== null);
     setBottomBarState(allMatched ? "checkEnabled" : "checkDisabled");
   }, [matches, setBottomBarState]);

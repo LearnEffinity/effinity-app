@@ -17,11 +17,11 @@ async function fetchTopicandXp(userId: string): Promise<{ hobby: string | null, 
   }
 
   const jsonData = data.onboardingData as any;
-  const hobby = jsonData?.subHobby?.hob?.user_hobby || null;
+  const hobby = jsonData?.subHobby?.hob?.title || null;
 
   const xp_map = ["beginner", "intermediate", "advanced"];
   
-  const experienceStage = jsonData?.subHobby?.hob?.experience?.stage;
+  const experienceStage = jsonData?.stage2;
   const experience = experienceStage !== undefined ? xp_map[experienceStage] : null;
 
   const finalExperience = experienceStage === 2 ? experience : null;
@@ -57,6 +57,8 @@ export async function GET(request: Request) {
     const user_info = await fetchTopicandXp(userData.user.id);
     const user_hobby = user_info.hobby;
     const xp = user_info.experience;
+    console.log(user_hobby);
+    console.log(xp);
 
     if (!user_hobby) {
       return NextResponse.json({ message: "Hobby not found" }, { status: 404 });
@@ -71,10 +73,7 @@ export async function GET(request: Request) {
           Please provide 4 terms related to effective budgeting in the context of ${user_hobby} and their corresponding definitions. 
           Assume that the user has ${xp} experience. These definitions shouldn't be too long, around 80 characters. 
           Return the terms/definitions, along with an explanation of each one if answer correctly, in this format.
-          {
-            terms: { [key: string]: string },
-            explanation: string
-          }
+          { "terms": { [key: string]: string }, "explanation": string}
           `,
         },
       ],
@@ -83,6 +82,8 @@ export async function GET(request: Request) {
 
     const message =
       response.choices[0]?.message?.content || "No response from OpenAI";
+
+    console.log(message);
 
     let parsedResponse: ResponseData;
 

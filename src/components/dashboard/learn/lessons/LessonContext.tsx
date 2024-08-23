@@ -33,6 +33,7 @@ interface LessonContextType {
   setCorrectNeeds: React.Dispatch<React.SetStateAction<string[]>>;
   correctWants: string[];
   setCorrectWants: React.Dispatch<React.SetStateAction<string[]>>;
+
   // explanation: string;
   // setExplanation: (explanation: string) => void;
 
@@ -45,6 +46,10 @@ interface LessonContextType {
   setSentence: (sentence: string) => void;
 
   // universal explanation
+  // Matching Activity states
+  userTerms_Defs: { [key: string]: string };
+  setUserTerms_Defs: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
+
   explanation: string;
   setExplanation: (explanation: string) => void;
   mode: string;
@@ -62,7 +67,9 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
   const [userWants, setUserWants] = useState<SortingCardData[]>([]);
   const [correctNeeds, setCorrectNeeds] = useState<string[]>([]);
   const [correctWants, setCorrectWants] = useState<string[]>([]);
+  const [userTerms_Defs, setUserTerms_Defs] = useState<{ [key: string]: string }>({});
   const [explanation, setExplanation] = useState<string>("");
+  const [mode, setMode] = useState<string>("sorting");
 
 
   // Fill in the blank states
@@ -88,7 +95,6 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
     //* Add more state and functions as needed
     mode,
     setMode,
-
     // Fill in the blank states
     userBlanks,
     setUserBlanks,
@@ -96,6 +102,11 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
     setCorrectBlanks,
     sentence,
     setSentence,
+//     Matching states
+    userTerms_Defs,
+    setUserTerms_Defs,
+    mode,
+    setMode,
 
   };
 

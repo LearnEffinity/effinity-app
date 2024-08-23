@@ -54,13 +54,6 @@ export default function SortingActivity() {
   const [items, setItems] = useState<SortingCardData[]>(initialItems);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const tempData = {
-    Needs: ["Pickaxe", "Shovel", "Food"],
-    Wants: ["Armor", "Enchanting Table", "Bed"],
-    Explanation:
-      "To play Minecraft effectively, you need tools like a pickaxe and shovel for mining and digging, as well as food to sustain your character. The wants, such as armor for protection, an enchanting table for enhancing tools, and a bed for setting spawn points, enhance the gaming experience but are not absolutely necessary for survival.",
-  };
-
   useEffect(() => {
     const fetchSortingData = async () => {
       try {

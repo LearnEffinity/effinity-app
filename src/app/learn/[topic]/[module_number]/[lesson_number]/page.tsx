@@ -90,9 +90,9 @@ export default function LessonPage({ params }: PageProps) {
           />
         );
       case "activity1":
-        return <SortingActivity />;
+        return <MatchingActivity />; // change back to sorting
       case "activity2":
-        return <MatchingActivity />;
+        return <SortingActivity />;
       case "activity3":
         return <FillBlankActivity />;
       case "quiz":

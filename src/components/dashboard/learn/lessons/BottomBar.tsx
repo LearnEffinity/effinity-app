@@ -16,6 +16,9 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
     correctNeeds,
     correctWants,
     explanation,
+    userBlanks,
+    correctBlanks,
+    mode,
   } = useLessonContext();  
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
 
@@ -33,28 +36,46 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
   };
 
   const handleCheck = () => {
-    console.log("Checking...");
-    console.log("User Needs: ", userNeeds);
-    console.log("User Wants: ", userWants);
-    console.log("Correct Needs: ", correctNeeds);
-    console.log("Correct Wants: ", correctWants);
-  
-    // Flatten userNeeds and userWants to just the 'item' field and sort them
-    const flattenedUserNeeds = userNeeds.map((need) => need.item).sort();
-    const flattenedUserWants = userWants.map((want) => want.item).sort();
-  
-    // Compare the sorted arrays
-    const sortedCorrectly =
-      JSON.stringify(flattenedUserNeeds) === JSON.stringify(correctNeeds) &&
-      JSON.stringify(flattenedUserWants) === JSON.stringify(correctWants);
-  
-    if (sortedCorrectly) {
-      setBottomBarState("correctAnswer");
-    } else {
-      setBottomBarState("wrongAnswer");
+    // Handle Check for Sorting Activity
+    console.log("Mode: ", mode);
+    if (mode === 'sorting') {
+      console.log("Checking Sorting Activity...");
+      console.log("User Needs: ", userNeeds);
+      console.log("User Wants: ", userWants);
+      console.log("Correct Needs: ", correctNeeds);
+      console.log("Correct Wants: ", correctWants);
+    
+      const flattenedUserNeeds = userNeeds.map((need) => need.item).sort();
+      const flattenedUserWants = userWants.map((want) => want.item).sort();
+    
+      const sortedCorrectly =
+        JSON.stringify(flattenedUserNeeds) === JSON.stringify(correctNeeds) &&
+        JSON.stringify(flattenedUserWants) === JSON.stringify(correctWants);
+    
+      if (sortedCorrectly) {
+        setBottomBarState("correctAnswer");
+      } else {
+        setBottomBarState("wrongAnswer");
+      }
+    }
+
+    // Handle Check for FillBlankActivity
+    else if (mode === 'fib') {
+      console.log("Checking Fill in the Blanks Activity...");
+      console.log("User Blanks: ", userBlanks);
+      console.log("Correct Blanks: ", correctBlanks);
+
+      const userAnswers = userBlanks.map((blank) => blank?.text);
+      const isCorrect =
+        JSON.stringify(userAnswers) === JSON.stringify(correctBlanks);
+
+      if (isCorrect) {
+        setBottomBarState("correctAnswer");
+      } else {
+        setBottomBarState("wrongAnswer");
+      }
     }
   };
-  
 
   const handleTryAgain = () => {
     setBottomBarState("checkDisabled");

@@ -15,19 +15,21 @@ export default function MatchingDefinition({
   definition,
   slot,
 }: MatchingCardProps) {
-  const { setNodeRef, isOver } = useDroppable({ id });
+  const { setNodeRef } = useDroppable({ id });
 
   return (
     <div
       ref={setNodeRef}
-      className={`relative flex h-[92px] w-[498px] items-center justify-center rounded-md border-2 bg-surface-primary transition-colors duration-200 ${slot ? "" : "border-dashed border-brand-accent"}`}
+      className={`group/card relative flex h-[96px] w-[502px] items-center justify-center rounded-md border-2 border-brand-accent bg-surface-primary transition-colors duration-200 ${slot ? "border-solid" : "border-dashed"}`}
     >
-      <div
-        className={`absolute inset-0 flex items-center justify-center p-4 transition-opacity duration-200`}
-      >
-        <p className="text-md text-center">{definition}</p>
+      <div className={`absolute inset-0 flex items-center justify-center p-4`}>
+        <p className="text-md">{definition}</p>
       </div>
-      {slot && <MatchingCard id={slot.id} icon={slot.icon} term={slot.term} />}
+      <div className={`absolute z-50 transition-opacity duration-200`}>
+        {slot && (
+          <MatchingCard id={slot.id} icon={slot.icon} term={slot.term} />
+        )}
+      </div>
     </div>
   );
 }

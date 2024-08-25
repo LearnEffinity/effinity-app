@@ -152,7 +152,7 @@ export default function MatchingActivity() {
         }),
       );
       setUnmatchedTerms(unmatchedDupe.filter((item) => item.id !== activeId));
-    } else if (targetId === "terms") {
+    } else if (targetId === "terms" && !unmatched) {
       const targetDef = definitions.find((def) => def.slot?.id === activeId);
       setDefinitions((prev) =>
         prev.map((def) =>
@@ -161,6 +161,22 @@ export default function MatchingActivity() {
       );
 
       setUnmatchedTerms((prev) => [...prev, draggedItem]);
+    } else if (targetId.includes("d") && !unmatched) {
+      const activeDef = {
+        ...definitions.find((def) => def.slot?.id === activeId),
+      };
+      const targetDef = { ...definitions.find((def) => def.id === targetId) };
+
+      setDefinitions((prev) => {
+        return prev.map((def) => {
+          if (def.id === targetId) {
+            def.slot = activeDef.slot;
+          } else if (def.id === activeDef.id) {
+            def.slot = targetDef.slot;
+          }
+          return def;
+        });
+      });
     }
   }
 

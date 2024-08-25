@@ -197,9 +197,12 @@ export default function MatchingActivity() {
             between definitions.
           </h2>
         </div>
-        <div className="flex w-full gap-4">
-          <UnmatchedTerms id="terms" items={unmatchedTerms} />
+        {/* still an issue with z indexs for some reason */}
+        {/* i did this to render the dragging terms before the undragged terms, still sucks though */}
+        {/* the z-index style seems to do nothing */}
+        <div className="flex flex-row-reverse gap-4">
           <MatchedTerms definitions={definitions} />
+          <UnmatchedTerms id="terms" items={unmatchedTerms} />
         </div>
       </div>
     </DndContext>

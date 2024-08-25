@@ -15,12 +15,12 @@ export default function MatchingDefinition({
   definition,
   slot,
 }: MatchingCardProps) {
-  const { setNodeRef } = useDroppable({ id });
+  const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
     <div
       ref={setNodeRef}
-      className={`group/card relative flex h-[96px] w-[502px] items-center justify-center rounded-md border-2 border-brand-accent bg-surface-primary transition-colors duration-200 ${slot ? "border-solid" : "border-dashed"}`}
+      className={`group/card relative flex h-[96px] w-[502px] items-center justify-center rounded-md border-2 border-brand-accent transition-colors duration-200 ${isOver ? "bg-surface-base" : "bg-surface-primary"} ${slot ? "border-solid" : "border-dashed"}`}
     >
       <div className={`absolute inset-0 flex items-center justify-center p-4`}>
         <p className="text-md">{definition}</p>

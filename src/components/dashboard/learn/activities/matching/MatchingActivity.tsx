@@ -153,14 +153,13 @@ export default function MatchingActivity() {
       );
       setUnmatchedTerms(unmatchedDupe.filter((item) => item.id !== activeId));
     } else if (targetId === "terms") {
-      setDefinitions(
-        definitions.map((def) => {
-          if (def.id === targetId) {
-            def.slot = draggedItem;
-          }
-          return def;
-        }),
+      const targetDef = definitions.find((def) => def.slot?.id === activeId);
+      setDefinitions((prev) =>
+        prev.map((def) =>
+          def.id === targetDef.id ? { ...def, slot: null } : def,
+        ),
       );
+
       setUnmatchedTerms((prev) => [...prev, draggedItem]);
     }
   }

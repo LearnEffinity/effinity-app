@@ -13,7 +13,9 @@ interface DropContainerProps {
 export default function MatchedTerms({ definitions }: DropContainerProps) {
   return (
     <>
-      <div className={`h-[428px] w-[534px] rounded-md border-2 p-4`}>
+      <div
+        className={`flex h-fit w-fit translate-y-4 flex-col gap-4 rounded-md bg-surface-base px-10 py-6`}
+      >
         {definitions.map((definition) => (
           <MatchingDefinition
             key={definition.id}

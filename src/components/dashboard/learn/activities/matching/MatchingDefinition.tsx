@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { MatchingItem } from "./MatchingActivity";
 import { useDroppable } from "@dnd-kit/core";
+import MatchingCard from "./MatchingCard";
 
 interface MatchingCardProps {
   id: string;
@@ -19,13 +20,14 @@ export default function MatchingDefinition({
   return (
     <div
       ref={setNodeRef}
-      className={`relative flex h-[100px] w-[498px] items-center justify-center rounded-md p-4 transition-colors duration-200 ${isOver ? "border-blue-500 bg-blue-100" : "border-surface-primary bg-surface-primary"}`}
+      className={`relative flex h-[92px] w-[498px] items-center justify-center rounded-md border-2 bg-surface-primary transition-colors duration-200 ${slot ? "" : "border-dashed border-brand-accent"}`}
     >
       <div
         className={`absolute inset-0 flex items-center justify-center p-4 transition-opacity duration-200`}
       >
-        <p className="text-md text-center">{slot ? slot.term : definition}</p>
+        <p className="text-md text-center">{definition}</p>
       </div>
+      {slot && <MatchingCard id={slot.id} icon={slot.icon} term={slot.term} />}
     </div>
   );
 }

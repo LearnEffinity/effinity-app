@@ -53,6 +53,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "Title not found" }, { status: 404 });
     }
 
+    // generate only 5 items and randomize the number of wants and needs, add a minimum 1 item per category though
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [

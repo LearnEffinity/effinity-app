@@ -7,15 +7,9 @@ interface MatchingCardProps {
   id: string;
   term: string;
   icon: string;
-  isInDefinition?: boolean;
 }
 
-export default function MatchingCard({
-  id,
-  term,
-  icon,
-  isInDefinition = false,
-}: MatchingCardProps) {
+export default function MatchingCard({ id, term, icon }: MatchingCardProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
 
   const style = {
@@ -28,9 +22,7 @@ export default function MatchingCard({
       style={style}
       {...attributes}
       {...listeners}
-      className={`cursor-move rounded-md bg-surface-base px-5 py-[18px] text-text-primary ${
-        isInDefinition ? "h-full w-full" : "w-[498px]"
-      }`}
+      className={`w-[498px] cursor-move rounded-md bg-surface-base px-5 py-[18px] text-text-primary`}
     >
       <div className="flex h-full items-center justify-start">
         <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-surface-primary">

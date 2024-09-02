@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -9,14 +9,21 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import MatchingCard from "./MatchingCard";
-import MatchingDefinition from "./MatchingDefinition";
 import { useLessonContext } from "../../lessons/LessonContext";
+import UnmatchedTerms from "./UnmatchedTerms";
+import MatchedTerms from "./MatchedTerms";
 
-interface MatchingItem {
+export interface MatchingItem {
   id: string;
   term: string;
   icon: string;
   definition: string;
+}
+
+export interface MatchingDefinition {
+  id: string;
+  definition: string;
+  slot: MatchingItem | null;
 }
 
 const initialItems: MatchingItem[] = [
@@ -47,27 +54,17 @@ const initialItems: MatchingItem[] = [
 ];
 
 export default function MatchingActivity() {
-  const {
-    setUserTerms_Defs,
-    setExplanation,
-    setBottomBarState,
-    setMode,
-  } = useLessonContext();
+  const { setUserTerms_Defs, setExplanation, setBottomBarState, setMode } =
+    useLessonContext();
 
-  const [items, setItems] = useState<MatchingItem[]>(initialItems);
-  const [matches, setMatches] = useState<{ [key: string]: string | null }>({});
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [unmatchedTerms, setUnmatchedTerms] =
+    useState<MatchingItem[]>(initialItems);
 
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
+  const [definitions, setDefinitions] = useState<MatchingDefinition[]>(
+    initialItems.map((item) => {
+      return { id: item.id + "d", definition: item.definition, slot: null };
     }),
   );
-
-  console.log("i am here");
 
   useEffect(() => {
     const fetchMatchingData = async () => {
@@ -84,17 +81,30 @@ export default function MatchingActivity() {
               term,
               icon: "/activity/wrench.png",
               definition: definition as string,
-            })
+            }),
           );
 
-          setItems(termItems);
+          setUnmatchedTerms(termItems);
+          setDefinitions(
+            termItems.map((item) => {
+              return {
+                id: item.id + "d",
+                definition: item.definition,
+                slot: null,
+              };
+            }),
+          );
 
-          setUserTerms_Defs(termItems.reduce((acc, item) => {
-            acc[item.term] = item.definition as string;
-            return acc;
-          }, {} as { [key: string]: string }));
+          setUserTerms_Defs(
+            termItems.reduce(
+              (acc, item) => {
+                acc[item.term] = item.definition as string;
+                return acc;
+              },
+              {} as { [key: string]: string },
+            ),
+          );
           setExplanation(data.Explanation);
-
         } else {
           console.error("Error fetching sorting data:", data.message);
         }
@@ -108,69 +118,70 @@ export default function MatchingActivity() {
   }, [setUserTerms_Defs, setExplanation]);
 
   useEffect(() => {
-    
-    const allMatched = Object.values(matches).every((match) => match !== null);
+    const allMatched = unmatchedTerms.length === 0;
     setBottomBarState(allMatched ? "checkEnabled" : "checkDisabled");
-  }, [matches, setBottomBarState]);
+  }, [unmatchedTerms, setBottomBarState]);
 
-  function handleDragStart(event: any) {
-    setActiveId(event.active.id);
-  }
+  function handleDragStart(event: any) {}
 
   function handleDragEnd(event: any) {
     const { over, active } = event;
 
-    if (over) {
-      setMatches((prev) => {
-        const updatedMatches = { ...prev };
-        const draggedTermId = active.id;
-        const targetDefinitionId = over.id;
+    const activeId = active.id as string;
+    const targetId = over.id as string;
 
-        // Find the current definition of the dragged term
-        const sourceDefinitionId = Object.entries(updatedMatches).find(
-          ([defId, termId]) => termId === draggedTermId,
-        )?.[0];
+    const draggedItem =
+      unmatchedTerms.find((item) => item.id === activeId) ??
+      definitions.find((item) => item.slot?.id === activeId).slot;
+    const unmatched = unmatchedTerms.includes(draggedItem);
 
-        // If there's already a term in the target definition, swap them
-        if (updatedMatches[targetDefinitionId]) {
-          const existingTermId = updatedMatches[targetDefinitionId];
+    if (unmatched && targetId.includes("d")) {
+      const targetDef = definitions.find((def) => def.id === targetId);
 
-          if (sourceDefinitionId) {
-            // If the dragged term was in a definition, perform a swap
-            updatedMatches[sourceDefinitionId] = existingTermId;
-          } else {
-            // If the dragged term was from the unmatched area, find an empty spot for the existing term
-            const emptyDefinitionId = Object.entries(updatedMatches).find(
-              ([defId, termId]) => termId === null,
-            )?.[0];
+      const unmatchedDupe = [...unmatchedTerms];
+      if (targetDef.slot) {
+        unmatchedDupe.push(targetDef.slot);
+      }
 
-            if (emptyDefinitionId) {
-              updatedMatches[emptyDefinitionId] = existingTermId;
-            }
+      setDefinitions(
+        definitions.map((def) => {
+          if (def.id === targetId) {
+            def.slot = draggedItem;
           }
-        } else if (sourceDefinitionId) {
-          // If moving to an empty definition, clear the source
-          updatedMatches[sourceDefinitionId] = null;
-        }
+          return def;
+        }),
+      );
+      setUnmatchedTerms(unmatchedDupe.filter((item) => item.id !== activeId));
+    } else if (targetId === "terms" && !unmatched) {
+      const targetDef = definitions.find((def) => def.slot?.id === activeId);
+      setDefinitions((prev) =>
+        prev.map((def) =>
+          def.id === targetDef.id ? { ...def, slot: null } : def,
+        ),
+      );
 
-        // Place the dragged term in the target definition
-        updatedMatches[targetDefinitionId] = draggedTermId;
+      setUnmatchedTerms((prev) => [...prev, draggedItem]);
+    } else if (targetId.includes("d") && !unmatched) {
+      const activeDef = {
+        ...definitions.find((def) => def.slot?.id === activeId),
+      };
+      const targetDef = { ...definitions.find((def) => def.id === targetId) };
 
-        return updatedMatches;
+      setDefinitions((prev) => {
+        return prev.map((def) => {
+          if (def.id === targetId) {
+            def.slot = activeDef.slot;
+          } else if (def.id === activeDef.id) {
+            def.slot = targetDef.slot;
+          }
+          return def;
+        });
       });
     }
-
-    setActiveId(null);
   }
-
-  // Get unmatched terms
-  const unmatchedTerms = items.filter(
-    (item) => !Object.values(matches).includes(item.id),
-  );
 
   return (
     <DndContext
-      sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       collisionDetection={closestCorners}
@@ -186,41 +197,14 @@ export default function MatchingActivity() {
             between definitions.
           </h2>
         </div>
-        <div className="flex flex-row items-start gap-x-11">
-          <div className="flex flex-col gap-y-10">
-            {unmatchedTerms.map((item) => (
-              <MatchingCard
-                icon={item.icon}
-                key={item.id}
-                id={item.id}
-                term={item.term}
-              />
-            ))}
-          </div>
-          <div className="flex flex-col gap-y-6 rounded-2xl bg-surface-base px-14 py-8">
-            {items.map((item) => (
-              <MatchingDefinition
-                key={item.id}
-                id={item.id}
-                definition={item.definition}
-                isMatched={matches[item.id] !== null}
-                matchedTerm={items.find((i) => i.id === matches[item.id])?.term}
-                matchedTermId={matches[item.id]}
-                icon={items.find((i) => i.id === matches[item.id])?.icon || ""}
-              />
-            ))}
-          </div>
+        {/* still an issue with z indexs for some reason */}
+        {/* i did this to render the dragging terms before the undragged terms, still sucks though */}
+        {/* the z-index style seems to do nothing */}
+        <div className="flex flex-row-reverse gap-4">
+          <MatchedTerms definitions={definitions} />
+          <UnmatchedTerms id="terms" items={unmatchedTerms} />
         </div>
       </div>
-      <DragOverlay>
-        {activeId ? (
-          <MatchingCard
-            id={activeId}
-            icon="/activity/wrench.png"
-            term={items.find((item) => item.id === activeId)?.term || ""}
-          />
-        ) : null}
-      </DragOverlay>
     </DndContext>
   );
 }

@@ -18,7 +18,7 @@ async function fetchTopic(userId: string): Promise<string | null> {
   }
 
   const jsonData = data.onboardingData as any;
-  return jsonData|| null;
+  return jsonData || null;
 }
 
 type ResponseData = {
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     console.error("Error fetching user data:", userError);
     return NextResponse.json(
       { message: "User not authenticated" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -51,35 +51,42 @@ export async function GET(request: Request) {
     console.log("User Preference:", userPreference);
 
     if (!userPreference) {
-      return NextResponse.json({ message: "userPreference not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "userPreference not found" },
+        { status: 404 },
+      );
     }
 
     const { stage1, stage2, stage3, stage4, subHobby } = userPreference;
     // console.log("User Preference Stages:", stage1, stage2, stage3, stage4, subHobby);
 
-       // Validate and retrieve titles for stage1
-       const selectedGoalTitles = stage1
-       .filter((index: number) => index < onboardingDataReference.stage1.length)
-       .map((index: number) => onboardingDataReference.stage1[index].title)
-       .join(", ");
- 
-     // Validate and retrieve titles for stage2
-     const experienceLevel = stage2 < onboardingDataReference.stage2.length
-       ? onboardingDataReference.stage2[stage2].title
-       : "Unknown Experience Level";
- 
-     // Validate and retrieve titles for stage3
-     const selectedInterestTitles = stage3
-       .filter((index: number) => index < onboardingDataReference.stage3.length)
-       .map((index: number) => onboardingDataReference.stage3[index].title)
-       .join(", ");
- 
-     // Validate and retrieve hobby
-     const hobbyCategory = onboardingDataReference.stage4[stage4]?.title || "Unknown Hobby";
-     const hobby = subHobby && onboardingDataReference.subHobbies[hobbyCategory]?.[subHobby.ind]?.title
-       ? onboardingDataReference.subHobbies[hobbyCategory][subHobby.ind].title
-       : "Unknown Hobby";
- 
+    // Validate and retrieve titles for stage1
+    const selectedGoalTitles = stage1
+      .filter((index: number) => index < onboardingDataReference.stage1.length)
+      .map((index: number) => onboardingDataReference.stage1[index].title)
+      .join(", ");
+
+    // Validate and retrieve titles for stage2
+    const experienceLevel =
+      stage2 < onboardingDataReference.stage2.length
+        ? onboardingDataReference.stage2[stage2].title
+        : "Unknown Experience Level";
+
+    // Validate and retrieve titles for stage3
+    const selectedInterestTitles = stage3
+      .filter((index: number) => index < onboardingDataReference.stage3.length)
+      .map((index: number) => onboardingDataReference.stage3[index].title)
+      .join(", ");
+
+    // Validate and retrieve hobby
+    const hobbyCategory =
+      onboardingDataReference.stage4[stage4]?.title || "Unknown Hobby";
+    const hobby =
+      subHobby &&
+      onboardingDataReference.subHobbies[hobbyCategory]?.[subHobby.ind]?.title
+        ? onboardingDataReference.subHobbies[hobbyCategory][subHobby.ind].title
+        : "Unknown Hobby";
+
     //  console.log("Selected Goals:", selectedGoalTitles);
     //  console.log("Experience Level:", experienceLevel);
     //  console.log("Selected Interests:", selectedInterestTitles);
@@ -121,7 +128,7 @@ export async function GET(request: Request) {
           incorrectOptions: [],
           explanation: "Invalid response format",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -142,7 +149,7 @@ export async function GET(request: Request) {
         incorrectOptions: [],
         explanation: "Internal Server Error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

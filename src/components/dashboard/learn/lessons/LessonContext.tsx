@@ -48,7 +48,9 @@ interface LessonContextType {
   // universal explanation
   // Matching Activity states
   userTerms_Defs: { [key: string]: string };
-  setUserTerms_Defs: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
+  setUserTerms_Defs: React.Dispatch<
+    React.SetStateAction<{ [key: string]: string }>
+  >;
 
   explanation: string;
   setExplanation: (explanation: string) => void;
@@ -67,17 +69,16 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
   const [userWants, setUserWants] = useState<SortingCardData[]>([]);
   const [correctNeeds, setCorrectNeeds] = useState<string[]>([]);
   const [correctWants, setCorrectWants] = useState<string[]>([]);
-  const [userTerms_Defs, setUserTerms_Defs] = useState<{ [key: string]: string }>({});
+  const [userTerms_Defs, setUserTerms_Defs] = useState<{
+    [key: string]: string;
+  }>({});
   const [explanation, setExplanation] = useState<string>("");
   const [mode, setMode] = useState<string>("sorting");
-
 
   // Fill in the blank states
   const [userBlanks, setUserBlanks] = useState<(BlankOption | null)[]>([]);
   const [correctBlanks, setCorrectBlanks] = useState<BlankOption[]>([]);
   const [sentence, setSentence] = useState<string>("");
-
-  const [mode, setMode] = useState<string>("fib");
 
   const value = {
     bottomBarState,
@@ -102,12 +103,9 @@ export const LessonProvider: React.FC<{ children: ReactNode }> = ({
     setCorrectBlanks,
     sentence,
     setSentence,
-//     Matching states
+    //     Matching states
     userTerms_Defs,
     setUserTerms_Defs,
-    mode,
-    setMode,
-
   };
 
   return (

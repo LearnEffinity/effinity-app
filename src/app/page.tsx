@@ -19,7 +19,7 @@ export default function Home() {
     async function getUser() {
       try {
         const { data, error } = await supabase.auth.getUser();
-        if (error) throw error;
+        if (error) console.error("Error fetching user:", error);
         setUser(data.user as User);
         console.log("User:", data.user);
       } catch (error) {

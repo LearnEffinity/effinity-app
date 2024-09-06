@@ -6,6 +6,7 @@ import {
   ProficiencyLevel,
   Topic,
 } from "@/components/onboarding/Option";
+import Input from "@/components/form/Input";
 import ProgressBar from "@/components/onboarding/ProgressBar";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
@@ -170,7 +171,9 @@ export default function Onboarding() {
   }, []);
 
   const [user, setUser] = useState(null);
+  const [stageZero, setStageZero] = useState(true);
   const [stage, setStage] = useState<number>(1);
+  const [username, setUsername] = useState("");
   const [selectedStage1, setSelectedStage1] = useState<number[]>([]);
   const [selectedStage2, setSelectedStage2] = useState<number | null>(null);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
@@ -181,6 +184,48 @@ export default function Onboarding() {
       ind: null,
     },
   );
+  useEffect(() => {
+    async function getPubUser() {
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("username")
+          .eq("id", user.id)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+        setUser(data);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    }
+
+    getPubUser();
+  }, []);
+
+  const noUsername = () => {
+    if (!user.username) {
+      setStageZero(false);
+    } else {
+      setStageZero(true);
+    }
+  };
+
+  const updateUsername = async (username: string) => {
+    const { data, error } = await supabase
+      .from("users")
+      .update({ username })
+      .eq("id", user.id)
+      .select();
+
+    if (error) {
+      console.error("Error updating username:", error);
+    }
+
+    console.log("Updated username:", data);
+  };
 
   const handleTopicSelection = (index: number) => {
     if (selectedTopics.includes(index)) {
@@ -198,7 +243,6 @@ export default function Onboarding() {
       setSelectedStage1([...selectedStage1, index]);
     }
   };
-
 
   const saveOnboardingData = async (nextStage: number) => {
     if (!user) {
@@ -263,124 +307,97 @@ export default function Onboarding() {
     setStage(previousStage);
   };
 
-  return (
-    <>
-      <ProgressBar stage={stage} totalStage={6} />
-      <div className="flex flex-col py-10">
-        {stage == 1 && (
-          <>
-            <p className="pb-7 text-lg md:text-2xl">
-              Why do you want to learn about finance?
-            </p>
-            <ul className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {stage1.map((goal, index) => (
-                <FinancialGoal
-                  key={index}
-                  title={goal.title}
-                  description={goal.description}
-                  image={goal.image}
-                  onClick={() => handleStage1Selection(index)}
-                  selected={selectedStage1.includes(index)}
-                  disabled={selectedStage1.length >= 3 && !selectedStage1.includes(index)}
+  if (!stageZero) {
+    return (
+      <>
+        <ProgressBar stage={stage} totalStage={6} />
+        <div className="flex flex-col py-10">
+          {stage == 1 && (
+            <>
+              <p className="pb-7 text-lg md:text-2xl">
+                Why do you want to learn about finance?
+              </p>
+              <ul className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {stage1.map((goal, index) => (
+                  <FinancialGoal
+                    key={index}
+                    title={goal.title}
+                    description={goal.description}
+                    image={goal.image}
+                    onClick={() => handleStage1Selection(index)}
+                    selected={selectedStage1.includes(index)}
+                    disabled={
+                      selectedStage1.length >= 3 &&
+                      !selectedStage1.includes(index)
+                    }
+                  />
+                ))}
+              </ul>
+              <div className="mt-10 flex justify-end">
+                <Continue
+                  onClick={handleContinue}
+                  disabled={selectedStage1.length === 0}
                 />
-              ))}
-            </ul>
-            <div className="mt-10 flex justify-end">
-              <Continue
-                onClick={handleContinue}
-                disabled={selectedStage1.length === 0}
-              />
-            </div>
-          </>
-        )}
-        {stage == 2 && (
-          <>
-            <p className="pb-7 text-lg md:text-2xl">
-              How much do you know about finance?
-            </p>
-            <ul className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              {stage2.map((level, index) => (
-                <ProficiencyLevel
-                  key={index}
-                  title={level.title}
-                  description={level.description}
-                  image={level.image}
-                  onClick={() => setSelectedStage2(index)}
-                  selected={selectedStage2 === index}
+              </div>
+            </>
+          )}
+          {stage == 2 && (
+            <>
+              <p className="pb-7 text-lg md:text-2xl">
+                How much do you know about finance?
+              </p>
+              <ul className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                {stage2.map((level, index) => (
+                  <ProficiencyLevel
+                    key={index}
+                    title={level.title}
+                    description={level.description}
+                    image={level.image}
+                    onClick={() => setSelectedStage2(index)}
+                    selected={selectedStage2 === index}
+                  />
+                ))}
+              </ul>
+              <div className="mt-28 flex justify-between">
+                <GoBack onClick={handleGoBack} />
+                <Continue
+                  onClick={handleContinue}
+                  disabled={selectedStage2 === null}
                 />
-              ))}
-            </ul>
-            <div className="mt-28 flex justify-between">
-              <GoBack onClick={handleGoBack} />
-              <Continue
-                onClick={handleContinue}
-                disabled={selectedStage2 === null}
-              />
-            </div>
-          </>
-        )}
-        {stage == 3 && (
-          <>
-            <p className="pb-7 text-lg md:text-2xl">
-              What topics are you interested in learning?
-            </p>
-            <ul className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {stage3.map((topic, index) => (
-                <Topic
-                  key={index}
-                  title={topic.title}
-                  image={topic.image}
-                  onClick={() => handleTopicSelection(index)}
-                  selected={selectedTopics?.includes(index)}
-                  disabled={
-                    selectedTopics.length >= 3 &&
-                    !selectedTopics.includes(index)
-                  }
-                  font="md:text-2xl text-lg"
+              </div>
+            </>
+          )}
+          {stage == 3 && (
+            <>
+              <p className="pb-7 text-lg md:text-2xl">
+                What topics are you interested in learning?
+              </p>
+              <ul className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                {stage3.map((topic, index) => (
+                  <Topic
+                    key={index}
+                    title={topic.title}
+                    image={topic.image}
+                    onClick={() => handleTopicSelection(index)}
+                    selected={selectedTopics?.includes(index)}
+                    disabled={
+                      selectedTopics.length >= 3 &&
+                      !selectedTopics.includes(index)
+                    }
+                    font="md:text-2xl text-lg"
+                  />
+                ))}
+              </ul>
+              <div className="mt-28 flex justify-between">
+                <GoBack onClick={handleGoBack} />
+                <Continue
+                  onClick={handleContinue}
+                  disabled={selectedTopics.length === 0}
                 />
-              ))}
-            </ul>
-            <div className="mt-28 flex justify-between">
-              <GoBack onClick={handleGoBack} />
-              <Continue
-                onClick={handleContinue}
-                disabled={selectedTopics.length === 0}
-              />
-            </div>
-          </>
-        )}
-        {stage == 4 && (
-          <>
-            <p className="pb-7 text-lg md:text-2xl">
-              What is your favorite hobby?{" "}
-              <span className=" text-text-secondary">
-                We&apos;ll use this to help you learn more effectively.
-              </span>
-            </p>
-            <ul className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-              {stage4.map((topic, index) => (
-                <Topic
-                  key={index}
-                  title={topic.title}
-                  image={topic.image}
-                  onClick={() => setSelectedStage4(index)}
-                  selected={selectedStage4 === index}
-                  font="md:text-2xl text-lg"
-                />
-              ))}
-            </ul>
-            <div className="mt-28 flex justify-between">
-              <GoBack onClick={handleGoBack} />
-              <Continue
-                onClick={handleContinue}
-                disabled={selectedStage4 === null}
-              />
-            </div>
-          </>
-        )}
-        {stage == 5 &&
-          selectedStage4 !== null &&
-          subHobbies[stage4[selectedStage4].title] && (
+              </div>
+            </>
+          )}
+          {stage == 4 && (
             <>
               <p className="pb-7 text-lg md:text-2xl">
                 What is your favorite hobby?{" "}
@@ -389,39 +406,90 @@ export default function Onboarding() {
                 </span>
               </p>
               <ul className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-                <Topic
-                  title={stage4[selectedStage4].title}
-                  image={stage4[selectedStage4].image}
-                  className="col-span-2 lg:row-span-2"
-                  font="text-4xl font-[500]"
-                />
-                {subHobbies[stage4[selectedStage4].title].map(
-                  (subHobby, subIndex) => (
-                    <Topic
-                      key={subIndex}
-                      title={subHobby.title}
-                      image={subHobby.image}
-                      font="text-2xl"
-                      onClick={() =>
-                        selectSubHobby({ hob: subHobby, ind: subIndex })
-                      }
-                      selected={hobby.hob === subHobby}
-                    />
-                  ),
-                )}
+                {stage4.map((topic, index) => (
+                  <Topic
+                    key={index}
+                    title={topic.title}
+                    image={topic.image}
+                    onClick={() => setSelectedStage4(index)}
+                    selected={selectedStage4 === index}
+                    font="md:text-2xl text-lg"
+                  />
+                ))}
               </ul>
               <div className="mt-28 flex justify-between">
                 <GoBack onClick={handleGoBack} />
                 <Continue
-                  onClick={() => {
-                    handleContinue();
-                  }}
-                  disabled={hobby.hob === ""}
+                  onClick={handleContinue}
+                  disabled={selectedStage4 === null}
                 />
               </div>
             </>
           )}
-      </div>
-    </>
-  );
+          {stage == 5 &&
+            selectedStage4 !== null &&
+            subHobbies[stage4[selectedStage4].title] && (
+              <>
+                <p className="pb-7 text-lg md:text-2xl">
+                  What is your favorite hobby?{" "}
+                  <span className=" text-text-secondary">
+                    We&apos;ll use this to help you learn more effectively.
+                  </span>
+                </p>
+                <ul className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+                  <Topic
+                    title={stage4[selectedStage4].title}
+                    image={stage4[selectedStage4].image}
+                    className="col-span-2 lg:row-span-2"
+                    font="text-4xl font-[500]"
+                  />
+                  {subHobbies[stage4[selectedStage4].title].map(
+                    (subHobby, subIndex) => (
+                      <Topic
+                        key={subIndex}
+                        title={subHobby.title}
+                        image={subHobby.image}
+                        font="text-2xl"
+                        onClick={() =>
+                          selectSubHobby({ hob: subHobby, ind: subIndex })
+                        }
+                        selected={hobby.hob === subHobby}
+                      />
+                    ),
+                  )}
+                </ul>
+                <div className="mt-28 flex justify-between">
+                  <GoBack onClick={handleGoBack} />
+                  <Continue
+                    onClick={() => {
+                      handleContinue();
+                    }}
+                    disabled={hobby.hob === ""}
+                  />
+                </div>
+              </>
+            )}
+        </div>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            updateUsername(username);
+          }}
+        >
+          <Input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e)}
+          />
+          <button type="submit">Submit</button>
+        </form>
+      </>
+    );
+  }
 }

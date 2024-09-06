@@ -4,7 +4,21 @@ import { createClient as createServerSupabaseClient } from "@/utils/supabase/ser
 import { cookies } from "next/headers";
 import onboardingDataReference from "@/utils/onboardingDataReference";
 
-async function fetchTopic(userId: string): Promise<string | null> {
+interface UserPreference {
+  stage1: number[];
+  stage2: number;
+  stage3: number[];
+  stage4: number;
+  subHobby: {
+    hob: {
+      image: string;
+      title: string;
+    };
+    ind: number;
+  };
+}
+
+async function fetchTopic(userId: string): Promise<UserPreference | null> {
   const supabase = createServerSupabaseClient(cookies());
   const { data, error } = await supabase
     .from("users")
@@ -17,8 +31,7 @@ async function fetchTopic(userId: string): Promise<string | null> {
     return null;
   }
 
-  const jsonData = data.onboardingData as any;
-  return jsonData|| null;
+  return (data.onboardingData as UserPreference) || null;
 }
 
 type ResponseData = {
@@ -38,12 +51,12 @@ export async function GET(request: Request) {
     console.error("Error fetching user data:", userError);
     return NextResponse.json(
       { message: "User not authenticated" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
   const openai = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY!,
+    apiKey: process.env.OPENAI_API_KEY!,
   });
 
   try {
@@ -51,35 +64,43 @@ export async function GET(request: Request) {
     console.log("User Preference:", userPreference);
 
     if (!userPreference) {
-      return NextResponse.json({ message: "userPreference not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "userPreference not found" },
+        { status: 404 },
+      );
     }
 
-    const { stage1, stage2, stage3, stage4, subHobby } = userPreference;
+    const { stage1, stage2, stage3, stage4, subHobby }: UserPreference =
+      userPreference;
     // console.log("User Preference Stages:", stage1, stage2, stage3, stage4, subHobby);
 
-       // Validate and retrieve titles for stage1
-       const selectedGoalTitles = stage1
-       .filter((index: number) => index < onboardingDataReference.stage1.length)
-       .map((index: number) => onboardingDataReference.stage1[index].title)
-       .join(", ");
- 
-     // Validate and retrieve titles for stage2
-     const experienceLevel = stage2 < onboardingDataReference.stage2.length
-       ? onboardingDataReference.stage2[stage2].title
-       : "Unknown Experience Level";
- 
-     // Validate and retrieve titles for stage3
-     const selectedInterestTitles = stage3
-       .filter((index: number) => index < onboardingDataReference.stage3.length)
-       .map((index: number) => onboardingDataReference.stage3[index].title)
-       .join(", ");
- 
-     // Validate and retrieve hobby
-     const hobbyCategory = onboardingDataReference.stage4[stage4]?.title || "Unknown Hobby";
-     const hobby = subHobby && onboardingDataReference.subHobbies[hobbyCategory]?.[subHobby.ind]?.title
-       ? onboardingDataReference.subHobbies[hobbyCategory][subHobby.ind].title
-       : "Unknown Hobby";
- 
+    // Validate and retrieve titles for stage1
+    const selectedGoalTitles = stage1
+      .filter((index: number) => index < onboardingDataReference.stage1.length)
+      .map((index: number) => onboardingDataReference.stage1[index].title)
+      .join(", ");
+
+    // Validate and retrieve titles for stage2
+    const experienceLevel =
+      stage2 < onboardingDataReference.stage2.length
+        ? onboardingDataReference.stage2[stage2].title
+        : "Unknown Experience Level";
+
+    // Validate and retrieve titles for stage3
+    const selectedInterestTitles = stage3
+      .filter((index: number) => index < onboardingDataReference.stage3.length)
+      .map((index: number) => onboardingDataReference.stage3[index].title)
+      .join(", ");
+
+    // Validate and retrieve hobby
+    const hobbyCategory =
+      onboardingDataReference.stage4[stage4]?.title || "Unknown Hobby";
+    const hobby =
+      subHobby &&
+      onboardingDataReference.subHobbies[hobbyCategory]?.[subHobby.ind]?.title
+        ? onboardingDataReference.subHobbies[hobbyCategory][subHobby.ind].title
+        : "Unknown Hobby";
+
     //  console.log("Selected Goals:", selectedGoalTitles);
     //  console.log("Experience Level:", experienceLevel);
     //  console.log("Selected Interests:", selectedInterestTitles);
@@ -90,30 +111,58 @@ export async function GET(request: Request) {
       messages: [
         {
           role: "user",
-          content: `
-          I am creating a fill-in-the-blank activity related to budgeting. The user is interested in ${selectedGoalTitles}, with an experience level of ${experienceLevel}, and has interests in ${selectedInterestTitles}. They also have a hobby in ${hobby}. Please provide a sentence related to budgeting with two blanks, along with the correct words to fill those blanks.Personalize it given their experience, hobby and so on. Also, provide a list of incorrect options that could fit into the blanks. Return the response in this format: 
-          {
-            "sentence": "Effective budgeting involves prioritizing {1} to achieve financial goals while managing {2} to maintain financial health.",
-            "correctOptions": ["example", "test"],
-            "incorrectOptions": ["investments", "income", "debts", "loans"],
-            "explanation": "Effective budgeting requires careful management of expenses to achieve financial goals while ensuring savings to maintain financial stability."
-          }
-          `,
+          content: `Create a fill-in-the-blank activity related to budgeting. The user is interested in ${selectedGoalTitles}, with an experience level of ${experienceLevel}, and has interests in ${selectedInterestTitles}. They also have a hobby in ${hobby}. Personalize the sentence given their experience, hobby, and interests.`,
         },
       ],
       temperature: 0.7,
+      response_format: { type: "json_object" },
+      functions: [
+        {
+          name: "fill_in_the_blanks",
+          description:
+            "Create a fill-in-the-blank activity related to budgeting.",
+          parameters: {
+            type: "object",
+            properties: {
+              sentence: {
+                type: "string",
+                description: "Sentence related to budgeting with two blanks.",
+              },
+              correctOptions: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+                description: "The two correct words to fill the blanks.",
+              },
+              incorrectOptions: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+                description:
+                  "List of incorrect options that could fit into the blanks.",
+              },
+              explanation: {
+                type: "string",
+                description: "Explanation of the fill-in-the-blank activity.",
+              },
+            },
+            required: [
+              "sentence",
+              "correctOptions",
+              "incorrectOptions",
+              "explanation",
+            ],
+          },
+        },
+      ],
+      function_call: { name: "fill_in_the_blanks" },
     });
 
-    const message =
-      response.choices[0]?.message?.content || "No response from OpenAI";
+    const functionCall = response.choices[0]?.message?.function_call;
 
-    let parsedResponse: ResponseData;
-
-    try {
-      parsedResponse = JSON.parse(message);
-      console.log("Parsed OpenAI Response:", parsedResponse);
-    } catch (error) {
-      console.error("Error parsing OpenAI response:", error);
+    if (!functionCall) {
       return NextResponse.json(
         {
           sentence: "",
@@ -121,9 +170,10 @@ export async function GET(request: Request) {
           incorrectOptions: [],
           explanation: "Invalid response format",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
+    const parsedResponse: ResponseData = JSON.parse(functionCall.arguments);
 
     const formattedResponse: ResponseData = {
       sentence: parsedResponse.sentence,
@@ -142,7 +192,7 @@ export async function GET(request: Request) {
         incorrectOptions: [],
         explanation: "Internal Server Error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

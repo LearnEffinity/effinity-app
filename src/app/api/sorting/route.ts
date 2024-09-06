@@ -43,7 +43,7 @@ export async function GET(request: Request) {
   // console.log("Authenticated User Data:", userData.user);
 
   const openai = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY!,
+    apiKey: process.env.OPENAI_API_KEY!,
   });
 
   try {
@@ -59,27 +59,55 @@ export async function GET(request: Request) {
       messages: [
         {
           role: "user",
-          content: `I like to ${title}, generate a list of 6 items of 3 wants and 3 needs. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items, and send me the response in this format: {"Needs": ["Item1", "Item2"], "Wants": ["Item1", "Item2"], "Explanation": "Explanation only if the user does everything correctly."}`,
+          content: `I like to ${title}, generate a list of 6 items of 3 wants and 3 needs. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items.`,
         },
       ],
       temperature: 0.7,
+      response_format: { type: "json_object" },
+      functions: [
+        {
+          name: "generate_wants_and_needs",
+          description: "Generate a list of 6 items of 3 wants and 3 needs.",
+          parameters: {
+            type: "object",
+            properties: {
+              Needs: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+                description:
+                  "Things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort.",
+              },
+              Wants: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+                description: "Other items that are not an absolute necessity.",
+              },
+              Explanation: {
+                type: "string",
+                description: "Explanation of the generated list.",
+              },
+            },
+            required: ["Needs", "Wants", "Explanation"],
+          },
+        },
+      ],
+      function_call: { name: "generate_wants_and_needs" },
     });
 
-    const message =
-      response.choices[0]?.message?.content || "No response from OpenAI";
+    const functionCall = response.choices[0]?.message?.function_call;
 
-    let parsedResponse: ResponseData;
-
-    try {
-      parsedResponse = JSON.parse(message);
-      console.log("Parsed OpenAI Response:", parsedResponse);
-    } catch (error) {
-      console.error("Error parsing OpenAI response:", error);
+    if (!functionCall) {
       return NextResponse.json(
         { Needs: [], Wants: [], Explanation: "Invalid response format" },
         { status: 400 },
       );
     }
+
+    let parsedResponse: ResponseData = JSON.parse(functionCall.arguments);
 
     const formattedResponse: ResponseData = {
       Needs: parsedResponse.Needs || [],

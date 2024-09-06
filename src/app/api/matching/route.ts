@@ -3,7 +3,9 @@ import { OpenAI } from "openai";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
-async function fetchTopicandXp(userId: string): Promise<{ hobby: string | null, experience: string | null }> {
+async function fetchTopicandXp(
+  userId: string,
+): Promise<{ hobby: string | null; experience: string | null }> {
   const supabase = createServerSupabaseClient(cookies());
   const { data, error } = await supabase
     .from("users")
@@ -20,20 +22,20 @@ async function fetchTopicandXp(userId: string): Promise<{ hobby: string | null, 
   const hobby = jsonData?.subHobby?.hob?.title || null;
 
   const xp_map = ["beginner", "intermediate", "advanced"];
-  
+
   const experienceStage = jsonData?.stage2;
-  const experience = experienceStage !== undefined ? xp_map[experienceStage] : null;
+  const experience =
+    experienceStage !== undefined ? xp_map[experienceStage] : null;
 
   const finalExperience = experienceStage === 2 ? experience : null;
 
   return { hobby, experience: finalExperience };
-
 }
 
 type ResponseData = {
-    terms: { [key: string]: string };
-    explanation: string;
-  };
+  terms: { [key: string]: string };
+  explanation: string;
+};
 
 export async function GET(request: Request) {
   const supabase = createServerSupabaseClient(cookies());
@@ -45,12 +47,12 @@ export async function GET(request: Request) {
     console.error("Error fetching user data:", userError);
     return NextResponse.json(
       { message: "User not authenticated" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
   const openai = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY!,
+    apiKey: process.env.OPENAI_API_KEY!,
   });
 
   try {
@@ -97,7 +99,7 @@ export async function GET(request: Request) {
           terms: {},
           explanation: "Invalid response format",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -114,7 +116,7 @@ export async function GET(request: Request) {
         terms: {},
         explanation: "Internal Server Error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

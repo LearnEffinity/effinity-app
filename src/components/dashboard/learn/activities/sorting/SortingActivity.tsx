@@ -59,7 +59,7 @@ export default function SortingActivity() {
       try {
         // const data = tempData;
         // const response = { ok: true };
-        const response = await fetch("/api/openai");
+        const response = await fetch("/api/sorting");
         const data = await response.json();
 
         if (response.ok) {

@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
 
+interface User {
+  id: string;
+  email: string;
+  role: string;
+  onboardingStage: number;
+  first_name: string;
+  last_name: string;
+  username: string;
+}
+
 export async function middleware(request: NextRequest) {
   console.log("Middleware function called for path:", request.nextUrl.pathname);
 
@@ -55,14 +65,18 @@ export async function middleware(request: NextRequest) {
 
   if (user) {
     console.log("User authenticated, fetching role");
-    const { data: userData } = await supabase
+    const { data: pubUser } = await supabase
       .from("users")
-      .select("role")
+      .select("role, onboardingStage")
       .eq("id", user.id)
       .single();
 
-    const userRole = userData?.role;
+    const userRole = pubUser?.role;
     console.log("User role:", userRole);
+
+    if (pubUser?.onboardingStage !== -1 && pathname !== "/onboarding") {
+      return NextResponse.redirect(new URL("/onboarding", request.url));
+    }
 
     // Uncomment this block if you want to restrict non-admin access
     // if (

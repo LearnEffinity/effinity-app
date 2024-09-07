@@ -67,7 +67,7 @@ export async function middleware(request: NextRequest) {
     console.log("User authenticated, fetching role");
     const { data: pubUser } = await supabase
       .from("users")
-      .select("role, onboardingStage")
+      .select("role, onboardingStage, username")
       .eq("id", user.id)
       .single();
 
@@ -78,7 +78,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/onboarding", request.url));
     }
 
-    // Uncomment this block if you want to restrict non-admin access
+    // !Uncomment this block if you want to restrict non-admin access
     // if (
     //   userRole !== "admin" &&
     //   !pathname.startsWith("/auth") &&

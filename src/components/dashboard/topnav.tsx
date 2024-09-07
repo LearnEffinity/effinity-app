@@ -39,7 +39,7 @@ export default function TopNav() {
   );
 }
 
-const TopProfileDetails = ({ profile }) => {
+export const TopProfileDetails = ({ profile }) => {
   return (
     <div className="flex flex-row items-center gap-x-5">
       <div className="flex items-center gap-x-1">

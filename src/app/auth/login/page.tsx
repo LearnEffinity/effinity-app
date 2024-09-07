@@ -121,14 +121,14 @@ function LoginForm({
           value={password}
           onChange={(v) => setPassword(v)}
         />
-        <div className="flex items-center justify-between text-sm">
+        <div className="mt-2 flex items-center justify-between text-sm">
           <span className="flex items-center gap-2">
             <Checkbox
               onChange={(v: boolean) => console.log(`Remember me set to ${v}`)}
             />
             <span>Remember me</span>
           </span>
-          <a href="/auth/forgot-password" className="text-text-primary">
+          <a href="/auth/forgot-password" className=" text-text-primary">
             Forgot password?
           </a>
         </div>

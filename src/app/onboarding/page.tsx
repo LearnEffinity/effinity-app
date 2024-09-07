@@ -1,5 +1,6 @@
 "use client";
 
+import { useUsername } from "@/context/UsernameContext";
 import { Continue, GoBack } from "@/components/onboarding/Buttons";
 import {
   FinancialGoal,
@@ -10,6 +11,7 @@ import Input from "@/components/form/Input";
 import ProgressBar from "@/components/onboarding/ProgressBar";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const stage1 = [
   {
@@ -136,6 +138,8 @@ const subHobbies = {
 };
 
 export default function Onboarding() {
+  const { username, setUsername, isLoading } = useUsername();
+  const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
@@ -148,7 +152,7 @@ export default function Onboarding() {
       if (user) {
         const { data, error } = await supabase
           .from("users")
-          .select("onboardingStage, onboardingData")
+          .select("username, onboardingStage, onboardingData")
           .eq("id", user.id)
           .single();
 
@@ -156,6 +160,8 @@ export default function Onboarding() {
 
         if (data) {
           console.log("Onboarding data:", data);
+          setUser({ ...user, ...data });
+          setStageZero(!data.username);
           setStage(data.onboardingStage || 1);
           const onboardingData = data.onboardingData || {};
           setSelectedStage1(onboardingData.stage1 || []);
@@ -173,7 +179,7 @@ export default function Onboarding() {
   const [user, setUser] = useState(null);
   const [stageZero, setStageZero] = useState(true);
   const [stage, setStage] = useState<number>(1);
-  const [username, setUsername] = useState("");
+  // const [username, setUsername] = useState("");
   const [selectedStage1, setSelectedStage1] = useState<number[]>([]);
   const [selectedStage2, setSelectedStage2] = useState<number | null>(null);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
@@ -184,6 +190,7 @@ export default function Onboarding() {
       ind: null,
     },
   );
+
   useEffect(() => {
     async function getPubUser() {
       try {
@@ -205,27 +212,31 @@ export default function Onboarding() {
     getPubUser();
   }, []);
 
-  const noUsername = () => {
-    if (!user.username) {
-      setStageZero(false);
-    } else {
-      setStageZero(true);
-    }
+  const handleUsernameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await setUsername(username);
+    setStageZero(false);
   };
 
-  const updateUsername = async (username: string) => {
-    const { data, error } = await supabase
-      .from("users")
-      .update({ username })
-      .eq("id", user.id)
-      .select();
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-    if (error) {
-      console.error("Error updating username:", error);
-    }
-
-    console.log("Updated username:", data);
-  };
+  if (!username) {
+    return (
+      <>
+        <form onSubmit={handleUsernameSubmit}>
+          <Input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e)}
+          />
+          <button type="submit">Submit</button>
+        </form>
+      </>
+    );
+  }
 
   const handleTopicSelection = (index: number) => {
     if (selectedTopics.includes(index)) {
@@ -478,7 +489,7 @@ export default function Onboarding() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            updateUsername(username);
+            useUsername(username);
           }}
         >
           <Input

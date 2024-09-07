@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { UsernameProvider } from "@/context/UsernameContext";
 
 export default function OnboardingLayout({
   children,
@@ -15,7 +16,7 @@ export default function OnboardingLayout({
         alt="Effinity"
         className="mb-6"
       />
-      {children}
+      <UsernameProvider>{children}</UsernameProvider>
     </div>
   );
 }

@@ -45,7 +45,7 @@ export default function Home() {
             <h1 className="text-4xl font-bold">
               Welcome{" "}
               {user
-                ? user.user_metadata.username || user.user_metadata.first_name
+                ? user.user_metadata.username || user.user_metadata.full_name
                 : "Loading..."}
             </h1>
             <a

@@ -1,26 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import SearchBar from "./learn/searchbar";
 import { createClient } from "@/utils/supabase/client";
+import { useUsername } from "@/context/UsernameContext";
 
 export default function TopNav() {
-  const [profile, setProfile] = useState(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-
-      if (error) {
-        console.error("Error fetching profile", error);
-      } else if (user) {
-        setProfile(user);
-      }
-    };
-    fetchProfile();
-  }, []);
+  const { username, isLoading } = useUsername();
 
   const handleSearch = (searchTerm: string) => {
     // !do something
@@ -34,12 +18,18 @@ export default function TopNav() {
           onSearch={handleSearch}
         />
       </div>
-      {profile && <TopProfileDetails profile={profile} />}
+      {!isLoading && <TopProfileDetails username={username} />}
     </div>
   );
 }
 
-export const TopProfileDetails = ({ profile }) => {
+interface TopProfileDetailsProps {
+  username: string | null;
+}
+
+export const TopProfileDetails: React.FC<TopProfileDetailsProps> = ({
+  username,
+}) => {
   return (
     <div className="flex flex-row items-center gap-x-5">
       <div className="flex items-center gap-x-1">
@@ -52,7 +42,7 @@ export const TopProfileDetails = ({ profile }) => {
         </div>
         <div className="flex w-[116px] flex-col items-start gap-y-1 overflow-ellipsis">
           <h1 className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-base font-medium text-text-primary">
-            {profile?.username || "User"}
+            {username || "User"}
           </h1>
           <p className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs font-normal text-text-secondary">
             Level 0

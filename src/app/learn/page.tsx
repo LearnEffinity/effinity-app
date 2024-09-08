@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Continue from "@/components/dashboard/learn/continue";
 import Recommended from "@/components/dashboard/learn/recommended";
 import TopNav from "@/components/dashboard/topnav";
+import { UsernameProvider } from "@/context/UsernameContext";
 
 export default function Home() {
   const pathname = usePathname();
@@ -15,29 +16,31 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className="fixed">
-        <Sidebar
-          currentRoute={pathname}
-          onWidthChange={handleSidebarWidthChange}
-        />
-      </div>
-      <main
-        className="flex-1 transition-all duration-[325ms]"
-        style={{ marginLeft: `${sidebarWidth}px` }}
-      >
-        <div className="px-8 py-10">
-          {/* MAIN CONTENT */}
-          <div className="mx-auto ">
-            <div className="mb-8 flex items-center justify-between">
-              <TopNav />
-            </div>
-            <Continue />
-            <Recommended />
-          </div>
-          {/* MAIN CONTENT */}
+    <UsernameProvider>
+      <div className="flex min-h-screen">
+        <div className="fixed">
+          <Sidebar
+            currentRoute={pathname}
+            onWidthChange={handleSidebarWidthChange}
+          />
         </div>
-      </main>
-    </div>
+        <main
+          className="flex-1 transition-all duration-[325ms]"
+          style={{ marginLeft: `${sidebarWidth}px` }}
+        >
+          <div className="px-8 py-10">
+            {/* MAIN CONTENT */}
+            <div className="mx-auto ">
+              <div className="mb-8 flex items-center justify-between">
+                <TopNav />
+              </div>
+              <Continue />
+              <Recommended />
+            </div>
+            {/* MAIN CONTENT */}
+          </div>
+        </main>
+      </div>
+    </UsernameProvider>
   );
 }

@@ -74,7 +74,7 @@ export async function middleware(request: NextRequest) {
     const userRole = pubUser?.role;
     console.log("User role:", userRole);
 
-    if (pubUser?.onboardingStage !== -1 && pathname !== "/onboarding") {
+    if (pubUser?.onboardingStage !== "-1" && pathname !== "/onboarding") {
       return NextResponse.redirect(new URL("/onboarding", request.url));
     }
 

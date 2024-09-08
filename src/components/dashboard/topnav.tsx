@@ -52,10 +52,7 @@ export const TopProfileDetails = ({ profile }) => {
         </div>
         <div className="flex w-[116px] flex-col items-start gap-y-1 overflow-ellipsis">
           <h1 className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-base font-medium text-text-primary">
-            {profile.user_metadata?.name ||
-              profile.user_metadata?.first_name ||
-              profile.user_metadata?.full_name ||
-              "User"}
+            {profile?.username || "User"}
           </h1>
           <p className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs font-normal text-text-secondary">
             Level 0

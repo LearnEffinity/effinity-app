@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import { add } from "@dnd-kit/utilities";
 
 async function fetchTopicandXp(
   userId: string,
@@ -71,42 +72,55 @@ export async function GET(request: Request) {
       messages: [
         {
           role: "user",
-          content: `
-          Please provide 4 terms related to effective budgeting in the context of ${user_hobby} and their corresponding definitions. 
-          Assume that the user has ${xp} experience. These definitions shouldn't be too long, around 80 characters. 
-          Return the terms/definitions, along with an explanation of each one if answer correctly, in this format.
-          { "terms": { [key: string]: string }, "explanation": string}
-          `,
+          content: `Provide 4 terms related to effective budgeting in the context of ${user_hobby} for a user with ${xp} experience. Definitions should be around 80 characters.`,
         },
       ],
-      temperature: 0.7,
+      temperature: 0.7,     
+       response_format: {type: "json_object"},
+       functions: [
+        {
+          name: "generate_budgeting_terms",
+          description: "Generate 4 terms related to effective budgeting and their definitions.",
+          parameters: {
+            type: "object",
+            properties: {
+             terms: {
+              type: "object",
+              description: "Terms related to effective budgeting and their definitions.",
+              additionalProperties: {
+                type: "string",
+              },
+              explanation: {
+                type: "string",
+                description: "Explanation of the term if answered correctly.",
+              }
+             },
+             required: ["terms", "explanation"],
+            },
+          },
+        }
+       ],
+       function_call: { name: "generate_budgeting_terms" },
+
     });
 
-    const message =
-      response.choices[0]?.message?.content || "No response from OpenAI";
+    const m = response.choices[0]?.message?.function_call
 
-    console.log(message);
-
-    let parsedResponse: ResponseData;
-
-    try {
-      parsedResponse = JSON.parse(message);
-      console.log("Parsed OpenAI Response:", parsedResponse);
-    } catch (error) {
-      console.error("Error parsing OpenAI response:", error);
+    if (!m) {
       return NextResponse.json(
-        {
-          terms: {},
-          explanation: "Invalid response format",
-        },
-        { status: 400 },
+        { message: "Function call not found" },
+        { status: 404 },
       );
-    }
+    } 
+
+    const message: ResponseData = JSON.parse(m.arguments);
+    
 
     const formattedResponse: ResponseData = {
-      terms: parsedResponse.terms || {},
-      explanation: parsedResponse.explanation || "No explanation provided.",
-    };
+      terms: message.terms || {},
+      explanation: message.explanation || "No explanation provided.",
+    
+    }
 
     return NextResponse.json<ResponseData>(formattedResponse);
   } catch (error) {

@@ -76,7 +76,13 @@ export function Topic({
       <div
         className={`${selected ? "border-brand-accent" : !disabled ? "border-transparent hover:border-surface-secondary" : "border-transparent"} grid w-full flex-grow place-items-center rounded-2xl border-4 bg-surface-base p-4`}
       >
-        <Image src={image} width={244} height={168} alt={title} />
+        <Image 
+          src={image} 
+          width={183} 
+          height={126} 
+          alt={title} 
+          className="w-auto h-auto" 
+        />
       </div>
       <span className={`font-semibold ${font}`}>{title}</span>
     </button>

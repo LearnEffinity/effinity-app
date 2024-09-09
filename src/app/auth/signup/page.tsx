@@ -201,7 +201,9 @@ function SignupForm({
               : "error"
             : undefined
         }
-        subtext={emailCheckPerformed && !emailValidated ? emailError : ""}
+        subtext={
+          emailCheckPerformed && !emailValidated ? emailError : "Valid Email!"
+        }
       />
       {!emailValidated ? (
         <Button

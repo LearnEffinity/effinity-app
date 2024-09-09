@@ -1,14 +1,18 @@
 "use client";
 
+import { useUsername } from "@/context/UsernameContext";
 import { Continue, GoBack } from "@/components/onboarding/Buttons";
 import {
   FinancialGoal,
   ProficiencyLevel,
   Topic,
 } from "@/components/onboarding/Option";
+import Input from "@/components/form/Input";
 import ProgressBar from "@/components/onboarding/ProgressBar";
-import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { fetchSession, saveOnboardingData, saveUsername } from "./actions";
+import { OnboardingStage, OnboardingData, UserData, SubHobby } from "./types";
 
 const stage1 = [
   {
@@ -135,139 +139,147 @@ const subHobbies = {
 };
 
 export default function Onboarding() {
-  const supabase = createClient();
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user || null);
-
-      if (user) {
-        const { data, error } = await supabase
-          .from("users")
-          .select("onboardingStage, onboardingData")
-          .eq("id", user.id)
-          .single();
-
-        if (error) console.error(error);
-
-        if (data) {
-          console.log("Onboarding data:", data);
-          setStage(data.onboardingStage || 1);
-          const onboardingData = data.onboardingData || {};
-          setSelectedStage1(onboardingData.stage1 || []);
-          setSelectedStage2(onboardingData.stage2);
-          setSelectedTopics(onboardingData.stage3 || []);
-          setSelectedStage4(onboardingData.stage4);
-          selectSubHobby(onboardingData.subHobby || { hob: "", ind: null });
-        }
-      }
-    };
-
-    fetchSession();
-  }, []);
-
-  const [user, setUser] = useState(null);
-  const [stage, setStage] = useState<number>(1);
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [stage, setStage] = useState<OnboardingStage>(OnboardingStage.Username);
+    const [username, setUsername] = useState("");
   const [selectedStage1, setSelectedStage1] = useState<number[]>([]);
   const [selectedStage2, setSelectedStage2] = useState<number | null>(null);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
   const [selectedStage4, setSelectedStage4] = useState<number | null>(null);
-  const [hobby, selectSubHobby] = useState<{ hob: string; ind: number | null }>(
-    {
-      hob: "",
-      ind: null,
-    },
-  );
+  const [hobby, selectSubHobby] = useState<{
+    hob: SubHobby;
+    ind: number | null;
+  }>({
+    hob: null,
+    ind: null,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [onboardingData, setOnboardingData] = useState<OnboardingData>({
+    username: "",
+    stage1: [],
+    stage2: null,
+    stage3: [],
+    stage4: null,
+    subHobby: { hob: null, ind: null },
+  });
+  useEffect(() => {
+    const initSession = async () => {
+      setIsLoading(true);
+      const { user, userData } = await fetchSession();
+      setUser(user);
+      console.log("User data:", userData, user);
 
+      if (userData) {
+        setUserData(userData);
+        if (userData.onboardingStage === OnboardingStage.Completed) {
+          console.log("Redirecting to home...");
+          router.push("/");
+          return;
+        }
+
+        setOnboardingData(userData.onboardingData || onboardingData);
+        setUsername(userData.onboardingData?.username || "");
+        setStage(userData.onboardingStage || OnboardingStage.Username);
+      } else {
+        setStage(OnboardingStage.Username);
+      }
+      setIsLoading(false);
+    };
+
+    initSession();
+  }, [router]);
   const handleTopicSelection = (index: number) => {
     if (selectedTopics.includes(index)) {
       setSelectedTopics(selectedTopics.filter((item) => item !== index));
-      console.log(selectedTopics);
     } else if (selectedTopics.length < 3) {
       setSelectedTopics([...selectedTopics, index]);
     }
   };
+
   const handleStage1Selection = (index: number) => {
     if (selectedStage1.includes(index)) {
       setSelectedStage1(selectedStage1.filter((item) => item !== index));
-      console.log(selectedStage1);
     } else {
       setSelectedStage1([...selectedStage1, index]);
     }
   };
 
-
-  const saveOnboardingData = async (nextStage: number) => {
-    if (!user) {
-      console.error("No user found");
-      return;
-    }
-
-    const onboardingData = {
-      stage1: selectedStage1,
-      stage2: selectedStage2,
-      stage3: selectedTopics,
-      stage4: selectedStage4,
-      subHobby: hobby,
-    };
-    console.log("Saving onboarding data:", onboardingData);
-
+  const handleUsernameSubmit = async () => {
+    if (!username.trim()) return;
     try {
-      const { data, error } = await supabase
-        .from("users")
-        .update({
-          onboardingData: onboardingData,
-          onboardingStage: nextStage,
-        })
-        .eq("id", user.id)
-        .select();
-
-      if (error) {
-        throw error;
-      }
-
-      console.log("Updated data:", data[0]);
+      await saveUsername(username);
+      setStage(OnboardingStage.FinancialGoals);
+      setOnboardingData({ ...onboardingData, username });
+      await saveOnboardingData(OnboardingStage.FinancialGoals, {
+        ...onboardingData,
+        username,
+      });
     } catch (error) {
-      console.error("Error saving onboarding data:", error);
+      console.error("Error saving username:", error);
     }
   };
-
   const handleContinue = async () => {
-    console.log("Stage before update:", stage);
-    console.log("typeof stage:", typeof stage);
-    const nextStage = parseInt(stage.toString()) + 1;
+    const currentStageIndex = Object.values(OnboardingStage).indexOf(stage);
+    const nextStage = Object.values(OnboardingStage)[
+      currentStageIndex + 1
+    ] as OnboardingStage;
 
-    if (nextStage === 6) {
-      setStage(-1);
-      console.log("Redirect to dashboard");
-      window.location.href = "/";
-      await saveOnboardingData(-1);
-      return;
+    if (nextStage === OnboardingStage.Completed) {
+      console.log("Onboarding completed, saving data and redirecting...");
+      await saveOnboardingData(OnboardingStage.Completed, onboardingData);
+      router.push("/");
     } else {
-      setStage((prevStage) => {
-        console.log("Updating stage from:", prevStage, "to:", nextStage);
-        return nextStage;
-      });
-      await saveOnboardingData(nextStage);
-
-      console.log("Stage after update:", nextStage);
+      console.log("Saving data for stage:", nextStage);
+      await saveOnboardingData(nextStage, onboardingData);
+      setStage(nextStage);
     }
   };
 
   const handleGoBack = async () => {
-    const previousStage = stage - 1;
-    await saveOnboardingData(previousStage);
+    const currentStageIndex = Object.values(OnboardingStage).indexOf(stage);
+    const previousStage = Object.values(OnboardingStage)[
+      currentStageIndex - 1
+    ] as OnboardingStage;
+    await saveOnboardingData(previousStage, onboardingData);
     setStage(previousStage);
   };
 
+  if (!user) {
+    return <div>Loading...</div>;
+  }
   return (
     <>
-      <ProgressBar stage={stage} totalStage={6} />
+      <ProgressBar stage={Number(stage)} totalStage={6} />
       <div className="flex flex-col py-10">
-        {stage == 1 && (
+        {stage === OnboardingStage.Username && (
+          <>
+            <p className="pb-7 text-lg md:text-2xl">
+              Choose a username:
+              <span className="text-text-secondary">
+                {" "}
+                This will be your display name in the app.
+              </span>
+            </p>
+            <div className="">
+              <Input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e)}
+                className="mb-6 w-full max-w-md"
+              />
+              <div className="mt-10 flex justify-end">
+                <Continue
+                  onClick={handleUsernameSubmit}
+                  disabled={!username.trim()}
+                />
+              </div>
+            </div>
+          </>
+        )}
+        {stage === OnboardingStage.FinancialGoals && (
           <>
             <p className="pb-7 text-lg md:text-2xl">
               Why do you want to learn about finance?
@@ -281,7 +293,10 @@ export default function Onboarding() {
                   image={goal.image}
                   onClick={() => handleStage1Selection(index)}
                   selected={selectedStage1.includes(index)}
-                  disabled={selectedStage1.length >= 3 && !selectedStage1.includes(index)}
+                  disabled={
+                    selectedStage1.length >= 3 &&
+                    !selectedStage1.includes(index)
+                  }
                 />
               ))}
             </ul>
@@ -293,7 +308,7 @@ export default function Onboarding() {
             </div>
           </>
         )}
-        {stage == 2 && (
+        {stage === OnboardingStage.ProficiencyLevel && (
           <>
             <p className="pb-7 text-lg md:text-2xl">
               How much do you know about finance?
@@ -319,7 +334,7 @@ export default function Onboarding() {
             </div>
           </>
         )}
-        {stage == 3 && (
+        {stage === OnboardingStage.Topics && (
           <>
             <p className="pb-7 text-lg md:text-2xl">
               What topics are you interested in learning?
@@ -349,7 +364,7 @@ export default function Onboarding() {
             </div>
           </>
         )}
-        {stage == 4 && (
+        {stage === OnboardingStage.Hobby && (
           <>
             <p className="pb-7 text-lg md:text-2xl">
               What is your favorite hobby?{" "}
@@ -378,7 +393,7 @@ export default function Onboarding() {
             </div>
           </>
         )}
-        {stage == 5 &&
+        {stage === OnboardingStage.SubHobby &&
           selectedStage4 !== null &&
           subHobbies[stage4[selectedStage4].title] && (
             <>
@@ -416,7 +431,7 @@ export default function Onboarding() {
                   onClick={() => {
                     handleContinue();
                   }}
-                  disabled={hobby.hob === ""}
+                  disabled={!hobby.hob}
                 />
               </div>
             </>

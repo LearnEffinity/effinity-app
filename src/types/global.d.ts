@@ -1,6 +1,7 @@
 
 declare global {
   type UserMetadata = {
+    [x: string]: string;
     email: string;
     email_verified: boolean;
     phone_verified: boolean;

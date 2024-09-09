@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
-import { add } from "@dnd-kit/utilities";
 
 async function fetchTopicandXp(
   userId: string,
@@ -54,6 +53,7 @@ export async function GET(request: Request) {
 
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY!,
+    // organization: process.env.OPENAI_ORG!,
   });
 
   try {
@@ -68,59 +68,58 @@ export async function GET(request: Request) {
     }
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         {
           role: "user",
           content: `Provide 4 terms related to effective budgeting in the context of ${user_hobby} for a user with ${xp} experience. Definitions should be around 80 characters.`,
         },
       ],
-      temperature: 0.7,     
-       response_format: {type: "json_object"},
-       functions: [
+      temperature: 0.7,
+      response_format: { type: "json_object" },
+      functions: [
         {
           name: "generate_budgeting_terms",
-          description: "Generate 4 terms related to effective budgeting and their definitions.",
+          description:
+            "Generate 4 terms related to effective budgeting and their definitions.",
           parameters: {
             type: "object",
             properties: {
-             terms: {
-              type: "object",
-              description: "Terms related to effective budgeting and their definitions.",
-              additionalProperties: {
-                type: "string",
+              terms: {
+                type: "object",
+                description:
+                  "Terms related to effective budgeting and their definitions.",
+                additionalProperties: {
+                  type: "string",
+                },
+                explanation: {
+                  type: "string",
+                  description: "Explanation of the term if answered correctly.",
+                },
               },
-              explanation: {
-                type: "string",
-                description: "Explanation of the term if answered correctly.",
-              }
-             },
-             required: ["terms", "explanation"],
+              required: ["terms", "explanation"],
             },
           },
-        }
-       ],
-       function_call: { name: "generate_budgeting_terms" },
-
+        },
+      ],
+      function_call: { name: "generate_budgeting_terms" },
     });
 
-    const m = response.choices[0]?.message?.function_call
+    const m = response.choices[0]?.message?.function_call;
 
     if (!m) {
       return NextResponse.json(
         { message: "Function call not found" },
         { status: 404 },
       );
-    } 
+    }
 
     const message: ResponseData = JSON.parse(m.arguments);
-    
 
     const formattedResponse: ResponseData = {
       terms: message.terms || {},
       explanation: message.explanation || "No explanation provided.",
-    
-    }
+    };
 
     return NextResponse.json<ResponseData>(formattedResponse);
   } catch (error) {

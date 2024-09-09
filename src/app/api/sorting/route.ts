@@ -44,6 +44,7 @@ export async function GET(request: Request) {
 
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY!,
+    // organization: process.env.OPENAI_ORG!,
   });
 
   try {
@@ -53,7 +54,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "Title not found" }, { status: 404 });
     }
 
-    // generate only 5 items and randomize the number of wants and needs, add a minimum 1 item per category though
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [

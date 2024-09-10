@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
-import { OpenAI } from "openai";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
+import { generateObject } from "ai";
+import { z } from "zod";
+
+const bedrock = createAmazonBedrock({
+  region: process.env.AWS_REGION!,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+});
+const model = bedrock("anthropic.claude-3-haiku-20240307-v1:0");
 
 async function fetchTopicandXp(
   userId: string,
@@ -33,7 +42,7 @@ async function fetchTopicandXp(
 }
 
 type ResponseData = {
-  terms: { [key: string]: string };
+  terms: { term: string; definition: string }[];
   explanation: string;
 };
 
@@ -51,11 +60,6 @@ export async function GET(request: Request) {
     );
   }
 
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY!,
-    // organization: process.env.OPENAI_ORG!,
-  });
-
   try {
     const user_info = await fetchTopicandXp(userData.user.id);
     const user_hobby = user_info.hobby;
@@ -67,58 +71,23 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "Hobby not found" }, { status: 404 });
     }
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "user",
-          content: `Provide 4 terms related to effective budgeting in the context of ${user_hobby} for a user with ${xp} experience. Definitions should be around 80 characters.`,
-        },
-      ],
+    const { object } = await generateObject({
+      model,
+      prompt: `Provide 4 terms related to effective budgeting in the context of ${user_hobby} for a user with ${xp} experience. Definitions should be around 80 characters.`,
       temperature: 0.7,
-      response_format: { type: "json_object" },
-      functions: [
-        {
-          name: "generate_budgeting_terms",
-          description:
-            "Generate 4 terms related to effective budgeting and their definitions.",
-          parameters: {
-            type: "object",
-            properties: {
-              terms: {
-                type: "object",
-                description:
-                  "Terms related to effective budgeting and their definitions.",
-                additionalProperties: {
-                  type: "string",
-                },
-                explanation: {
-                  type: "string",
-                  description: "Explanation of the term if answered correctly.",
-                },
-              },
-              required: ["terms", "explanation"],
-            },
-          },
-        },
-      ],
-      function_call: { name: "generate_budgeting_terms" },
+      schema: z.object({
+        terms: z.array(
+          z.object({
+            term: z.string(),
+            definition: z.string(),
+          }),
+        ),
+        explanation: z.string(),
+      }),
     });
-
-    const m = response.choices[0]?.message?.function_call;
-
-    if (!m) {
-      return NextResponse.json(
-        { message: "Function call not found" },
-        { status: 404 },
-      );
-    }
-
-    const message: ResponseData = JSON.parse(m.arguments);
-
     const formattedResponse: ResponseData = {
-      terms: message.terms || {},
-      explanation: message.explanation || "No explanation provided.",
+      terms: object.terms as { term: string; definition: string }[],
+      explanation: object.explanation || "No explanation provided.",
     };
 
     return NextResponse.json<ResponseData>(formattedResponse);
@@ -126,7 +95,7 @@ export async function GET(request: Request) {
     console.error("Error calling OpenAI API:", error);
     return NextResponse.json<ResponseData>(
       {
-        terms: {},
+        terms: [],
         explanation: "Internal Server Error",
       },
       { status: 500 },

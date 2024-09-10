@@ -75,14 +75,12 @@ export default function MatchingActivity() {
         if (response.ok) {
           console.log("API Response:", data);
 
-          const termItems = Object.entries(data.terms).map(
-            ([term, definition], index) => ({
-              id: `item-${index}`,
-              term,
-              icon: "/activity/wrench.png",
-              definition: definition as string,
-            }),
-          );
+          const termItems = data.terms.map((term, index) => ({
+            id: `item-${index}`,
+            term: term.term as string,
+            icon: "/activity/wrench.png",
+            definition: term.definition as string,
+          }));
 
           setUnmatchedTerms(termItems);
           setDefinitions(

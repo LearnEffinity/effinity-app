@@ -125,6 +125,7 @@ export async function GET(request: Request) {
           .describe("The two correct words to fill the blanks."),
         incorrectOptions: z
           .array(z.string())
+          .length(2)
           .describe(
             "List of incorrect options that could fit into the blanks.",
           ),

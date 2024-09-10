@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
-import { OpenAI } from "openai";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
+import { generateObject } from "ai";
+import { z } from "zod";
+
+const bedrock = createAmazonBedrock({
+  region: process.env.AWS_REGION!,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+});
+const model = bedrock("anthropic.claude-3-haiku-20240307-v1:0");
 
 async function fetchTopic(userId: string): Promise<string | null> {
   const supabase = createServerSupabaseClient(cookies());
@@ -42,11 +51,6 @@ export async function GET(request: Request) {
 
   // console.log("Authenticated User Data:", userData.user);
 
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY!,
-    // organization: process.env.OPENAI_ORG!,
-  });
-
   try {
     const title = await fetchTopic(userData.user.id);
 
@@ -54,65 +58,27 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "Title not found" }, { status: 404 });
     }
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: `I like to ${title}, generate a list of 6 items of 3 wants and 3 needs. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items.`,
-        },
-      ],
+    const { object } = await generateObject({
+      model,
+      prompt: `I like to ${title}, generate a list of 6 items of 3 wants and 3 needs. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items.`,
       temperature: 0.7,
-      response_format: { type: "json_object" },
-      functions: [
-        {
-          name: "generate_wants_and_needs",
-          description: "Generate a list of 6 items of 3 wants and 3 needs.",
-          parameters: {
-            type: "object",
-            properties: {
-              Needs: {
-                type: "array",
-                items: {
-                  type: "string",
-                },
-                description:
-                  "Things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort.",
-              },
-              Wants: {
-                type: "array",
-                items: {
-                  type: "string",
-                },
-                description: "Other items that are not an absolute necessity.",
-              },
-              Explanation: {
-                type: "string",
-                description: "Explanation of the generated list.",
-              },
-            },
-            required: ["Needs", "Wants", "Explanation"],
-          },
-        },
-      ],
-      function_call: { name: "generate_wants_and_needs" },
+      schema: z.object({
+        Needs: z
+          .array(z.string())
+          .describe(
+            "Things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort.",
+          ),
+        Wants: z
+          .array(z.string())
+          .describe("Other items that are not an absolute necessity."),
+        Explanation: z.string().describe("Explanation of the generated list."),
+      }),
     });
 
-    const functionCall = response.choices[0]?.message?.function_call;
-
-    if (!functionCall) {
-      return NextResponse.json(
-        { Needs: [], Wants: [], Explanation: "Invalid response format" },
-        { status: 400 },
-      );
-    }
-
-    let parsedResponse: ResponseData = JSON.parse(functionCall.arguments);
-
     const formattedResponse: ResponseData = {
-      Needs: parsedResponse.Needs || [],
-      Wants: parsedResponse.Wants || [],
-      Explanation: parsedResponse.Explanation || "No explanation provided.",
+      Needs: object.Needs || [],
+      Wants: object.Wants || [],
+      Explanation: object.Explanation || "No explanation provided.",
     };
 
     return NextResponse.json<ResponseData>(formattedResponse);

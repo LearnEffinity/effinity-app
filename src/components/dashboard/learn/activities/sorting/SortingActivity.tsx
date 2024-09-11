@@ -57,8 +57,6 @@ export default function SortingActivity() {
   useEffect(() => {
     const fetchSortingData = async () => {
       try {
-        // const data = tempData;
-        // const response = { ok: true };
         const response = await fetch("/api/sorting");
         const data = await response.json();
 
@@ -68,7 +66,7 @@ export default function SortingActivity() {
           const allItems = [...data.Needs, ...data.Wants].map(
             (item: string, index: number) => ({
               id: `item-${index}`,
-              icon: "/activity/wrench.png", // Update icon path as needed
+              icon: "/activity/wrench.png",
               item,
             }),
           );

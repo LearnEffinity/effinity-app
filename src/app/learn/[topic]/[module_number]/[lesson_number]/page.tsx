@@ -86,15 +86,15 @@ export default function LessonPage({ params }: PageProps) {
         return (
           <IntroContent
             lessonTitle="Introduction to Budgeting"
-            content="Budgeting is so cool, i wish I knew how to budget my allowance of 0 dollars!!!!!"
+            content="Budgeting is the process of managing your money to ensure you have enough to cover your expenses and save for the future. It's a skill that can help you achieve your financial goals and live a more secure life."
           />
         );
       case "activity1":
-        return <MatchingActivity />; // change back to sorting
+        return <FillBlankActivity />;
       case "activity2":
         return <SortingActivity />;
       case "activity3":
-        return <FillBlankActivity />;
+        return <MatchingActivity />;
       case "quiz":
         return <QuizActivity />;
       case "conclusion":

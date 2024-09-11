@@ -1,6 +1,5 @@
 "use client";
 
-import { useUsername } from "@/context/UsernameContext";
 import { Continue, GoBack } from "@/components/onboarding/Buttons";
 import {
   FinancialGoal,
@@ -143,7 +142,7 @@ export default function Onboarding() {
   const [user, setUser] = useState<any>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [stage, setStage] = useState<OnboardingStage>(OnboardingStage.Username);
-    const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("");
   const [selectedStage1, setSelectedStage1] = useState<number[]>([]);
   const [selectedStage2, setSelectedStage2] = useState<number | null>(null);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
@@ -180,8 +179,15 @@ export default function Onboarding() {
         }
 
         setOnboardingData(userData.onboardingData || onboardingData);
-        setUsername(userData.onboardingData?.username || "");
-        setStage(userData.onboardingStage || OnboardingStage.Username);
+
+        // Check if the username exists
+        if (!userData.onboardingData?.username) {
+          setStage(OnboardingStage.Username);
+          setUsername("");
+        } else {
+          setUsername(userData.onboardingData.username);
+          setStage(userData.onboardingStage || OnboardingStage.FinancialGoals);
+        }
       } else {
         setStage(OnboardingStage.Username);
       }
@@ -226,13 +232,37 @@ export default function Onboarding() {
       currentStageIndex + 1
     ] as OnboardingStage;
 
+    let updatedOnboardingData = { ...onboardingData };
+
+    switch (stage) {
+      case OnboardingStage.FinancialGoals:
+        updatedOnboardingData.stage1 = selectedStage1;
+        break;
+      case OnboardingStage.ProficiencyLevel:
+        updatedOnboardingData.stage2 = selectedStage2;
+        break;
+      case OnboardingStage.Topics:
+        updatedOnboardingData.stage3 = selectedTopics;
+        break;
+      case OnboardingStage.Hobby:
+        updatedOnboardingData.stage4 = selectedStage4;
+        break;
+      case OnboardingStage.SubHobby:
+        updatedOnboardingData.subHobby = hobby;
+        break;
+    }
+
+    setOnboardingData(updatedOnboardingData);
     if (nextStage === OnboardingStage.Completed) {
       console.log("Onboarding completed, saving data and redirecting...");
-      await saveOnboardingData(OnboardingStage.Completed, onboardingData);
+      await saveOnboardingData(
+        OnboardingStage.Completed,
+        updatedOnboardingData,
+      );
       router.push("/");
     } else {
       console.log("Saving data for stage:", nextStage);
-      await saveOnboardingData(nextStage, onboardingData);
+      await saveOnboardingData(nextStage, updatedOnboardingData);
       setStage(nextStage);
     }
   };

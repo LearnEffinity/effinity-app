@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { OpenAI } from "openai";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import onboardingDataReference from "@/utils/onboardingDataReference";
+import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
+import { generateObject } from "ai";
+import { z } from "zod";
 
 interface UserPreference {
   stage1: number[];
@@ -17,6 +19,13 @@ interface UserPreference {
     ind: number;
   };
 }
+
+const bedrock = createAmazonBedrock({
+  region: process.env.AWS_REGION!,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+});
+const model = bedrock("anthropic.claude-3-haiku-20240307-v1:0");
 
 async function fetchTopic(userId: string): Promise<UserPreference | null> {
   const supabase = createServerSupabaseClient(cookies());
@@ -54,11 +63,6 @@ export async function GET(request: Request) {
       { status: 401 },
     );
   }
-
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY!,
-    // organization: process.env.OPENAI_ORG!,
-  });
 
   try {
     const userPreference = await fetchTopic(userData.user.id);
@@ -107,82 +111,36 @@ export async function GET(request: Request) {
     //  console.log("Selected Interests:", selectedInterestTitles);
     //  console.log("Hobby:", hobby);
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: `Create a fill-in-the-blank activity related to budgeting. The user is interested in ${selectedGoalTitles}, with an experience level of ${experienceLevel}, and has interests in ${selectedInterestTitles}. They also have a hobby in ${hobby}. Personalize the sentence given their experience, hobby, and interests.`,
-        },
-      ],
+    const { object } = await generateObject({
+      model,
+      prompt: `Create a fill-in-the-blank activity related to budgeting. The user is interested in ${selectedGoalTitles}, with an experience level of ${experienceLevel}, and has interests in ${selectedInterestTitles}. They also have a hobby in ${hobby}. Personalize the sentence given their experience, hobby, and interests.`,
       temperature: 0.7,
-      response_format: { type: "json_object" },
-      functions: [
-        {
-          name: "fill_in_the_blanks",
-          description:
-            "Create a fill-in-the-blank activity related to budgeting.",
-          parameters: {
-            type: "object",
-            properties: {
-              sentence: {
-                type: "string",
-                description: "Sentence related to budgeting with two blanks.",
-              },
-              correctOptions: {
-                type: "array",
-                items: {
-                  type: "string",
-                },
-                description: "The two correct words to fill the blanks.",
-              },
-              incorrectOptions: {
-                type: "array",
-                items: {
-                  type: "string",
-                },
-                description:
-                  "List of incorrect options that could fit into the blanks.",
-              },
-              explanation: {
-                type: "string",
-                description: "Explanation of the fill-in-the-blank activity.",
-              },
-            },
-            required: [
-              "sentence",
-              "correctOptions",
-              "incorrectOptions",
-              "explanation",
-            ],
-          },
-        },
-      ],
-      function_call: { name: "fill_in_the_blanks" },
+      schema: z.object({
+        sentence: z
+          .string()
+          .describe("Sentence related to budgeting with two blanks."),
+        correctOptions: z
+          .array(z.string())
+          .length(2)
+          .describe("The two correct words to fill the blanks."),
+        incorrectOptions: z
+          .array(z.string())
+          .length(2)
+          .describe(
+            "List of incorrect options that could fit into the blanks.",
+          ),
+        explanation: z
+          .string()
+          .describe("Explanation of the fill-in-the-blank activity."),
+      }),
     });
 
-    const functionCall = response.choices[0]?.message?.function_call;
-
-    if (!functionCall) {
-      return NextResponse.json(
-        {
-          sentence: "",
-          correctOptions: [],
-          incorrectOptions: [],
-          explanation: "Invalid response format",
-        },
-        { status: 400 },
-      );
-    }
-    const parsedResponse: ResponseData = JSON.parse(functionCall.arguments);
-
     const formattedResponse: ResponseData = {
-      sentence: parsedResponse.sentence,
-      correctOptions: parsedResponse.correctOptions || [],
-      incorrectOptions: parsedResponse.incorrectOptions || [],
-      explanation: parsedResponse.explanation || "No explanation provided.",
+      sentence: object.sentence,
+      correctOptions: object.correctOptions || [],
+      incorrectOptions: object.incorrectOptions || [],
+      explanation: object.explanation || "No explanation provided.",
     };
-
     return NextResponse.json<ResponseData>(formattedResponse);
   } catch (error) {
     console.error("Error calling OpenAI API:", error);

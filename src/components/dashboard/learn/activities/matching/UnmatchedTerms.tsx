@@ -17,7 +17,7 @@ export default function UnmatchedTerms({ id, items }: DropContainerProps) {
         ref={setNodeRef}
         className={`h-[428px] w-[534px] rounded-md border-2 p-4 ${isOver ? "border-blue-500 bg-blue-100" : "border-surface-primary bg-surface-primary"}`}
       >
-        <div className="space-y-2">
+        <div className="space-y-8">
           {items.map((item) => (
             <MatchingCard
               key={item.id}

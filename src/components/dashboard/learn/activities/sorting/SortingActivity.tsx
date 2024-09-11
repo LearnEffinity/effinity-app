@@ -53,16 +53,16 @@ export default function SortingActivity() {
 
   const [items, setItems] = useState<SortingCardData[]>(initialItems);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchSortingData = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/sorting");
         const data = await response.json();
 
         if (response.ok) {
-          console.log("API Response:", data);
-
           const allItems = [...data.Needs, ...data.Wants].map(
             (item: string, index: number) => ({
               id: `item-${index}`,
@@ -75,20 +75,18 @@ export default function SortingActivity() {
           setCorrectNeeds(data.Needs.sort());
           setCorrectWants(data.Wants.sort());
           setExplanation(data.Explanation);
-
-          console.log("Needs:", data.Needs);
-          console.log("Wants:", data.Wants);
-          console.log("Explanation:", data.Explanation);
         } else {
           console.error("Error fetching sorting data:", data.message);
         }
       } catch (error) {
         console.error("Error calling API:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchSortingData();
-  }, [setCorrectNeeds, setCorrectWants, setExplanation]);
+  }, []);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -151,6 +149,10 @@ export default function SortingActivity() {
 
     console.log("User Needs:", userNeeds);
     console.log("User Wants:", userWants);
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a more sophisticated loading indicator
   }
 
   return (

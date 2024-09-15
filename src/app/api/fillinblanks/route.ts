@@ -140,7 +140,6 @@ Additional Context: For the activity, a user is given one sentence with 2 blanks
           .describe("The two correct words to fill the blanks."),
         incorrectOptions: z
           .array(z.string())
-          .length(2)
           .describe(
             "List of incorrect options that could fit into the blanks.",
           ),

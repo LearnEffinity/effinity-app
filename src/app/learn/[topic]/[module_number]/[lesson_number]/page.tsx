@@ -19,9 +19,9 @@ type ScreenType =
 
 const baseScreens: ScreenType[] = [
   "intro",
-  "activity3",
   "activity1",
   "activity2",
+  "activity3",
   "quiz",
   "conclusion",
 ];
@@ -62,7 +62,7 @@ export default function LessonPage({ params }: PageProps) {
   const [progressWidth, setProgressWidth] = useState(0);
 
   useEffect(() => {
-    // setScreens(shuffleActivities([...baseScreens]));
+    setScreens(shuffleActivities([...baseScreens]));
     setScreens([...baseScreens]);
   }, []);
 

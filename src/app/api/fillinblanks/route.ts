@@ -118,14 +118,14 @@ export async function GET(request: Request) {
       schema: z.object({
         sentence: z
           .string()
-          .describe("Sentence related to budgeting with two blanks."),
+          .describe(
+            "Sentence related to budgeting with two blanks. Blank words are represented by open and closed braces with the answer inside of it. For example: {budgeting}.'",
+          ),
         correctOptions: z
           .array(z.string())
-          .length(2)
           .describe("The two correct words to fill the blanks."),
         incorrectOptions: z
           .array(z.string())
-          .length(2)
           .describe(
             "List of incorrect options that could fit into the blanks.",
           ),

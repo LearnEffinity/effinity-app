@@ -32,6 +32,9 @@ export default function FillBlankActivity() {
   } = useLessonContext();
 
   const [options, setOptions] = useState<BlankOption[]>([]);
+  const [sentenceFragments, setSentenceFragments] = useState<
+    SentenceFragment[]
+  >([]);
 
   // Fetch sentence and correct options from the API
   useEffect(() => {
@@ -48,11 +51,32 @@ export default function FillBlankActivity() {
         setUserBlanks(Array(data.correctOptions.length).fill(null));
 
         // Set initial options
-        const initialOptions = data.correctOptions.concat(data.incorrectOptions).map((text, index) => ({
-          id: `option-${index}`,
-          text: text,
-        }));
+        const initialOptions = data.correctOptions
+          .concat(data.incorrectOptions)
+          .map((text, index) => ({
+            id: `option-${index}`,
+            text: text,
+          }));
+        initialOptions.sort(() => Math.random() - 0.5);
         setOptions(initialOptions);
+
+        let bid = 0;
+        const newSentence = data.sentence.replaceAll("}", "} ");
+        setSentenceFragments(
+          newSentence.split(" ").map((fragment) => {
+            const isBlank = fragment.includes("{");
+
+            const newVal = {
+              id: Math.round(Math.random() * 10000).toString(),
+              text: fragment.replace("{", "").replace("}", ""),
+              blank: isBlank,
+              blankId: isBlank ? bid : undefined,
+            };
+            if (isBlank) bid++;
+
+            return newVal;
+          }),
+        );
       } catch (error) {
         console.error("Error fetching fill-in-the-blank data:", error);
       }
@@ -61,20 +85,6 @@ export default function FillBlankActivity() {
     fetchData();
     setMode("fib");
   }, [setSentence, setCorrectBlanks, setUserBlanks, setExplanation]);
-
-  // Parse sentence into fragments using the format {id} for blanks
-  const sentenceFragments = sentence.split(" ").map((fragment) => {
-    const isBlank = fragment.includes("{");
-
-    return {
-      id: isBlank
-        ? (parseInt(fragment.replace("{", "").replace("}", "")) - 1).toString()
-        : Math.round(Math.random() * 10000).toString(),
-      text: fragment.replace("{", "").replace("}", ""),
-      blank: isBlank,
-      blankId: isBlank ? fragment.replace("{", "").replace("}", "") : undefined,
-    };
-  });
 
   useEffect(() => {
     // Enable the check button when all blanks have been filled
@@ -89,29 +99,21 @@ export default function FillBlankActivity() {
     const { over, active } = event;
     if (!over) return;
 
-    const activeOption = options.find((option) => option.id === active.id);
-    const overBlank = sentenceFragments.find(
-      (fragment) => fragment.id === over.id
+    const fragment = sentenceFragments.find(
+      (fragment) => fragment.id === over.id,
     );
+    const option = options.find((option) => option.id === active.id);
 
-    if (activeOption && overBlank) {
-      // Remove the option from the list of options
-      const newOptions = options.filter((option) => option.id !== active.id);
+    if (fragment && option) {
+      const newBlanks = userBlanks.map((blank) => {
+        if (blank === option) {
+          return null;
+        }
+        return blank;
+      });
 
-      // If the blank already has an option, add it back to the options list
-      const currentBlank = userBlanks[parseInt(overBlank.id as string)];
-      if (currentBlank) {
-        newOptions.push(currentBlank);
-      }
-
-      // Set the option to the blank
-      const newBlanks = [...userBlanks];
-      newBlanks[parseInt(overBlank.blankId as string) - 1] = {
-        id: activeOption.id,
-        text: activeOption.text,
-      };
+      newBlanks[fragment.blankId] = option;
       setUserBlanks(newBlanks);
-      setOptions(newOptions);
     }
   }
 
@@ -130,12 +132,12 @@ export default function FillBlankActivity() {
           </div>
           <div className="mt-20 w-full">
             <p className="flex w-full flex-wrap items-center gap-3 text-3xl font-medium leading-[80px]">
-              {sentenceFragments.map((fragment) => {
+              {sentenceFragments.map((fragment, i) => {
                 return fragment.blank ? (
                   <Blank
                     key={fragment.id}
                     fragment={fragment}
-                    answer={userBlanks[parseInt(fragment.id)]}
+                    answer={userBlanks[fragment.blankId]}
                   />
                 ) : (
                   <span key={fragment.id}>{fragment.text}</span>

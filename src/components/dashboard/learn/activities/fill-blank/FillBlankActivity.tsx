@@ -16,6 +16,7 @@ export interface SentenceFragment {
 export interface BlankOption {
   id: string;
   text: string;
+  display: boolean;
 }
 
 export default function FillBlankActivity() {
@@ -56,6 +57,7 @@ export default function FillBlankActivity() {
           .map((text, index) => ({
             id: `option-${index}`,
             text: text,
+            display: true,
           }));
         initialOptions.sort(() => Math.random() - 0.5);
         setOptions(initialOptions);
@@ -105,6 +107,19 @@ export default function FillBlankActivity() {
     const option = options.find((option) => option.id === active.id);
 
     if (fragment && option) {
+      const newOptions = options.map((o) => {
+        if (o === option) {
+          return { ...o, display: false };
+        }
+
+        if (userBlanks[fragment.blankId]) {
+          return { ...o, display: true };
+        }
+
+        return o;
+      });
+      setOptions(newOptions);
+
       const newBlanks = userBlanks.map((blank) => {
         if (blank === option) {
           return null;
@@ -147,6 +162,7 @@ export default function FillBlankActivity() {
           </div>
           <div className="mt-20 flex w-full flex-wrap items-center justify-center gap-8">
             {options.map((option, i) => {
+              if (!option.display) return null;
               return <FillBlankOption option={option} key={i} />;
             })}
           </div>

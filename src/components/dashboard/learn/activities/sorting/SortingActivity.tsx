@@ -51,14 +51,13 @@ export default function SortingActivity() {
     userWants,
   } = useLessonContext();
 
-  const [items, setItems] = useState<SortingCardData[]>(initialItems);
+  const [items, setItems] = useState<SortingCardData[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchSortingData = async () => {
       try {
-        // const data = tempData;
-        // const response = { ok: true };
         const response = await fetch("/api/sorting");
         const data = await response.json();
 
@@ -77,15 +76,18 @@ export default function SortingActivity() {
           setCorrectNeeds(data.Needs.sort());
           setCorrectWants(data.Wants.sort());
           setExplanation(data.Explanation);
+          setIsLoading(false);
 
           console.log("Needs:", data.Needs);
           console.log("Wants:", data.Wants);
           console.log("Explanation:", data.Explanation);
         } else {
           console.error("Error fetching sorting data:", data.message);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Error calling API:", error);
+        setIsLoading(false);
       }
     };
 
@@ -153,6 +155,25 @@ export default function SortingActivity() {
 
     console.log("User Needs:", userNeeds);
     console.log("User Wants:", userWants);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-start px-36 pb-10">
+        <div className="pb-8 pt-10">
+          <div className="mb-4 h-8 w-48 animate-pulse rounded bg-gray-200"></div>
+          <div className="mb-2 h-12 w-96 animate-pulse rounded bg-gray-200"></div>
+          <div className="h-6 w-72 animate-pulse rounded bg-gray-200"></div>
+        </div>
+        <div className="flex flex-row items-start">
+          <div className="h-96 w-64 animate-pulse rounded bg-gray-200"></div>
+          <div className="ml-6 flex h-full gap-x-4 rounded-2xl bg-surface-base p-5">
+            <div className="h-96 w-48 animate-pulse rounded bg-gray-200"></div>
+            <div className="h-96 w-48 animate-pulse rounded bg-gray-200"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -36,10 +36,12 @@ export default function FillBlankActivity() {
   const [sentenceFragments, setSentenceFragments] = useState<
     SentenceFragment[]
   >([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch sentence and correct options from the API
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/fillinblanks");
         const data = await response.json();
@@ -81,6 +83,8 @@ export default function FillBlankActivity() {
         );
       } catch (error) {
         console.error("Error fetching fill-in-the-blank data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -130,6 +134,28 @@ export default function FillBlankActivity() {
       newBlanks[fragment.blankId] = option;
       setUserBlanks(newBlanks);
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex w-full justify-center px-8 pb-10">
+        <div className="flex w-full max-w-[1500px] flex-col items-start">
+          <div className="pb-8 pt-10">
+            <h3 className="text-xl font-medium text-text-secondary">
+              Fill in the Blank
+            </h3>
+            <h1 className="text-4xl font-medium text-text-primary">
+              What is {"effective budgeting"}?
+            </h1>
+            <h2>Drag and place each word into the correct blank box.</h2>
+          </div>
+          {/* Skeleton for sentence area */}
+          <div className="mt-20 h-20 w-full animate-pulse rounded bg-gray-200"></div>
+          {/* Skeleton for terms area */}
+          <div className="mt-20 h-40 w-full animate-pulse rounded bg-gray-200"></div>
+        </div>
+      </div>
+    );
   }
 
   return (

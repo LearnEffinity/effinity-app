@@ -60,7 +60,7 @@ export async function GET(request: Request) {
 
     const { object } = await generateObject({
       model,
-      prompt: `I like to ${title}, generate a list of 6 items of 3 wants and 3 needs. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items.`,
+      prompt: `I like to ${title}, generate a list of 5 items of 2 wants and 3 needs. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items.`,
       temperature: 0.7,
       schema: z.object({
         Needs: z

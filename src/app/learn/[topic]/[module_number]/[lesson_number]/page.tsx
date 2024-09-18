@@ -6,6 +6,7 @@ import SortingActivity from "@/components/dashboard/learn/activities/sorting/Sor
 import FillBlankActivity from "@/components/dashboard/learn/activities/fill-blank/FillBlankActivity";
 import MatchingActivity from "@/components/dashboard/learn/activities/matching/MatchingActivity";
 import IntroContent from "@/components/dashboard/learn/lessons/IntroContent";
+import EndScreen from "@/components/dashboard/learn/lessons/EndScreen";
 import { LessonProvider } from "@/components/dashboard/learn/lessons/LessonContext";
 import BottomBar from "@/components/dashboard/learn/lessons/BottomBar";
 
@@ -98,11 +99,7 @@ export default function LessonPage({ params }: PageProps) {
       case "quiz":
         return <QuizActivity />;
       case "conclusion":
-        return (
-          <div className="text-center text-5xl font-black text-brand-secondary">
-            Congratulations
-          </div>
-        );
+        return <EndScreen />;
       default:
         return null;
     }

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLessonContext } from "./LessonContext";
 import ExplanationTray from "./ExplanationTray";
 import { AiFillExclamationCircle } from "react-icons/ai";
+import { useRouter } from "next/navigation";
 
 interface BottomBarProps {
   onContinue: () => void;
@@ -19,16 +20,22 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
     userBlanks,
     correctBlanks,
     mode,
-  } = useLessonContext();  
+  } = useLessonContext();
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
+  const [isFinishLoading, setIsFinishLoading] = useState(false);
+
+  const router = useRouter();
 
   const handleExplanationToggle = () => {
     setIsExplanationOpen(!isExplanationOpen);
   };
 
-  // replace with whatever ai says
-  const explanationText =
-    "Lorem ipsum dolor sit amet consectetur. Egestas mi aliquet amet mattis scelerisque sed ornare. Laoreet sed nunc enim ante arcu mauris et ultrices tellus.";
+  const handleFinish = async () => {
+    setIsFinishLoading(true);
+    // Simulate a delay (you can replace this with any necessary cleanup or data submission)
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    router.push("/learn");
+  };
 
   const handleContinue = () => {
     onContinue();
@@ -38,20 +45,20 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
   const handleCheck = () => {
     // Handle Check for Sorting Activity
     console.log("Mode: ", mode);
-    if (mode === 'sorting') {
+    if (mode === "sorting") {
       console.log("Checking Sorting Activity...");
       console.log("User Needs: ", userNeeds);
       console.log("User Wants: ", userWants);
       console.log("Correct Needs: ", correctNeeds);
       console.log("Correct Wants: ", correctWants);
-    
+
       const flattenedUserNeeds = userNeeds.map((need) => need.item).sort();
       const flattenedUserWants = userWants.map((want) => want.item).sort();
-    
+
       const sortedCorrectly =
         JSON.stringify(flattenedUserNeeds) === JSON.stringify(correctNeeds) &&
         JSON.stringify(flattenedUserWants) === JSON.stringify(correctWants);
-    
+
       if (sortedCorrectly) {
         setBottomBarState("correctAnswer");
       } else {
@@ -60,7 +67,7 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
     }
 
     // Handle Check for FillBlankActivity
-    else if (mode === 'fib') {
+    else if (mode === "fib") {
       console.log("Checking Fill in the Blanks Activity...");
       console.log("User Blanks: ", userBlanks);
       console.log("Correct Blanks: ", correctBlanks);
@@ -173,6 +180,26 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
             </div>
           </div>
         );
+      case "finish":
+        return (
+          <div className="flex flex-row items-center justify-between border-t border-surface-secondary px-8 py-6">
+            <ReportButton answerType="text-secondary" />
+            <button
+              onClick={handleFinish}
+              disabled={isFinishLoading}
+              className="flex items-center rounded-lg bg-button px-7 py-3 text-surface-primary"
+            >
+              {isFinishLoading ? (
+                <>
+                  <Spinner className="mr-2" />
+                  Loading...
+                </>
+              ) : (
+                "Finish"
+              )}
+            </button>
+          </div>
+        );
       default:
         return null;
     }
@@ -245,6 +272,31 @@ const StartIcon = ({ className }: { className?: string }) => {
         d="M58.6673 32.0007C58.6673 46.7282 46.7282 58.6673 32.0007 58.6673C17.2731 58.6673 5.33398 46.7282 5.33398 32.0007C5.33398 17.2731 17.2731 5.33398 32.0007 5.33398C46.7282 5.33398 58.6673 17.2731 58.6673 32.0007ZM42.7482 23.9198C43.5292 24.7008 43.5292 25.9671 42.7482 26.7482L29.4149 40.0815C28.6338 40.8626 27.3675 40.8626 26.5864 40.0815L21.2531 34.7482C20.4721 33.9672 20.4721 32.7008 21.2531 31.9198C22.0342 31.1387 23.3005 31.1387 24.0815 31.9198L28.0007 35.8389L33.9602 29.8793L39.9198 23.9198C40.7008 23.1387 41.9671 23.1387 42.7482 23.9198Z"
         fill="#47B881"
       />
+    </svg>
+  );
+};
+
+const Spinner = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      className={`h-5 w-5 animate-spin text-white ${className}`}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      ></path>
     </svg>
   );
 };

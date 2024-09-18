@@ -49,6 +49,8 @@ export async function GET(request: Request) {
     );
   }
 
+  // console.log("Authenticated User Data:", userData.user);
+
   try {
     const title = await fetchTopic(userData.user.id);
 

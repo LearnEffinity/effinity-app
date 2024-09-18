@@ -5,7 +5,9 @@ export type BottomBarState =
   | "checkDisabled"
   | "checkEnabled"
   | "correctAnswer"
-  | "wrongAnswer";
+  | "wrongAnswer"
+  | "quizWrongAnswer"
+  | "finish";
 
 interface SortingCardData {
   id: string;

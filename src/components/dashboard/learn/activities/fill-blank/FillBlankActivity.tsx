@@ -16,6 +16,7 @@ export interface SentenceFragment {
 export interface BlankOption {
   id: string;
   text: string;
+  display: boolean;
 }
 
 export default function FillBlankActivity() {
@@ -32,10 +33,15 @@ export default function FillBlankActivity() {
   } = useLessonContext();
 
   const [options, setOptions] = useState<BlankOption[]>([]);
+  const [sentenceFragments, setSentenceFragments] = useState<
+    SentenceFragment[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch sentence and correct options from the API
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/fillinblanks");
         const data = await response.json();
@@ -48,33 +54,43 @@ export default function FillBlankActivity() {
         setUserBlanks(Array(data.correctOptions.length).fill(null));
 
         // Set initial options
-        const initialOptions = data.correctOptions.concat(data.incorrectOptions).map((text, index) => ({
-          id: `option-${index}`,
-          text: text,
-        }));
+        const initialOptions = data.correctOptions
+          .concat(data.incorrectOptions)
+          .map((text, index) => ({
+            id: `option-${index}`,
+            text: text,
+            display: true,
+          }));
+        initialOptions.sort(() => Math.random() - 0.5);
         setOptions(initialOptions);
+
+        let bid = 0;
+        const newSentence = data.sentence.replaceAll("}", "} ");
+        setSentenceFragments(
+          newSentence.split(" ").map((fragment) => {
+            const isBlank = fragment.includes("{");
+
+            const newVal = {
+              id: Math.round(Math.random() * 10000).toString(),
+              text: fragment.replace("{", "").replace("}", ""),
+              blank: isBlank,
+              blankId: isBlank ? bid : undefined,
+            };
+            if (isBlank) bid++;
+
+            return newVal;
+          }),
+        );
       } catch (error) {
         console.error("Error fetching fill-in-the-blank data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
     setMode("fib");
   }, [setSentence, setCorrectBlanks, setUserBlanks, setExplanation]);
-
-  // Parse sentence into fragments using the format {id} for blanks
-  const sentenceFragments = sentence.split(" ").map((fragment) => {
-    const isBlank = fragment.includes("{");
-
-    return {
-      id: isBlank
-        ? (parseInt(fragment.replace("{", "").replace("}", "")) - 1).toString()
-        : Math.round(Math.random() * 10000).toString(),
-      text: fragment.replace("{", "").replace("}", ""),
-      blank: isBlank,
-      blankId: isBlank ? fragment.replace("{", "").replace("}", "") : undefined,
-    };
-  });
 
   useEffect(() => {
     // Enable the check button when all blanks have been filled
@@ -89,30 +105,57 @@ export default function FillBlankActivity() {
     const { over, active } = event;
     if (!over) return;
 
-    const activeOption = options.find((option) => option.id === active.id);
-    const overBlank = sentenceFragments.find(
-      (fragment) => fragment.id === over.id
+    const fragment = sentenceFragments.find(
+      (fragment) => fragment.id === over.id,
     );
+    const option = options.find((option) => option.id === active.id);
 
-    if (activeOption && overBlank) {
-      // Remove the option from the list of options
-      const newOptions = options.filter((option) => option.id !== active.id);
+    if (fragment && option) {
+      const newOptions = options.map((o) => {
+        if (o === option) {
+          return { ...o, display: false };
+        }
 
-      // If the blank already has an option, add it back to the options list
-      const currentBlank = userBlanks[parseInt(overBlank.id as string)];
-      if (currentBlank) {
-        newOptions.push(currentBlank);
-      }
+        if (userBlanks[fragment.blankId]) {
+          return { ...o, display: true };
+        }
 
-      // Set the option to the blank
-      const newBlanks = [...userBlanks];
-      newBlanks[parseInt(overBlank.blankId as string) - 1] = {
-        id: activeOption.id,
-        text: activeOption.text,
-      };
-      setUserBlanks(newBlanks);
+        return o;
+      });
       setOptions(newOptions);
+
+      const newBlanks = userBlanks.map((blank) => {
+        if (blank === option) {
+          return null;
+        }
+        return blank;
+      });
+
+      newBlanks[fragment.blankId] = option;
+      setUserBlanks(newBlanks);
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex w-full justify-center px-8 pb-10">
+        <div className="flex w-full max-w-[1500px] flex-col items-start">
+          <div className="pb-8 pt-10">
+            <h3 className="text-xl font-medium text-text-secondary">
+              Fill in the Blank
+            </h3>
+            <h1 className="text-4xl font-medium text-text-primary">
+              What is {"effective budgeting"}?
+            </h1>
+            <h2>Drag and place each word into the correct blank box.</h2>
+          </div>
+          {/* Skeleton for sentence area */}
+          <div className="mt-20 h-20 w-full animate-pulse rounded bg-gray-200"></div>
+          {/* Skeleton for terms area */}
+          <div className="mt-20 h-40 w-full animate-pulse rounded bg-gray-200"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -130,12 +173,12 @@ export default function FillBlankActivity() {
           </div>
           <div className="mt-20 w-full">
             <p className="flex w-full flex-wrap items-center gap-3 text-3xl font-medium leading-[80px]">
-              {sentenceFragments.map((fragment) => {
+              {sentenceFragments.map((fragment, i) => {
                 return fragment.blank ? (
                   <Blank
                     key={fragment.id}
                     fragment={fragment}
-                    answer={userBlanks[parseInt(fragment.id)]}
+                    answer={userBlanks[fragment.blankId]}
                   />
                 ) : (
                   <span key={fragment.id}>{fragment.text}</span>
@@ -145,6 +188,7 @@ export default function FillBlankActivity() {
           </div>
           <div className="mt-20 flex w-full flex-wrap items-center justify-center gap-8">
             {options.map((option, i) => {
+              if (!option.display) return null;
               return <FillBlankOption option={option} key={i} />;
             })}
           </div>

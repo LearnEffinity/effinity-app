@@ -106,26 +106,21 @@ export async function GET(request: Request) {
         ? onboardingDataReference.subHobbies[hobbyCategory][subHobby.ind].title
         : "Unknown Hobby";
 
-    //  console.log("Selected Goals:", selectedGoalTitles);
-    //  console.log("Experience Level:", experienceLevel);
-    //  console.log("Selected Interests:", selectedInterestTitles);
-    //  console.log("Hobby:", hobby);
-
     const { object } = await generateObject({
       model,
-      prompt: `Create a fill-in-the-blank activity related to budgeting. The user is interested in ${selectedGoalTitles}, with an experience level of ${experienceLevel}, and has interests in ${selectedInterestTitles}. They also have a hobby in ${hobby}. Personalize the sentence given their experience, hobby, and interests.`,
+      prompt: `Create a fill-in-the-blank activity related to budgeting. The user is interested in ${selectedGoalTitles}, with an experience level of ${experienceLevel}, and has interests in ${selectedInterestTitles}. They also have a hobby in ${hobby}. Personalize the sentence given their experience, hobby, and interests. Make the sentence short and sweet to fit in 2 blanks.`,
       temperature: 0.7,
       schema: z.object({
         sentence: z
           .string()
-          .describe("Sentence related to budgeting with two blanks."),
+          .describe(
+            "Sentence related to budgeting with two blanks. Blank words are represented by open and closed braces with the answer inside of it. For example: {budgeting}. Make sure the sentence is short and sweet to fit in 2 blanks.",
+          ),
         correctOptions: z
           .array(z.string())
-          .length(2)
           .describe("The two correct words to fill the blanks."),
         incorrectOptions: z
           .array(z.string())
-          .length(2)
           .describe(
             "List of incorrect options that could fit into the blanks.",
           ),

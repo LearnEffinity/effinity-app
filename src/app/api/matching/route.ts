@@ -78,11 +78,23 @@ export async function GET(request: Request) {
       schema: z.object({
         terms: z.array(
           z.object({
-            term: z.string(),
-            definition: z.string(),
+            term: z
+              .string()
+              .describe(
+                `The term to be matched should be terms that are in the context of ${user_hobby}`,
+              ),
+            definition: z
+              .string()
+              .describe(
+                `The definition of the term should be around 80 characters and related to ${user_hobby}`,
+              ),
           }),
         ),
-        explanation: z.string(),
+        explanation: z
+          .string()
+          .describe(
+            `The explanation should be a short explanation of the terms and definitions in the context of ${user_hobby}`,
+          ),
       }),
     });
     const formattedResponse: ResponseData = {

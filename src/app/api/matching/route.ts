@@ -61,6 +61,32 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Extract topic and module number from the request URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split("/");
+    const topic = pathParts[2]; // 'budgeting' in your example
+    const moduleNumber = pathParts[3]; // '1' in your example
+
+    if (!topic || !moduleNumber) {
+      return NextResponse.json(
+        { message: "Topic or module number not provided" },
+        { status: 400 },
+      );
+    }
+
+    // Fetch the current topic information using the new API endpoint
+    const topicResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_CLIENT_URL}/api/getCurrentTopic/${topic}/${moduleNumber}`,
+      { cache: "no-store" },
+    );
+    const topicInfo = await topicResponse.json();
+
+    if (!topicResponse.ok || !topicInfo) {
+      return NextResponse.json(
+        { message: "Failed to fetch current topic" },
+        { status: 500 },
+      );
+    }
     const user_info = await fetchTopicandXp(userData.user.id);
     const user_hobby = user_info.hobby;
     const xp = user_info.experience;
@@ -73,7 +99,19 @@ export async function GET(request: Request) {
 
     const { object } = await generateObject({
       model,
-      prompt: `Provide 4 terms related to effective budgeting in the context of ${user_hobby} for a user with ${xp} experience. Definitions should be around 80 characters.`,
+      prompt: `Your goal is to optimize the initial prompt to achieve accurate and informative responses from ChatGPT. You possess a deep understanding of GPT models and can guide them effectively. Keep your prompts professional and concise. Ensure that the responses are relevant to the desired goal and provide helpful information.  
+
+
+
+Goal: Act as a financial literacy bot. Help me learn about ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle} as a person with a short attention span by creating an activity and keep everything engaging.  
+
+
+
+Parameters/Rules: Explain the financial literacy topic in terms that relate to ${user_hobby}. The activity should be a matching activity where terms should be matched to the correct definition that is explained in ${user_hobby} terminology. The difficulty level of this activity should be for a user with ${xp} experience.  
+
+
+
+Additional Context: For the activity, Provide 4 terms related to ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle} and 4 definitions of the terms of which users must match the correct term to the correct definition. Do not tell the user which are which, the user must figure it out on their end. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items. Definitions and terms should be around 80 characters.`,
       temperature: 0.7,
       schema: z.object({
         terms: z.array(

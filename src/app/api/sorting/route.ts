@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import onboardingDataReference from "@/utils/onboardingDataReference";
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
 import { generateObject } from "ai";
 import { z } from "zod";
@@ -12,7 +13,21 @@ const bedrock = createAmazonBedrock({
 });
 const model = bedrock("anthropic.claude-3-haiku-20240307-v1:0");
 
-async function fetchTopic(userId: string): Promise<string | null> {
+interface UserPreference {
+  stage1: number[];
+  stage2: number;
+  stage3: number[];
+  stage4: number;
+  subHobby: {
+    hob: {
+      image: string;
+      title: string;
+    };
+    ind: number;
+  };
+}
+
+async function fetchTopic(userId: string): Promise<UserPreference | null> {
   const supabase = createServerSupabaseClient(cookies());
   const { data, error } = await supabase
     .from("users")
@@ -25,10 +40,8 @@ async function fetchTopic(userId: string): Promise<string | null> {
     return null;
   }
 
-  const jsonData = data.onboardingData as any;
-  return jsonData?.subHobby?.hob?.title || null;
+  return (data.onboardingData as UserPreference) || null;
 }
-
 type ResponseData = {
   Needs?: string[];
   Wants?: string[];
@@ -52,21 +65,83 @@ export async function GET(request: Request) {
   // console.log("Authenticated User Data:", userData.user);
 
   try {
-    const title = await fetchTopic(userData.user.id);
+    const userPreference = await fetchTopic(userData.user.id);
+    console.log("User Preference:", userPreference);
 
-    if (!title) {
-      return NextResponse.json({ message: "Title not found" }, { status: 404 });
+    if (!userPreference) {
+      return NextResponse.json(
+        { message: "userPreference not found" },
+        { status: 404 },
+      );
     }
+
+    // Extract topic and module number from the request URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split("/");
+    const topic = pathParts[2]; // 'budgeting' in your example
+    const moduleNumber = pathParts[3]; // '1' in your example
+
+    if (!topic || !moduleNumber) {
+      return NextResponse.json(
+        { message: "Topic or module number not provided" },
+        { status: 400 },
+      );
+    }
+
+    // Fetch the current topic information using the new API endpoint
+    const topicResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_CLIENT_URL}/api/getCurrentTopic/${topic}/${moduleNumber}`,
+      { cache: "no-store" },
+    );
+    const topicInfo = await topicResponse.json();
+
+    if (!topicResponse.ok || !topicInfo) {
+      return NextResponse.json(
+        { message: "Failed to fetch current topic" },
+        { status: 500 },
+      );
+    }
+
+    const { stage1, stage2, stage3, stage4, subHobby }: UserPreference =
+      userPreference;
+    // console.log("User Preference Stages:", stage1, stage2, stage3, stage4, subHobby);
+
+    // Validate and retrieve titles for stage1
+    const selectedGoalTitles = stage1
+      .filter((index: number) => index < onboardingDataReference.stage1.length)
+      .map((index: number) => onboardingDataReference.stage1[index].title)
+      .join(", ");
+
+    // Validate and retrieve titles for stage2
+    const experienceLevel =
+      stage2 < onboardingDataReference.stage2.length
+        ? onboardingDataReference.stage2[stage2].title
+        : "Unknown Experience Level";
+
+    // Validate and retrieve titles for stage3
+    const selectedInterestTitles = stage3
+      .filter((index: number) => index < onboardingDataReference.stage3.length)
+      .map((index: number) => onboardingDataReference.stage3[index].title)
+      .join(", ");
+
+    // Validate and retrieve hobby
+    const hobbyCategory =
+      onboardingDataReference.stage4[stage4]?.title || "Unknown Hobby";
+    const hobby =
+      subHobby &&
+      onboardingDataReference.subHobbies[hobbyCategory]?.[subHobby.ind]?.title
+        ? onboardingDataReference.subHobbies[hobbyCategory][subHobby.ind].title
+        : "Unknown Hobby";
 
     const { object } = await generateObject({
       model,
-      prompt: `Generate a list of 5 items related to ${title}, consisting of 3 needs and 2 wants.
+      prompt: `Your goal is to optimize the initial prompt to achieve accurate and informative responses from ChatGPT. You possess a deep understanding of GPT models and can guide them effectively. Keep your prompts professional and concise. Ensure that the responses are relevant to the desired goal and provide helpful information.  
 
-Needs: Essential items or equipment that are absolutely necessary to participate in ${title} at a basic level. These should be the bare minimum requirements without which the activity cannot be performed safely or effectively.
+Goal: Act as a financial literacy bot. Help me learn about ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle} as a person with a short attention span by creating an activity and keep everything engaging.  
 
-Wants: Non-essential items that enhance the experience of ${title} but are not strictly necessary. These could be items for comfort, convenience, or to improve performance beyond the basics.
+Parameters/Rules: Explain the financial literacy topic in terms that relate to ${hobby}. The activity should be a sorting activity where terms should be matched to the correct definition that is explained in ${hobby} terminology. The difficulty level of this activity should be for a user with ${experienceLevel} experience.  
 
-Please ensure all items are directly relevant to ${title} and provide a clear distinction between needs and wants. Include specific, tangible items rather than general concepts.`,
+Additional Context: For the activity, generate a list of 5 items of 2 wants and 3 needs based on ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle}. Do not tell the user which are which, the user must figure it out on their end. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items.`,
       temperature: 0.7,
       schema: z.object({
         Needs: z

@@ -1,9 +1,33 @@
 import { NextResponse } from "next/server";
-import { OpenAI } from "openai";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import onboardingDataReference from "@/utils/onboardingDataReference";
+import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
+import { generateObject } from "ai";
+import { z } from "zod";
 
-async function fetchTopic(userId: string): Promise<string | null> {
+const bedrock = createAmazonBedrock({
+  region: process.env.AWS_REGION!,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+});
+const model = bedrock("anthropic.claude-3-haiku-20240307-v1:0");
+
+interface UserPreference {
+  stage1: number[];
+  stage2: number;
+  stage3: number[];
+  stage4: number;
+  subHobby: {
+    hob: {
+      image: string;
+      title: string;
+    };
+    ind: number;
+  };
+}
+
+async function fetchTopic(userId: string): Promise<UserPreference | null> {
   const supabase = createServerSupabaseClient(cookies());
   const { data, error } = await supabase
     .from("users")
@@ -16,10 +40,8 @@ async function fetchTopic(userId: string): Promise<string | null> {
     return null;
   }
 
-  const jsonData = data.onboardingData as any;
-  return jsonData?.subHobby?.hob?.title || null;
+  return (data.onboardingData as UserPreference) || null;
 }
-
 type ResponseData = {
   Needs?: string[];
   Wants?: string[];
@@ -42,77 +64,102 @@ export async function GET(request: Request) {
 
   // console.log("Authenticated User Data:", userData.user);
 
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY!,
-  });
-
   try {
-    const title = await fetchTopic(userData.user.id);
+    const userPreference = await fetchTopic(userData.user.id);
+    console.log("User Preference:", userPreference);
 
-    if (!title) {
-      return NextResponse.json({ message: "Title not found" }, { status: 404 });
+    if (!userPreference) {
+      return NextResponse.json(
+        { message: "userPreference not found" },
+        { status: 404 },
+      );
     }
 
-    // generate only 5 items and randomize the number of wants and needs, add a minimum 1 item per category though
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: `I like to ${title}, generate a list of 6 items of 3 wants and 3 needs. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items.`,
-        },
-      ],
-      temperature: 0.7,
-      response_format: { type: "json_object" },
-      functions: [
-        {
-          name: "generate_wants_and_needs",
-          description: "Generate a list of 6 items of 3 wants and 3 needs.",
-          parameters: {
-            type: "object",
-            properties: {
-              Needs: {
-                type: "array",
-                items: {
-                  type: "string",
-                },
-                description:
-                  "Things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort.",
-              },
-              Wants: {
-                type: "array",
-                items: {
-                  type: "string",
-                },
-                description: "Other items that are not an absolute necessity.",
-              },
-              Explanation: {
-                type: "string",
-                description: "Explanation of the generated list.",
-              },
-            },
-            required: ["Needs", "Wants", "Explanation"],
-          },
-        },
-      ],
-      function_call: { name: "generate_wants_and_needs" },
-    });
+    // Extract topic and module number from the request URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split("/");
+    const topic = pathParts[2]; // 'budgeting' in your example
+    const moduleNumber = pathParts[3]; // '1' in your example
 
-    const functionCall = response.choices[0]?.message?.function_call;
-
-    if (!functionCall) {
+    if (!topic || !moduleNumber) {
       return NextResponse.json(
-        { Needs: [], Wants: [], Explanation: "Invalid response format" },
+        { message: "Topic or module number not provided" },
         { status: 400 },
       );
     }
 
-    let parsedResponse: ResponseData = JSON.parse(functionCall.arguments);
+    // Fetch the current topic information using the new API endpoint
+    const topicResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_CLIENT_URL}/api/getCurrentTopic/${topic}/${moduleNumber}`,
+      { cache: "no-store" },
+    );
+    const topicInfo = await topicResponse.json();
+
+    if (!topicResponse.ok || !topicInfo) {
+      return NextResponse.json(
+        { message: "Failed to fetch current topic" },
+        { status: 500 },
+      );
+    }
+
+    const { stage1, stage2, stage3, stage4, subHobby }: UserPreference =
+      userPreference;
+    // console.log("User Preference Stages:", stage1, stage2, stage3, stage4, subHobby);
+
+    // Validate and retrieve titles for stage1
+    const selectedGoalTitles = stage1
+      .filter((index: number) => index < onboardingDataReference.stage1.length)
+      .map((index: number) => onboardingDataReference.stage1[index].title)
+      .join(", ");
+
+    // Validate and retrieve titles for stage2
+    const experienceLevel =
+      stage2 < onboardingDataReference.stage2.length
+        ? onboardingDataReference.stage2[stage2].title
+        : "Unknown Experience Level";
+
+    // Validate and retrieve titles for stage3
+    const selectedInterestTitles = stage3
+      .filter((index: number) => index < onboardingDataReference.stage3.length)
+      .map((index: number) => onboardingDataReference.stage3[index].title)
+      .join(", ");
+
+    // Validate and retrieve hobby
+    const hobbyCategory =
+      onboardingDataReference.stage4[stage4]?.title || "Unknown Hobby";
+    const hobby =
+      subHobby &&
+      onboardingDataReference.subHobbies[hobbyCategory]?.[subHobby.ind]?.title
+        ? onboardingDataReference.subHobbies[hobbyCategory][subHobby.ind].title
+        : "Unknown Hobby";
+
+    const { object } = await generateObject({
+      model,
+      prompt: `Your goal is to optimize the initial prompt to achieve accurate and informative responses from ChatGPT. You possess a deep understanding of GPT models and can guide them effectively. Keep your prompts professional and concise. Ensure that the responses are relevant to the desired goal and provide helpful information.  
+
+Goal: Act as a financial literacy bot. Help me learn about ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle} as a person with a short attention span by creating an activity and keep everything engaging.  
+
+Parameters/Rules: Explain the financial literacy topic in terms that relate to ${hobby}. The activity should be a sorting activity where terms should be matched to the correct definition that is explained in ${hobby} terminology. The difficulty level of this activity should be for a user with ${experienceLevel} experience.  
+
+Additional Context: For the activity, generate a list of 5 items of 2 wants and 3 needs based on ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle}. Do not tell the user which are which, the user must figure it out on their end. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items.`,
+      temperature: 0.7,
+      schema: z.object({
+        Needs: z
+          .array(z.string())
+          .describe(
+            "Things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort.",
+          ),
+        Wants: z
+          .array(z.string())
+          .describe("Other items that are not an absolute necessity."),
+        Explanation: z.string().describe("Explanation of the generated list."),
+      }),
+    });
 
     const formattedResponse: ResponseData = {
-      Needs: parsedResponse.Needs || [],
-      Wants: parsedResponse.Wants || [],
-      Explanation: parsedResponse.Explanation || "No explanation provided.",
+      Needs: object.Needs || [],
+      Wants: object.Wants || [],
+      Explanation: object.Explanation || "No explanation provided.",
     };
 
     return NextResponse.json<ResponseData>(formattedResponse);

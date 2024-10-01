@@ -57,17 +57,13 @@ export default function MatchingActivity() {
   const { setUserTerms_Defs, setExplanation, setBottomBarState, setMode } =
     useLessonContext();
 
-  const [unmatchedTerms, setUnmatchedTerms] =
-    useState<MatchingItem[]>(initialItems);
-
-  const [definitions, setDefinitions] = useState<MatchingDefinition[]>(
-    initialItems.map((item) => {
-      return { id: item.id + "d", definition: item.definition, slot: null };
-    }),
-  );
+  const [unmatchedTerms, setUnmatchedTerms] = useState<MatchingItem[]>([]);
+  const [definitions, setDefinitions] = useState<MatchingDefinition[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchMatchingData = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/matching");
         const data = await response.json();
@@ -75,14 +71,12 @@ export default function MatchingActivity() {
         if (response.ok) {
           console.log("API Response:", data);
 
-          const termItems = Object.entries(data.terms).map(
-            ([term, definition], index) => ({
-              id: `item-${index}`,
-              term,
-              icon: "/activity/wrench.png",
-              definition: definition as string,
-            }),
-          );
+          const termItems = data.terms.map((term, index) => ({
+            id: `item-${index}`,
+            term: term.term as string,
+            icon: "/activity/wrench.png",
+            definition: term.definition as string,
+          }));
 
           setUnmatchedTerms(termItems);
           setDefinitions(
@@ -104,18 +98,21 @@ export default function MatchingActivity() {
               {} as { [key: string]: string },
             ),
           );
-          setExplanation(data.Explanation);
+          setExplanation(data.explanation);
         } else {
           console.error("Error fetching sorting data:", data.message);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Error calling API:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchMatchingData();
     setMode("sorting");
-  }, [setUserTerms_Defs, setExplanation]);
+  }, [setUserTerms_Defs, setExplanation, setMode]);
 
   useEffect(() => {
     const allMatched = unmatchedTerms.length === 0;
@@ -178,6 +175,22 @@ export default function MatchingActivity() {
         });
       });
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-start px-36 pb-10">
+        <div className="pb-8 pt-10">
+          <div className="mb-4 h-8 w-48 animate-pulse rounded bg-gray-200"></div>
+          <div className="mb-2 h-12 w-96 animate-pulse rounded bg-gray-200"></div>
+          <div className="h-6 w-80 animate-pulse rounded bg-gray-200"></div>
+        </div>
+        <div className="flex w-full flex-row-reverse gap-4">
+          <div className="h-96 w-1/2 animate-pulse rounded bg-gray-200"></div>
+          <div className="h-96 w-1/2 animate-pulse rounded bg-gray-200"></div>
+        </div>
+      </div>
+    );
   }
 
   return (

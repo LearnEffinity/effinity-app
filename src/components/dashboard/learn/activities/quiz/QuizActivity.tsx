@@ -51,7 +51,7 @@ export default function QuizActivity() {
             return (
               <div
                 className={
-                  "flex h-[200px] w-full cursor-pointer items-center rounded-lg border-2 bg-surface-base p-8 transition-all " +
+                  "flex h-[150px] w-full cursor-pointer items-center rounded-lg border-2 bg-surface-base p-4 transition-all " +
                   (isSelected ? "border-brand-accent" : "border-surface-base")
                 }
                 key={i}
@@ -64,7 +64,7 @@ export default function QuizActivity() {
                 }}
               >
                 <span
-                  className={"text-2xl " + (isSelected && "text-brand-accent")}
+                  className={"text-xl " + (isSelected && "text-brand-accent")}
                 >
                   <b>{String.fromCharCode(65 + i)}.</b> {option}
                 </span>
@@ -72,7 +72,7 @@ export default function QuizActivity() {
             );
           })}
         </div>
-        <div className="mt-12 flex w-full justify-center">
+        <div className="mt-12 flex w-full justify-center mb-20">
           <CountdownCircleTimer
             isPlaying={
               !(

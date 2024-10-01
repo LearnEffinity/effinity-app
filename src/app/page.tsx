@@ -217,7 +217,7 @@ export default function Home() {
                   <h4 className="mb-4 text-center text-lg font-semibold">
                     {progressData.label}
                   </h4>
-                  <div className="relative mx-auto h-72 w-72">
+                  <div className="relative mx-auto h-full w-full max-w-xs max-h-xs">
                     <svg className="h-full w-full" viewBox="0 0 100 100">
                       {/* Background circle */}
                       <circle

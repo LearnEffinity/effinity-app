@@ -6,6 +6,7 @@ import SortingActivity from "@/components/dashboard/learn/activities/sorting/Sor
 import FillBlankActivity from "@/components/dashboard/learn/activities/fill-blank/FillBlankActivity";
 import MatchingActivity from "@/components/dashboard/learn/activities/matching/MatchingActivity";
 import IntroContent from "@/components/dashboard/learn/lessons/IntroContent";
+import EndScreen from "@/components/dashboard/learn/lessons/EndScreen";
 import { LessonProvider } from "@/components/dashboard/learn/lessons/LessonContext";
 import BottomBar from "@/components/dashboard/learn/lessons/BottomBar";
 
@@ -62,7 +63,7 @@ export default function LessonPage({ params }: PageProps) {
   const [progressWidth, setProgressWidth] = useState(0);
 
   useEffect(() => {
-    // setScreens(shuffleActivities([...baseScreens]));
+    setScreens(shuffleActivities([...baseScreens]));
     setScreens([...baseScreens]);
   }, []);
 
@@ -86,23 +87,19 @@ export default function LessonPage({ params }: PageProps) {
         return (
           <IntroContent
             lessonTitle="Introduction to Budgeting"
-            content="Budgeting is so cool, i wish I knew how to budget my allowance of 0 dollars!!!!!"
+            content="Budgeting is the process of managing your money to ensure you have enough to cover your expenses and save for the future. It's a skill that can help you achieve your financial goals and live a more secure life."
           />
         );
       case "activity1":
-        return <MatchingActivity />; // change back to sorting
-      case "activity2":
         return <SortingActivity />;
+      case "activity2":
+        return <MatchingActivity />;
       case "activity3":
         return <FillBlankActivity />;
       case "quiz":
         return <QuizActivity />;
       case "conclusion":
-        return (
-          <div className="text-center text-5xl font-black text-brand-secondary">
-            Congratulations
-          </div>
-        );
+        return <EndScreen />;
       default:
         return null;
     }

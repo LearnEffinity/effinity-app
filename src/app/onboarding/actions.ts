@@ -1,16 +1,21 @@
-'use server';
+"use server";
 
-import { createClient } from '@/utils/supabase/server';
-import { cookies } from 'next/headers';
-import { revalidatePath } from 'next/cache';
-import { OnboardingStage, OnboardingData, UserData } from './types';
+import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
+import { OnboardingStage, OnboardingData, UserData } from "./types";
 
-export async function fetchSession(): Promise<{ user: any; userData: UserData | null }> {
+export async function fetchSession(): Promise<{
+  user: any;
+  userData: UserData | null;
+}> {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (user) {
     const { data, error } = await supabase
       .from("users")
@@ -29,21 +34,38 @@ export async function fetchSession(): Promise<{ user: any; userData: UserData | 
   return { user: null, userData: null };
 }
 
-export async function saveOnboardingData(nextStage: OnboardingStage, data: Partial<OnboardingData>) {
+export async function saveOnboardingData(
+  nextStage: OnboardingStage,
+  data: Partial<OnboardingData>,
+) {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
     throw new Error("No authenticated user found");
   }
 
   try {
+    const { data: currentData, error: fetchError } = await supabase
+      .from("users")
+      .select("onboardingData")
+      .eq("id", user.id)
+      .single();
+
+    if (fetchError) {
+      throw fetchError;
+    }
+
+    const updatedOnboardingData = { ...currentData.onboardingData, ...data };
+
     const { data: updatedData, error } = await supabase
       .from("users")
       .update({
-        onboardingData: data,
+        onboardingData: updatedOnboardingData,
         onboardingStage: nextStage,
       })
       .eq("id", user.id)
@@ -53,7 +75,7 @@ export async function saveOnboardingData(nextStage: OnboardingStage, data: Parti
       throw error;
     }
 
-    revalidatePath('/onboarding');
+    revalidatePath("/onboarding");
     return updatedData[0];
   } catch (error) {
     console.error("Error saving onboarding data:", error);
@@ -64,9 +86,11 @@ export async function saveOnboardingData(nextStage: OnboardingStage, data: Parti
 export async function saveUsername(username: string) {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
     throw new Error("No authenticated user found");
   }
@@ -82,7 +106,7 @@ export async function saveUsername(username: string) {
       throw error;
     }
 
-    revalidatePath('/onboarding');
+    revalidatePath("/onboarding");
     return data[0];
   } catch (error) {
     console.error("Error saving username:", error);

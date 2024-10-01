@@ -62,8 +62,6 @@ export async function GET(request: Request) {
     );
   }
 
-  // console.log("Authenticated User Data:", userData.user);
-
   try {
     const userPreference = await fetchTopic(userData.user.id);
     console.log("User Preference:", userPreference);

@@ -53,6 +53,7 @@ export default function SortingActivity() {
 
   const [items, setItems] = useState<SortingCardData[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchSortingData = async () => {
@@ -85,6 +86,8 @@ export default function SortingActivity() {
         }
       } catch (error) {
         console.error("Error calling API:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 

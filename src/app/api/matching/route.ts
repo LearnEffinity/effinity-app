@@ -111,7 +111,7 @@ Parameters/Rules: Explain the financial literacy topic in terms that relate to $
 
 
 
-Additional Context: For the activity, Provide 4 terms related to ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle} and 4 definitions of the terms of which users must match the correct term to the correct definition. Do not tell the user which are which, the user must figure it out on their end. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items. Definitions and terms should be around 80 characters.`,
+Additional Context: For the activity, Provide 4 terms related to ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle} and 4 definitions of the terms of which users must match the correct term to the correct definition. Do not tell the user which are which, the user must figure it out on their end. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items. Definitions and terms should be around 30 characters.`,
       temperature: 0.7,
       schema: z.object({
         terms: z.array(

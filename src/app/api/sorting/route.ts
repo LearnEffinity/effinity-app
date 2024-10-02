@@ -139,7 +139,7 @@ Goal: Act as a financial literacy bot. Help me learn about ${topicInfo.topic}: $
 
 Parameters/Rules: Explain the financial literacy topic in terms that relate to ${hobby}. The activity should be a sorting activity where terms should be matched to the correct definition that is explained in ${hobby} terminology. The difficulty level of this activity should be for a user with ${experienceLevel} experience.  
 
-Additional Context: For the activity, generate a list of 5 items of 2 wants and 3 needs based on ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle}. Do not tell the user which are which, the user must figure it out on their end. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items.`,
+Additional Context: For the activity, generate a list of 5 items of 2 wants and 3 needs based on ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle}. Do not tell the user which are which, the user must figure it out on their end. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items. The terms should be around 30 characters or less.`,
       temperature: 0.7,
       schema: z.object({
         Needs: z

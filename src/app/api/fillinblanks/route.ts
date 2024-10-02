@@ -5,6 +5,11 @@ import onboardingDataReference from "@/utils/onboardingDataReference";
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
 import { generateObject } from "ai";
 import { z } from "zod";
+import {
+  MAX_SENTENCE_LENGTH,
+  MAX_OPTIONS_LENGTH,
+  MAX_EXPLANATION_LENGTH,
+} from "@/constants/token";
 
 interface UserPreference {
   stage1: number[];
@@ -78,11 +83,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Extract topic and module number from the request URL
     const url = new URL(request.url);
     const pathParts = url.pathname.split("/");
-    const topic = pathParts[2]; // 'budgeting' in your example
-    const moduleNumber = pathParts[3]; // '1' in your example
+    const topic = pathParts[2];
+    const moduleNumber = pathParts[3];
 
     if (!topic || !moduleNumber) {
       return NextResponse.json(
@@ -128,6 +132,7 @@ Parameters/Rules: Explain the financial literacy topic in terms that relate to $
 
 
 Additional Context: For the activity, a user is given one sentence with 2 blanks that they must use a word bank in order to fill relating to ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle}. Give the user at least 4 different words to fill into the blanks (2 incorrect terms, 2 correct terms). Do not tell the user which are which, the user must figure it out on their end. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items. Definitions and terms should be around 80 characters.`,
+
       temperature: 0.7,
       schema: z.object({
         sentence: z

@@ -29,6 +29,15 @@ export default function QuizActivity() {
 
   const [selected, setSelected] = useState<number | null>(null);
 
+  // numWrong would just be the total number of questions - numCorrect
+  const [numCorrect, setNumCorrect] = useState(0);
+
+  useEffect(() => {
+    if (bottomBarState === "correctAnswer") {
+      setNumCorrect(numCorrect + 1);
+    }
+  }, [bottomBarState]);
+
   useEffect(() => {
     if (selected !== null) setBottomBarState("checkEnabled");
   }, [selected, setBottomBarState]);
@@ -72,7 +81,7 @@ export default function QuizActivity() {
             );
           })}
         </div>
-        <div className="mt-12 flex w-full justify-center mb-20">
+        <div className="mb-20 mt-12 flex w-full justify-center">
           <CountdownCircleTimer
             isPlaying={
               !(
@@ -88,11 +97,8 @@ export default function QuizActivity() {
             trailColor="#EFEEF6"
             trailStrokeWidth={8}
             onComplete={() => {
-              setBottomBarState(
-                selected && selected === question.correctAnswer
-                  ? "correctAnswer"
-                  : "wrongAnswer",
-              );
+              const isCorrect = selected === question.correctAnswer;
+              setBottomBarState(isCorrect ? "correctAnswer" : "wrongAnswer");
             }}
           >
             {({ remainingTime }) => (

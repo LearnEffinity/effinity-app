@@ -28,9 +28,34 @@ export default function QuizActivity() {
   const { bottomBarState, setBottomBarState } = useLessonContext();
 
   const [selected, setSelected] = useState<number | null>(null);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([question]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   // numWrong would just be the total number of questions - numCorrect
   const [numCorrect, setNumCorrect] = useState(0);
+
+  useEffect(() => {
+    const fetchQuizData = async () => {
+      try {
+        const response = await fetch("/api/quiz");
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log("API Response:", data);
+
+          const questions: QuizQuestion[] = data.questions as QuizQuestion[];
+          setQuestions(questions);
+        } else {
+          console.error("Error fetching quiz data:", data.message);
+        }
+      } catch (error) {
+        console.error("Error calling API:", error);
+      }
+    };
+
+    fetchQuizData();
+    console.log("run");
+  }, []);
 
   useEffect(() => {
     if (bottomBarState === "correctAnswer") {
@@ -50,11 +75,12 @@ export default function QuizActivity() {
           <h1 className="text-4xl font-medium text-text-primary">
             {"Needs vs. Wants"}
           </h1>
-          <h2>{question.question}</h2>
+          <h2>{questions[currentQuestionIndex].question}</h2>
         </div>
         <div className="mt-12 grid w-full grid-cols-2 grid-rows-2 gap-4">
-          {question.options.map((option, i) => {
-            const userIsCorrect = selected === question.correctAnswer;
+          {questions[currentQuestionIndex].options.map((option, i) => {
+            const userIsCorrect =
+              selected === questions[currentQuestionIndex].correctAnswer;
             const isSelected = selected === i;
 
             return (
@@ -97,7 +123,8 @@ export default function QuizActivity() {
             trailColor="#EFEEF6"
             trailStrokeWidth={8}
             onComplete={() => {
-              const isCorrect = selected === question.correctAnswer;
+              const isCorrect =
+                selected === questions[currentQuestionIndex].correctAnswer;
               setBottomBarState(isCorrect ? "correctAnswer" : "wrongAnswer");
             }}
           >

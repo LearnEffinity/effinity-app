@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerSupabaseClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
-import onboardingDataReference from "@/utils/onboardingDataReference";
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
 import { generateObject } from "ai";
 import { z } from "zod";
@@ -57,10 +56,11 @@ async function fetchTopicandXp(
 }
 
 type ResponseData = {
-  sentence: string;
-  correctOptions: string[];
-  incorrectOptions: string[];
-  explanation: string;
+  questions: {
+    question: string;
+    options: string[];
+    correctAnswer: number;
+  }[];
 };
 
 export async function GET(request: Request) {
@@ -122,48 +122,37 @@ Goal: Act as a financial literacy bot. Help me learn about ${topicInfo.topic}: $
 
 
 
-Parameters/Rules: Explain the financial literacy topic in terms that relate to ${user_hobby}.  The activity should be a fill-in-the-blank activity where terms should be matched to the correct definition that is explained in ${user_hobby} terminology. The difficulty level of this activity should be for a user with ${xp} experience. Make sure that there is only 1 sentence that is short and sweet to fit in 2 blanks.  
+Parameters/Rules: Explain the financial literacy topic in terms that relate to ${user_hobby}.  The activity should be a quiz activity where there are questions that explain in ${user_hobby} terminology. The difficulty level of this activity should be for a user with ${xp} experience.
 
 
 
-Additional Context: For the activity, a user is given one sentence with 2 blanks that they must use a word bank in order to fill relating to ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle}. Give the user at least 4 different words to fill into the blanks (2 incorrect terms, 2 correct terms). Do not tell the user which are which, the user must figure it out on their end. Needs are things that are an absolute necessity to do the bare minimum for this activity, and does not include things for comfort, while wants are other items. Definitions and terms should be around 80 characters.`,
+Additional Context: For the activity, a user is given a question relating to ${topicInfo.topic}: ${topicInfo.moduleTitle} - ${topicInfo.lessonTitle}. Give the user 5 questions, each with 4 options. The correct answer should be the index of the correct option.`,
 
       temperature: 0.7,
-      schema: z.object({
-        sentence: z
-          .string()
-          .describe(
-            "Sentence related to budgeting with two blanks. Blank words are represented by open and closed braces with the answer inside of it. For example: {budgeting}. Make sure the sentence is short and sweet to fit in 2 blanks.",
-          ),
-        correctOptions: z
-          .array(z.string())
-          .describe("The two correct words to fill the blanks."),
-        incorrectOptions: z
-          .array(z.string())
-          .describe(
-            "List of incorrect options that could fit into the blanks.",
-          ),
-        explanation: z
-          .string()
-          .describe("Explanation of the fill-in-the-blank activity."),
-      }),
+      schema: z
+        .array(
+          z.object({
+            question: z.string().describe("The question to ask the user."),
+            options: z
+              .array(z.string())
+              .describe("The options to present to the user."),
+            correctAnswer: z
+              .number()
+              .describe("The index of the correct answer."),
+          }),
+        )
+        .describe("5 questions to ask the user"),
     });
 
     const formattedResponse: ResponseData = {
-      sentence: object.sentence,
-      correctOptions: object.correctOptions || [],
-      incorrectOptions: object.incorrectOptions || [],
-      explanation: object.explanation || "No explanation provided.",
+      questions: object as any,
     };
     return NextResponse.json<ResponseData>(formattedResponse);
   } catch (error) {
     console.error("Error calling OpenAI API:", error);
     return NextResponse.json<ResponseData>(
       {
-        sentence: "",
-        correctOptions: [],
-        incorrectOptions: [],
-        explanation: "Internal Server Error",
+        questions: [],
       },
       { status: 500 },
     );

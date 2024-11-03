@@ -20,6 +20,7 @@ type ScreenType =
 
 const baseScreens: ScreenType[] = [
   "intro",
+  "quiz",
   "activity1",
   "activity2",
   "activity3",

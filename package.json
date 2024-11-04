@@ -1,0 +1,17 @@
+{
+  "name": "effinity",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "pnpm --parallel run dev",
+    "build": "pnpm --parallel run build",
+    "start": "pnpm --parallel run start",
+    "lint": "pnpm --parallel run lint",
+    "clean": "pnpm -r exec rm -rf node_modules && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

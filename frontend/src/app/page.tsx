@@ -27,6 +27,8 @@ interface ChartData {
 export default function Home() {
   const supabase = createClient();
   const [username, setUsernameState] = useState<string | null>(null);
+  const [lives, setLivesState] = useState<number>(0);
+  const [level, setLevelState] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
 
@@ -38,13 +40,15 @@ export default function Home() {
       if (user) {
         const { data, error } = await supabase
           .from("users")
-          .select("username")
+          .select("username, lives, level")
           .eq("id", user.id)
           .single();
         if (error) {
           console.error("Error fetching username:", error);
         } else {
           setUsernameState(data?.username || null);
+          setLivesState(data?.lives || 0);
+          setLevelState(data?.level || 0);
         }
       }
       setIsLoading(false);
@@ -138,7 +142,11 @@ export default function Home() {
                 What's good my fellow financial freedom seeker!
               </h3>
             </div>
-            <TopProfileDetails username={username} />
+            <TopProfileDetails
+              username={username}
+              lives={lives}
+              level={level}
+            />
           </div>
           {/* Progress Section */}
           <div className="flex flex-col">
@@ -217,7 +225,7 @@ export default function Home() {
                   <h4 className="mb-4 text-center text-lg font-semibold">
                     {progressData.label}
                   </h4>
-                  <div className="relative mx-auto h-full w-full max-w-xs max-h-xs">
+                  <div className="max-h-xs relative mx-auto h-full w-full max-w-xs">
                     <svg className="h-full w-full" viewBox="0 0 100 100">
                       {/* Background circle */}
                       <circle

@@ -1,0 +1,47 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^0.0.23",
+    "@ai-sdk/openai": "^0.0.58",
+    "@dnd-kit/core": "^6.1.0",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@supabase/ssr": "^0.3.0",
+    "@supabase/supabase-js": "^2.42.5",
+    "@types/react-countdown-circle-timer": "^2.0.1",
+    "ai": "^3.3.30",
+    "autoprefixer": "^10.4.19",
+    "framer-motion": "^11.1.7",
+    "next": "^14.2.5",
+    "openai": "^4.55.0",
+    "react": "^18",
+    "react-charts": "^3.0.0-beta.57",
+    "react-countdown-circle-timer": "^3.2.1",
+    "react-dom": "^18",
+    "react-icons": "^5.2.1",
+    "recharts": "^2.12.7",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.1",
+    "postcss": "^8.4.38",
+    "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.5.14",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5"
+  }
+}

@@ -85,12 +85,7 @@ export default function LessonPage({ params }: PageProps) {
   const renderScreen = () => {
     switch (screens[currentScreenIndex]) {
       case "intro":
-        return (
-          <IntroContent
-            lessonTitle="Introduction to Budgeting"
-            content="Budgeting is the process of managing your money to ensure you have enough to cover your expenses and save for the future. It's a skill that can help you achieve your financial goals and live a more secure life."
-          />
-        );
+        return <IntroContent lessonTitle="Introduction to Budgeting" />;
       case "activity1":
         return <SortingActivity />;
       case "activity2":

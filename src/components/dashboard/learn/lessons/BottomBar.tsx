@@ -37,7 +37,7 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
     router.push("/learn");
   };
 
-  const handleContinue = () => {
+  const handleContinueCallback = () => {
     onContinue();
     setBottomBarState("checkDisabled");
   };
@@ -96,7 +96,7 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
             <ReportButton answerType="text-secondary" />
 
             <button
-              onClick={handleContinue}
+              onClick={handleContinueCallback}
               className="rounded-lg bg-button px-7 py-3 text-surface-primary"
             >
               Continue
@@ -150,7 +150,7 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
                   </button>
                 )}
                 <button
-                  onClick={handleContinue}
+                  onClick={handleContinueCallback}
                   className="rounded-lg bg-green-500 px-7 py-3 text-white"
                 >
                   Continue

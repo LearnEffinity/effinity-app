@@ -54,7 +54,6 @@ export default function QuizActivity() {
     };
 
     fetchQuizData();
-    console.log("run");
   }, []);
 
   useEffect(() => {

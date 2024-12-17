@@ -20,7 +20,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         />
       </div>
       <main className="flex-1" style={{ marginLeft: `${sidebarWidth}px` }}>
-        <div className="px-8 py-10">
+        <div className="px-16 py-10">
           {/* MAIN CONTENT */}
           {children}
           {/* MAIN CONTENT */}

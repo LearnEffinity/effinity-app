@@ -35,6 +35,13 @@ export default function QuizActivity({
   // numWrong would just be the total number of questions - numCorrect
   const [numCorrect, setNumCorrect] = useState(0);
 
+  // Determine if timer should be playing
+  const shouldTimerPlay = !(
+    bottomBarState === "continue" ||
+    bottomBarState === "correctAnswer" ||
+    bottomBarState === "wrongAnswer"
+  );
+
   useEffect(() => {
     console.log("params", params);
     const fetchSortingData = async () => {
@@ -140,13 +147,8 @@ export default function QuizActivity({
         </div>
         <div className="mb-20 mt-12 flex w-full justify-center">
           <CountdownCircleTimer
-            isPlaying={
-              !(
-                bottomBarState === "continue" ||
-                bottomBarState === "correctAnswer" ||
-                bottomBarState === "wrongAnswer"
-              )
-            }
+            key={questionIndex}
+            isPlaying={shouldTimerPlay}
             duration={30}
             colors="#583AFE"
             size={96}

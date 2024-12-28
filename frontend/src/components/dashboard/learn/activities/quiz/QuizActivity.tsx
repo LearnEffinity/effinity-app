@@ -8,7 +8,7 @@ import {
 } from "react-countdown-circle-timer";
 import { useParams } from "next/navigation";
 
-interface QuizQuestion {
+export interface QuizQuestion {
   id: string;
   question: string;
   options: string[];
@@ -20,16 +20,19 @@ export default function QuizActivity({
   questionIndex,
   selected,
   setSelected,
+  questions,
+  setQuestions,
 }: {
   questionIndex: number;
   selected: number | null;
   setSelected: (selected: number | null) => void;
+  questions: QuizQuestion[];
+  setQuestions: (questions: QuizQuestion[]) => void;
 }) {
   const params = useParams();
   const { bottomBarState, setBottomBarState, setExplanation } =
     useLessonContext();
 
-  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // numWrong would just be the total number of questions - numCorrect

@@ -7,7 +7,10 @@ import SortingActivity from "@/components/dashboard/learn/activities/sorting/Sor
 // import MatchingActivity from "@/components/dashboard/learn/activities/matching/MatchingActivity";
 import IntroContent from "@/components/dashboard/learn/lessons/IntroContent";
 import EndScreen from "@/components/dashboard/learn/lessons/EndScreen";
-import { LessonProvider } from "@/components/dashboard/learn/lessons/LessonContext";
+import {
+  LessonProvider,
+  useLessonContext,
+} from "@/components/dashboard/learn/lessons/LessonContext";
 import BottomBar from "@/components/dashboard/learn/lessons/BottomBar";
 
 type ScreenType = "intro" | "activity" | "conclusion";
@@ -22,6 +25,19 @@ export default function LessonPage({ params }: PageProps) {
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
   const [lessonData, setLessonData] = useState<any>(null);
+
+  const {
+    bottomBarState,
+    setBottomBarState,
+    userNeeds,
+    userWants,
+    correctNeeds,
+    correctWants,
+    explanation,
+    userBlanks,
+    correctBlanks,
+    mode,
+  } = useLessonContext();
 
   useEffect(() => {
     const fetchLessonData = async () => {
@@ -106,7 +122,56 @@ export default function LessonPage({ params }: PageProps) {
               </div>
             </div>
             <div className="flex-grow">{renderScreen()}</div>
-            <BottomBar onContinue={handleContinue} />
+            <BottomBar
+              onContinue={handleContinue}
+              handleCheck={(awardXp: () => void) => {
+                if (mode === "sorting") {
+                  console.log("Checking Sorting Activity...");
+                  console.log("User Needs: ", userNeeds);
+                  console.log("User Wants: ", userWants);
+                  console.log("Correct Needs: ", correctNeeds);
+                  console.log("Correct Wants: ", correctWants);
+
+                  const flattenedUserNeeds = userNeeds
+                    .map((need) => need.item)
+                    .sort();
+                  const flattenedUserWants = userWants
+                    .map((want) => want.item)
+                    .sort();
+
+                  const sortedCorrectly =
+                    JSON.stringify(flattenedUserNeeds) ===
+                      JSON.stringify(correctNeeds) &&
+                    JSON.stringify(flattenedUserWants) ===
+                      JSON.stringify(correctWants);
+
+                  if (sortedCorrectly) {
+                    awardXp();
+                    setBottomBarState("correctAnswer");
+                  } else {
+                    setBottomBarState("wrongAnswer");
+                  }
+                }
+
+                // Handle Check for FillBlankActivity
+                else if (mode === "fib") {
+                  console.log("Checking Fill in the Blanks Activity...");
+                  console.log("User Blanks: ", userBlanks);
+                  console.log("Correct Blanks: ", correctBlanks);
+
+                  const userAnswers = userBlanks.map((blank) => blank?.text);
+                  const isCorrect =
+                    JSON.stringify(userAnswers) ===
+                    JSON.stringify(correctBlanks);
+
+                  if (isCorrect) {
+                    setBottomBarState("correctAnswer");
+                  } else {
+                    setBottomBarState("wrongAnswer");
+                  }
+                }
+              }}
+            />
           </main>
         </div>
       </LessonProvider>

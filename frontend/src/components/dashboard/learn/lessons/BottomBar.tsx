@@ -7,21 +7,11 @@ import { createClient } from "@/utils/supabase/client";
 
 interface BottomBarProps {
   onContinue: () => void;
+  handleCheck: (awardXp: () => void) => void;
 }
 
-export default function BottomBar({ onContinue }: BottomBarProps) {
-  const {
-    bottomBarState,
-    setBottomBarState,
-    userNeeds,
-    userWants,
-    correctNeeds,
-    correctWants,
-    explanation,
-    userBlanks,
-    correctBlanks,
-    mode,
-  } = useLessonContext();
+export default function BottomBar({ onContinue, handleCheck }: BottomBarProps) {
+  const { bottomBarState, setBottomBarState, explanation } = useLessonContext();
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
   const [isFinishLoading, setIsFinishLoading] = useState(false);
   const [hasAwardedXP, setHasAwardedXP] = useState(false);
@@ -83,49 +73,6 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
     setHasAwardedXP(true);
   };
 
-  const handleCheck = () => {
-    // Handle Check for Sorting Activity
-    console.log("Mode: ", mode);
-    if (mode === "sorting") {
-      console.log("Checking Sorting Activity...");
-      console.log("User Needs: ", userNeeds);
-      console.log("User Wants: ", userWants);
-      console.log("Correct Needs: ", correctNeeds);
-      console.log("Correct Wants: ", correctWants);
-
-      const flattenedUserNeeds = userNeeds.map((need) => need.item).sort();
-      const flattenedUserWants = userWants.map((want) => want.item).sort();
-
-      const sortedCorrectly =
-        JSON.stringify(flattenedUserNeeds) === JSON.stringify(correctNeeds) &&
-        JSON.stringify(flattenedUserWants) === JSON.stringify(correctWants);
-
-      if (sortedCorrectly) {
-        awardXP();
-        setBottomBarState("correctAnswer");
-      } else {
-        setBottomBarState("wrongAnswer");
-      }
-    }
-
-    // Handle Check for FillBlankActivity
-    else if (mode === "fib") {
-      console.log("Checking Fill in the Blanks Activity...");
-      console.log("User Blanks: ", userBlanks);
-      console.log("Correct Blanks: ", correctBlanks);
-
-      const userAnswers = userBlanks.map((blank) => blank?.text);
-      const isCorrect =
-        JSON.stringify(userAnswers) === JSON.stringify(correctBlanks);
-
-      if (isCorrect) {
-        setBottomBarState("correctAnswer");
-      } else {
-        setBottomBarState("wrongAnswer");
-      }
-    }
-  };
-
   const handleTryAgain = () => {
     setBottomBarState("checkDisabled");
   };
@@ -163,7 +110,7 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
           <div className="flex flex-row items-center justify-between border-t border-surface-secondary px-8 py-6">
             <ReportButton answerType="text-secondary" />
             <button
-              onClick={handleCheck}
+              onClick={() => handleCheck(awardXP)}
               className="rounded-lg bg-button px-7 py-3 text-surface-primary"
             >
               Check

@@ -1,11 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import QuizActivity from "@/components/dashboard/learn/activities/quiz/QuizActivity";
+import QuizActivity, {
+  QuizQuestion,
+} from "@/components/dashboard/learn/activities/quiz/QuizActivity";
 import IntroContent from "@/components/dashboard/learn/lessons/IntroContent";
 import EndScreen from "@/components/dashboard/learn/lessons/EndScreen";
-import { LessonProvider } from "@/components/dashboard/learn/lessons/LessonContext";
+import {
+  LessonProvider,
+  useLessonContext,
+} from "@/components/dashboard/learn/lessons/LessonContext";
 import BottomBar from "@/components/dashboard/learn/lessons/BottomBar";
+import QuizBottom from "./QuizBottom";
 
 type ScreenType = "intro" | "activity" | "conclusion";
 
@@ -19,6 +25,7 @@ export default function QuizPage({ params }: PageProps) {
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
 
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
 
@@ -60,6 +67,8 @@ export default function QuizPage({ params }: PageProps) {
             questionIndex={questionIndex}
             selected={selected}
             setSelected={setSelected}
+            questions={questions}
+            setQuestions={setQuestions}
           />
         );
       case "conclusion":
@@ -100,7 +109,12 @@ export default function QuizPage({ params }: PageProps) {
             </div>
           </div>
           <div className="flex-grow">{renderScreen()}</div>
-          <BottomBar onContinue={handleContinue} />
+          <QuizBottom
+            selected={selected}
+            questions={questions}
+            questionIndex={questionIndex}
+            handleContinue={handleContinue}
+          />
         </main>
       </div>
     </LessonProvider>

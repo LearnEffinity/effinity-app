@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import LessonIntroCard from "@/components/dashboard/learn/module/lessonIntroCard";
 import LessonCard from "@/components/dashboard/learn/module/lessonCard";
+import QuizCard from "@/components/dashboard/learn/module/QuizCard";
 import Sidebar from "@/components/dashboard/sidebar";
 import { usePathname } from "next/navigation";
 
@@ -139,6 +140,15 @@ export default function ModulePage({ params }: PageProps) {
                     topic={params.topic}
                   />
                 ))}
+                <QuizCard
+                  lessonNumber={lessons.length + 1}
+                  title="Quiz"
+                  description="Test your knowledge"
+                  status="not-started"
+                  slug={`${params.module_number}`}
+                  moduleSlug={params.module_number}
+                  topic={params.topic}
+                />
               </div>
             </div>
             {/* MAIN CONTENT */}

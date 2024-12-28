@@ -24,6 +24,7 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
   } = useLessonContext();
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
   const [isFinishLoading, setIsFinishLoading] = useState(false);
+  const [hasAwardedXP, setHasAwardedXP] = useState(false);
 
   const supabase = createClient();
 
@@ -65,6 +66,9 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
     }
     const xp = userData?.xp || 0;
 
+    if (hasAwardedXP) {
+      return;
+    }
     const { data, error } = await supabase
       .from("users")
       .update({ xp: xp + 100 })
@@ -76,6 +80,7 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
     } else {
       console.log("Awarded 100 XP to user:", data);
     }
+    setHasAwardedXP(true);
   };
 
   const handleCheck = () => {

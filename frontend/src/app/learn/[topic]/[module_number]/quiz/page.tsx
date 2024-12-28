@@ -19,14 +19,27 @@ export default function QuizPage({ params }: PageProps) {
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
 
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+
   useEffect(() => {
-    const newWidth = (currentScreenIndex / (screens.length - 1)) * 100;
+    const newWidth =
+      ((currentScreenIndex + questionIndex) / (screens.length + 1)) * 100;
     setProgressWidth(newWidth);
-  }, [currentScreenIndex]);
+  }, [currentScreenIndex, questionIndex]);
 
   const handleContinue = () => {
-    if (currentScreenIndex < screens.length - 1) {
-      setCurrentScreenIndex(currentScreenIndex + 1);
+    if (currentScreenIndex === 0) setCurrentScreenIndex(1);
+    else if (currentScreenIndex === 1) {
+      if (questionIndex < 2) {
+        setQuestionIndex((prev) => prev + 1);
+        setSelected(null);
+      } else {
+        setCurrentScreenIndex(2);
+      }
+    } else {
+      // End screen
+      console.log("End screen");
     }
   };
 
@@ -42,9 +55,15 @@ export default function QuizPage({ params }: PageProps) {
           />
         );
       case "activity":
-        return <QuizActivity />;
+        return (
+          <QuizActivity
+            questionIndex={questionIndex}
+            selected={selected}
+            setSelected={setSelected}
+          />
+        );
       case "conclusion":
-        return <EndScreen />;
+        return <EndScreen text="You have completed the quiz." />;
       default:
         return null;
     }

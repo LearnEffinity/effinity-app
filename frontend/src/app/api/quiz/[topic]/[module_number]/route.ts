@@ -128,7 +128,7 @@ export async function GET(
             {
               type: "text",
               text: `Create a quiz activity about ${ModuleData.module.name} related to ${hobby}.
-              Generate 5 questions that a ${hobby} enthusiast would understand.
+              Generate 3 questions that a ${hobby} enthusiast would understand.
               Each question should be max 30 characters.
               Needs are essential items/concepts for ${ModuleData.module.name}, while wants are optional/luxury items.
               Adjust the complexity for ${experienceLevel} level.

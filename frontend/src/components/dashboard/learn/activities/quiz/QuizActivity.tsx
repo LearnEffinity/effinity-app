@@ -2,7 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { useLessonContext } from "../../lessons/LessonContext";
-import { CountdownCircleTimer } from "react-countdown-circle-timer";
+import {
+  CountdownCircleTimer,
+  useCountdown,
+} from "react-countdown-circle-timer";
 import { useParams } from "next/navigation";
 
 interface QuizQuestion {
@@ -13,14 +16,20 @@ interface QuizQuestion {
   explanation: string;
 }
 
-export default function QuizActivity() {
+export default function QuizActivity({
+  questionIndex,
+  selected,
+  setSelected,
+}: {
+  questionIndex: number;
+  selected: number | null;
+  setSelected: (selected: number | null) => void;
+}) {
   const params = useParams();
   const { bottomBarState, setBottomBarState, setExplanation } =
     useLessonContext();
 
-  const [selected, setSelected] = useState<number | null>(null);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   // numWrong would just be the total number of questions - numCorrect
@@ -84,9 +93,9 @@ export default function QuizActivity() {
 
   useEffect(() => {
     if (questions.length > 0) {
-      setExplanation(questions[currentQuestionIndex].explanation);
+      setExplanation(questions[questionIndex].explanation);
     }
-  }, [questions, currentQuestionIndex]);
+  }, [questions, questionIndex]);
 
   if (isLoading) return <></>;
   return (
@@ -97,12 +106,12 @@ export default function QuizActivity() {
           <h1 className="text-4xl font-medium text-text-primary">
             {"Needs vs. Wants"}
           </h1>
-          <h2>{questions[currentQuestionIndex].question}</h2>
+          <h2>{questions[questionIndex].question}</h2>
         </div>
         <div className="mt-12 grid w-full grid-cols-2 grid-rows-2 gap-4">
-          {questions[currentQuestionIndex].options.map((option, i) => {
+          {questions[questionIndex].options.map((option, i) => {
             const userIsCorrect =
-              selected === questions[currentQuestionIndex].correctAnswer;
+              selected === questions[questionIndex].correctAnswer;
             const isSelected = selected === i;
 
             return (
@@ -146,7 +155,7 @@ export default function QuizActivity() {
             trailStrokeWidth={8}
             onComplete={() => {
               const isCorrect =
-                selected === questions[currentQuestionIndex].correctAnswer;
+                selected === questions[questionIndex].correctAnswer;
               setBottomBarState(isCorrect ? "correctAnswer" : "wrongAnswer");
             }}
           >

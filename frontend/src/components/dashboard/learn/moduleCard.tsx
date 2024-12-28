@@ -34,7 +34,7 @@ export default function RegModuleCard({
         <div className="flex h-full w-full flex-col gap-y-4 rounded-b-xl bg-surface-base p-6">
           <div className="flex flex-col gap-y-2">
             <h3 className="text-sm font-normal leading-6 text-text-secondary">
-              Module {`${moduleID}`}
+              Module {`${module_number}`}
             </h3>
             <h1 className="text-2xl font-medium text-text-primary">{title}</h1>
             <div className="flex flex-row items-center">

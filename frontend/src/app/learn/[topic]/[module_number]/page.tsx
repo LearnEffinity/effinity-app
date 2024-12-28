@@ -130,7 +130,7 @@ export default function ModulePage({ params }: PageProps) {
                 {lessons.map((lesson) => (
                   <LessonCard
                     key={lesson.id}
-                    lessonNumber={lesson.lesson_id}
+                    lessonNumber={lesson.lesson_number}
                     title={lesson.name}
                     description={lesson.description}
                     status="not-started"

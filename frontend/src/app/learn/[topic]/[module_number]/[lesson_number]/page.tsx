@@ -82,6 +82,13 @@ export default function LessonPage({ params }: PageProps) {
   console.log("Params:", params);
   console.log("Current screens order:", screens);
 
+
+  useEffect(() => {
+    console.log("")
+
+  })
+
+
   const renderScreen = () => {
     switch (screens[currentScreenIndex]) {
       case "intro":

@@ -3,75 +3,48 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import QuizActivity from "@/components/dashboard/learn/activities/quiz/QuizActivity";
 import SortingActivity from "@/components/dashboard/learn/activities/sorting/SortingActivity";
-import FillBlankActivity from "@/components/dashboard/learn/activities/fill-blank/FillBlankActivity";
-import MatchingActivity from "@/components/dashboard/learn/activities/matching/MatchingActivity";
+// import FillBlankActivity from "@/components/dashboard/learn/activities/fill-blank/FillBlankActivity";
+// import MatchingActivity from "@/components/dashboard/learn/activities/matching/MatchingActivity";
 import IntroContent from "@/components/dashboard/learn/lessons/IntroContent";
 import EndScreen from "@/components/dashboard/learn/lessons/EndScreen";
 import { LessonProvider } from "@/components/dashboard/learn/lessons/LessonContext";
 import BottomBar from "@/components/dashboard/learn/lessons/BottomBar";
 
-type ScreenType =
-  | "intro"
-  | "activity1"
-  | "activity2"
-  | "activity3"
-  | "quiz"
-  | "conclusion";
+type ScreenType = "intro" | "activity" | "conclusion";
 
-const baseScreens: ScreenType[] = [
-  "intro",
-  "quiz",
-  "activity1",
-  "activity2",
-  "activity3",
-  "quiz",
-  "conclusion",
-];
-
-function shuffleActivities(screens: ScreenType[]): ScreenType[] {
-  const activities = screens.filter((screen) => screen.startsWith("activity"));
-  const otherScreens = screens.filter(
-    (screen) => !screen.startsWith("activity"),
-  );
-
-  for (let i = activities.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [activities[i], activities[j]] = [activities[j], activities[i]];
-  }
-
-  const shuffledScreens: ScreenType[] = [];
-  let activityIndex = 0;
-
-  for (const screen of baseScreens) {
-    if (screen.startsWith("activity")) {
-      shuffledScreens.push(activities[activityIndex]);
-      activityIndex++;
-    } else {
-      shuffledScreens.push(screen);
-    }
-  }
-
-  return shuffledScreens;
-}
+const screens: ScreenType[] = ["intro", "activity", "conclusion"];
 
 interface PageProps {
   params?: { topic: string; module_number: string; lesson_number: string };
 }
 
 export default function LessonPage({ params }: PageProps) {
-  const [screens, setScreens] = useState<ScreenType[]>(baseScreens);
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
+  const [lessonData, setLessonData] = useState<any>(null);
 
   useEffect(() => {
-    setScreens(shuffleActivities([...baseScreens]));
-    setScreens([...baseScreens]);
-  }, []);
+    const fetchLessonData = async () => {
+      try {
+        const response = await fetch(
+          `/api/lesson/${params.topic}/${params.module_number}/${params.lesson_number}`,
+        );
+        const data = await response.json();
+        setLessonData(data);
+      } catch (error) {
+        console.error("Error fetching lesson data:", error);
+      }
+    };
+
+    if (params?.topic && params?.module_number && params?.lesson_number) {
+      fetchLessonData();
+    }
+  }, [params?.topic, params?.module_number, params?.lesson_number]);
 
   useEffect(() => {
     const newWidth = (currentScreenIndex / (screens.length - 1)) * 100;
     setProgressWidth(newWidth);
-  }, [currentScreenIndex, screens.length]);
+  }, [currentScreenIndex]);
 
   const handleContinue = () => {
     if (currentScreenIndex < screens.length - 1) {
@@ -80,32 +53,18 @@ export default function LessonPage({ params }: PageProps) {
   };
 
   console.log("Params:", params);
-  console.log("Current screens order:", screens);
-
-
-  useEffect(() => {
-    console.log("")
-
-  })
-
 
   const renderScreen = () => {
     switch (screens[currentScreenIndex]) {
       case "intro":
         return (
           <IntroContent
-            lessonTitle="Introduction to Budgeting"
-            content="Budgeting is the process of managing your money to ensure you have enough to cover your expenses and save for the future. It's a skill that can help you achieve your financial goals and live a more secure life."
+            lessonTitle={lessonData?.name || "Loading..."}
+            content={lessonData?.description || "Loading lesson content..."}
           />
         );
-      case "activity1":
+      case "activity":
         return <SortingActivity />;
-      case "activity2":
-        return <MatchingActivity />;
-      case "activity3":
-        return <FillBlankActivity />;
-      case "quiz":
-        return <QuizActivity />;
       case "conclusion":
         return <EndScreen />;
       default:

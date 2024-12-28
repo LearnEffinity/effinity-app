@@ -43,7 +43,7 @@ export default function LessonCard({
           {description}
         </h6>
 
-        <div className="flex w-full justify-end">
+        <div className="flex w-full items-center justify-end -mt-4">
           {renderActionButton(status, progress, slug, moduleSlug, topic)}
         </div>
       </div>

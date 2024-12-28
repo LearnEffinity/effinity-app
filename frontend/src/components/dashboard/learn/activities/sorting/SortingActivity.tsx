@@ -4,6 +4,7 @@ import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
 import DropContainer from "./DropContainer";
 import SortingCard from "./SortingCard";
 import { useLessonContext } from "../../lessons/LessonContext";
+import { useParams } from "next/navigation";
 
 interface SortingCardData {
   id: string;
@@ -11,35 +12,8 @@ interface SortingCardData {
   item: string;
 }
 
-const initialItems: SortingCardData[] = [
-  {
-    id: "1",
-    icon: "/activity/wrench.png",
-    item: "Utilities",
-  },
-  {
-    id: "2",
-    icon: "/activity/wrench.png",
-    item: "Dining Out",
-  },
-  {
-    id: "3",
-    icon: "/activity/wrench.png",
-    item: "Groceries",
-  },
-  {
-    id: "4",
-    icon: "/activity/wrench.png",
-    item: "Gas",
-  },
-  {
-    id: "5",
-    icon: "/activity/wrench.png",
-    item: "Subscriptions",
-  },
-];
-
 export default function SortingActivity() {
+  const params = useParams();
   const {
     setUserNeeds,
     setUserWants,
@@ -59,27 +33,35 @@ export default function SortingActivity() {
     const fetchSortingData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/sorting");
+        const response = await fetch(
+          `/api/sorting/${params.topic}/${params.module_number}/${params.lesson_number}`
+        );
         const data = await response.json();
 
         if (response.ok) {
-          const allItems = [...data.Needs, ...data.Wants].map(
-            (item: string, index: number) => ({
-              id: `item-${index}`,
-              icon: "/activity/wrench.png",
-              item,
-            }),
-          );
+          // Transform the items array into SortingCardData format
+          const allItems = data.items.map((item: { text: string; category: string }, index: number) => ({
+            id: `item-${index}`,
+            icon: "/activity/wrench.png",
+            item: item.text,
+          }));
+
+          // Separate needs and wants for the correct answers
+          const needs = data.items
+            .filter((item: { category: string }) => item.category === "needs")
+            .map((item: { text: string }) => item.text)
+            .sort();
+          
+          const wants = data.items
+            .filter((item: { category: string }) => item.category === "wants")
+            .map((item: { text: string }) => item.text)
+            .sort();
 
           setItems(allItems);
-          setCorrectNeeds(data.Needs.sort());
-          setCorrectWants(data.Wants.sort());
-          setExplanation(data.Explanation);
+          setCorrectNeeds(needs);
+          setCorrectWants(wants);
+          setExplanation(data.explanation);
           setIsLoading(false);
-
-          console.log("Needs:", data.Needs);
-          console.log("Wants:", data.Wants);
-          console.log("Explanation:", data.Explanation);
         } else {
           console.error("Error fetching sorting data:", data.message);
           setIsLoading(false);
@@ -91,8 +73,10 @@ export default function SortingActivity() {
       }
     };
 
-    fetchSortingData();
-  }, []);
+    if (params.topic && params.module_number && params.lesson_number) {
+      fetchSortingData();
+    }
+  }, [params.topic, params.module_number, params.lesson_number]);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -152,9 +136,6 @@ export default function SortingActivity() {
         setUserWants((prev) => [...prev, item]);
         break;
     }
-
-    console.log("User Needs:", userNeeds);
-    console.log("User Wants:", userWants);
   }
 
   if (isLoading) {
@@ -184,19 +165,15 @@ export default function SortingActivity() {
         collisionDetection={closestCorners}
       >
         <div className="flex flex-col items-start px-36 pb-10">
-          <div className=" pb-8 pt-10">
+          <div className="pb-8 pt-10">
             <h3 className="text-xl font-medium">Sorting</h3>
             <h1 className="text-4xl font-medium text-text-primary">
-              Distinguished between {"Needs"} and {"Wants"}
+              Distinguish between Needs and Wants
             </h1>
             <h2>Sort each option into the correct category.</h2>
-            {/* {explanation && (
-              <p className="text-sm text-gray-600 mt-4">{explanation}</p>
-            )} */}
           </div>
           <div className="flex flex-row items-start">
             <DropContainer id="items" items={items} />
-
             <div className="ml-6 flex h-full gap-x-4 rounded-2xl bg-surface-base p-5">
               <DropContainer id="needs" items={userNeeds} title="Needs" />
               <DropContainer id="wants" items={userWants} title="Wants" />

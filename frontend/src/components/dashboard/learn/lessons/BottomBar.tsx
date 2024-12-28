@@ -3,6 +3,7 @@ import { useLessonContext } from "./LessonContext";
 import ExplanationTray from "./ExplanationTray";
 import { AiFillExclamationCircle } from "react-icons/ai";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 interface BottomBarProps {
   onContinue: () => void;
@@ -24,6 +25,8 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
   const [isFinishLoading, setIsFinishLoading] = useState(false);
 
+  const supabase = createClient();
+
   const router = useRouter();
 
   const handleExplanationToggle = () => {
@@ -40,6 +43,39 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
   const handleContinue = () => {
     onContinue();
     setBottomBarState("checkDisabled");
+  };
+
+  const awardXP = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("User not found");
+      return;
+    }
+
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select()
+      .eq("id", user.id)
+      .single();
+    if (userError) {
+      console.error("Error fetching user data:", userError);
+      return;
+    }
+    const xp = userData?.xp || 0;
+
+    const { data, error } = await supabase
+      .from("users")
+      .update({ xp: xp + 100 })
+      .eq("id", user.id)
+      .single();
+
+    if (error) {
+      console.error("Error updating user data:", error);
+    } else {
+      console.log("Awarded 100 XP to user:", data);
+    }
   };
 
   const handleCheck = () => {
@@ -60,6 +96,7 @@ export default function BottomBar({ onContinue }: BottomBarProps) {
         JSON.stringify(flattenedUserWants) === JSON.stringify(correctWants);
 
       if (sortedCorrectly) {
+        awardXP();
         setBottomBarState("correctAnswer");
       } else {
         setBottomBarState("wrongAnswer");

@@ -34,24 +34,26 @@ export default function SortingActivity() {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/sorting/${params.topic}/${params.module_number}/${params.lesson_number}`
+          `/api/sorting/${params.topic}/${params.module_number}/${params.lesson_number}`,
         );
         const data = await response.json();
 
         if (response.ok) {
           // Transform the items array into SortingCardData format
-          const allItems = data.items.map((item: { text: string; category: string }, index: number) => ({
-            id: `item-${index}`,
-            icon: "/activity/wrench.png",
-            item: item.text,
-          }));
+          const allItems = data.items.map(
+            (item: { text: string; category: string }, index: number) => ({
+              id: `item-${index}`,
+              icon: "/activity/wrench.png",
+              item: item.text,
+            }),
+          );
 
           // Separate needs and wants for the correct answers
           const needs = data.items
             .filter((item: { category: string }) => item.category === "needs")
             .map((item: { text: string }) => item.text)
             .sort();
-          
+
           const wants = data.items
             .filter((item: { category: string }) => item.category === "wants")
             .map((item: { text: string }) => item.text)

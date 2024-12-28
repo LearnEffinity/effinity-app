@@ -6,6 +6,7 @@ interface UsernameContextType {
   isLoading: boolean;
   lives: number;
   level: number;
+  xp: number;
 }
 
 const UsernameContext = createContext<UsernameContextType | undefined>(
@@ -17,6 +18,7 @@ export function UsernameProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [lives, setLives] = useState(0);
   const [level, setLevel] = useState(0);
+  const [xp, setXp] = useState(0);
   const supabase = createClient();
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export function UsernameProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         const { data, error } = await supabase
           .from("users")
-          .select("username, lives, level")
+          .select("username, lives, level, xp")
           .eq("id", user.id)
           .single();
         if (error) {
@@ -44,7 +46,7 @@ export function UsernameProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <UsernameContext.Provider value={{ username, isLoading, lives, level }}>
+    <UsernameContext.Provider value={{ username, isLoading, lives, level, xp }}>
       {children}
     </UsernameContext.Provider>
   );

@@ -3,59 +3,74 @@
 import React, { useEffect, useState } from "react";
 import { useLessonContext } from "../../lessons/LessonContext";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
+import { useParams } from "next/navigation";
 
 interface QuizQuestion {
   id: string;
   question: string;
   options: string[];
   correctAnswer: number;
+  explanation: string;
 }
 
-const question: QuizQuestion = {
-  id: "1",
-  question:
-    "Which of the following items is considered a ‘Need’ rather than a ‘Want’?",
-  options: [
-    "Designer Shoes",
-    "A new smartphone",
-    "Prescription medication",
-    "Concert tickets",
-  ],
-  correctAnswer: 2,
-};
-
 export default function QuizActivity() {
-  const { bottomBarState, setBottomBarState } = useLessonContext();
+  const params = useParams();
+  const { bottomBarState, setBottomBarState, setExplanation } =
+    useLessonContext();
 
   const [selected, setSelected] = useState<number | null>(null);
-  const [questions, setQuestions] = useState<QuizQuestion[]>([question]);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   // numWrong would just be the total number of questions - numCorrect
   const [numCorrect, setNumCorrect] = useState(0);
 
   useEffect(() => {
-    const fetchQuizData = async () => {
+    console.log("params", params);
+    const fetchSortingData = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch("/api/quiz");
-        const data = await response.json();
+        const response = await fetch(
+          `/api/quiz/${params.topic}/${params.module_number}`,
+        );
+        console.log("response", response);
+        const data = (await response.json()) as {
+          questions: {
+            question: string;
+            options: string[];
+            correctAnswer: number;
+            explanation: string;
+          }[];
+        };
 
         if (response.ok) {
-          console.log("API Response:", data);
-
-          const questions: QuizQuestion[] = data.questions as QuizQuestion[];
-          setQuestions(questions);
+          setQuestions(
+            data.questions.map((question, i) => ({
+              id: i.toString(),
+              question: question.question,
+              options: question.options,
+              correctAnswer: question.correctAnswer,
+              explanation: question.explanation,
+            })),
+          );
+          console.log("questions", data.questions);
+          setIsLoading(false);
         } else {
-          console.error("Error fetching quiz data:", data.message);
+          console.error("Error fetching sorting data:", (data as any).message);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Error calling API:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchQuizData();
-    console.log("run");
-  }, []);
+    if (params.topic && params.module_number) {
+      fetchSortingData();
+    }
+  }, [params.topic, params.module_number]);
 
   useEffect(() => {
     if (bottomBarState === "correctAnswer") {
@@ -67,6 +82,13 @@ export default function QuizActivity() {
     if (selected !== null) setBottomBarState("checkEnabled");
   }, [selected, setBottomBarState]);
 
+  useEffect(() => {
+    if (questions.length > 0) {
+      setExplanation(questions[currentQuestionIndex].explanation);
+    }
+  }, [questions, currentQuestionIndex]);
+
+  if (isLoading) return <></>;
   return (
     <div className="flex w-full justify-center px-8 pb-10">
       <div className="flex w-full max-w-[1500px] flex-col items-start">

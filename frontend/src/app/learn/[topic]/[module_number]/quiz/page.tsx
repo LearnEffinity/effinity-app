@@ -29,6 +29,8 @@ export default function QuizPage({ params }: PageProps) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
 
+  const [lives, setLives] = useState(5);
+
   useEffect(() => {
     const newWidth =
       ((currentScreenIndex + questionIndex) / (screens.length + 1)) * 100;
@@ -105,7 +107,9 @@ export default function QuizPage({ params }: PageProps) {
                   fill="#EC2D30"
                 />
               </svg>
-              <p className="ml-1 text-xl font-normal text-text-secondary">6</p>
+              <p className="ml-1 text-xl font-normal text-text-secondary">
+                {lives}
+              </p>
             </div>
           </div>
           <div className="flex-grow">{renderScreen()}</div>
@@ -113,6 +117,7 @@ export default function QuizPage({ params }: PageProps) {
             selected={selected}
             questions={questions}
             questionIndex={questionIndex}
+            setLives={setLives}
             handleContinue={handleContinue}
           />
         </main>

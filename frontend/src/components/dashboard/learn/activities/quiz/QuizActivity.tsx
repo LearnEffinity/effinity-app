@@ -7,6 +7,7 @@ import {
   useCountdown,
 } from "react-countdown-circle-timer";
 import { useParams } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export interface QuizQuestion {
   id: string;
@@ -33,6 +34,11 @@ export default function QuizActivity({
   const { bottomBarState, setBottomBarState, setExplanation } =
     useLessonContext();
 
+  const [moduleData, setModuleData] = useState<any>({
+    name: "",
+  });
+  const supabase = createClient();
+
   const [isLoading, setIsLoading] = useState(true);
 
   // numWrong would just be the total number of questions - numCorrect
@@ -47,7 +53,7 @@ export default function QuizActivity({
 
   useEffect(() => {
     console.log("params", params);
-    const fetchSortingData = async () => {
+    const fetchQuizData = async () => {
       setIsLoading(true);
       try {
         const response = await fetch(
@@ -86,8 +92,24 @@ export default function QuizActivity({
       }
     };
 
+    const fetchModuleData = async () => {
+      const { data, error } = await supabase
+        .from("modules")
+        .select("name")
+        .eq("module_number", params.module_number)
+        .single();
+      if (error) {
+        console.error("Error fetching module data:", error);
+        setModuleData({ name: "ERROR" });
+        return;
+      }
+
+      setModuleData(data);
+    };
+
     if (params.topic && params.module_number) {
-      fetchSortingData();
+      fetchQuizData();
+      fetchModuleData();
     }
   }, [params.topic, params.module_number]);
 
@@ -114,7 +136,7 @@ export default function QuizActivity({
         <div className="pb-8 pt-10">
           <h3 className="text-xl font-medium text-text-secondary">Quiz</h3>
           <h1 className="text-4xl font-medium text-text-primary">
-            {"Needs vs. Wants"}
+            {moduleData.name}
           </h1>
           <h2>{questions[questionIndex].question}</h2>
         </div>

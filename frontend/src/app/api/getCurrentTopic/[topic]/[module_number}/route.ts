@@ -9,11 +9,11 @@ interface TopicInfo {
 
 export async function GET(
   request: Request,
-  { params }: { params: { topic: string; module_number: string } },
+  { params }: { params: { topic: string; module_number: string } }
 ) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const { topic, module_number } = params;
@@ -21,7 +21,7 @@ export async function GET(
   if (!topic || !module_number) {
     return NextResponse.json(
       { error: "Topic or module number not provided" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -57,7 +57,7 @@ export async function GET(
     console.error("Error fetching current topic:", error);
     return NextResponse.json(
       { error: "Failed to fetch current topic" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -12,6 +12,7 @@ import {
 } from "@/components/dashboard/learn/lessons/LessonContext";
 import BottomBar from "@/components/dashboard/learn/lessons/BottomBar";
 import QuizBottom from "./QuizBottom";
+import { createClient } from "@/utils/supabase/client";
 
 type ScreenType = "intro" | "activity" | "conclusion";
 
@@ -31,11 +32,39 @@ export default function QuizPage({ params }: PageProps) {
 
   const [lives, setLives] = useState(5);
 
+  const supabase = createClient();
+
   useEffect(() => {
     const newWidth =
       ((currentScreenIndex + questionIndex) / (screens.length + 1)) * 100;
     setProgressWidth(newWidth);
   }, [currentScreenIndex, questionIndex]);
+
+  useEffect(() => {
+    const updateLives = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      console.log("User:", user);
+
+      const { data, error } = await supabase
+        .from("users")
+        .update({
+          lives,
+        })
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error updating lives:", error);
+      } else {
+        console.log("Updated lives:", data);
+      }
+    };
+
+    updateLives();
+  }, [lives]);
 
   const handleContinue = () => {
     if (currentScreenIndex === 0) setCurrentScreenIndex(1);

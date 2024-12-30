@@ -129,7 +129,26 @@ export default function QuizActivity({
     }
   }, [questions, questionIndex]);
 
-  if (isLoading) return <></>;
+  if (isLoading)
+    return (
+      <div className="flex w-full justify-center px-8 pb-10">
+        <div className="flex w-full max-w-[1500px] flex-col items-start">
+          <div className="pb-8 pt-10">
+            <h3 className="text-xl font-medium text-text-secondary">Quiz</h3>
+            <h1 className="text-4xl font-medium text-text-primary">
+              Loading...
+            </h1>
+            <h2 className="my-2 h-[20px] w-[250px] animate-pulse rounded-lg bg-gray-200"></h2>
+          </div>
+          <div className="mt-12 grid w-full grid-cols-2 grid-rows-2 gap-4">
+            <div className="flex h-[150px] w-full animate-pulse items-center rounded-lg border-2 bg-gray-200 p-4" />
+            <div className="flex h-[150px] w-full animate-pulse items-center rounded-lg border-2 bg-gray-200 p-4" />
+            <div className="flex h-[150px] w-full animate-pulse items-center rounded-lg border-2 bg-gray-200 p-4" />
+            <div className="flex h-[150px] w-full animate-pulse items-center rounded-lg border-2 bg-gray-200 p-4" />
+          </div>
+        </div>
+      </div>
+    );
   return (
     <div className="flex w-full justify-center px-8 pb-10">
       <div className="flex w-full max-w-[1500px] flex-col items-start">

@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+"use client";
+
+import React, { createContext, ReactNode, useContext, useState } from "react";
 //+ these are the possible states f
 export type BottomBarState =
   | "continue"
